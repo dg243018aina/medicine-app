@@ -36,7 +36,6 @@
               <span class="active-red"></span><span class="active-red"></span><span class="active-yellow"></span>
             </div>
           </div>
-          <!-- ホーム画面のペットアイコン -->
           <div class="pet-avatar-mini">
             <svg viewBox="0 0 100 100" class="pet-svg-icon">
               <circle cx="50" cy="55" r="35" fill="#f3a683"/>
@@ -70,6 +69,14 @@
         <div class="pet-display">
           <div class="pet-level-badge">Lv.<span id="pet-level">1</span> <span id="pet-stage-name">赤ちゃんハム</span></div>
           
+          <!-- レベルのプログレスバー -->
+          <div class="exp-bar-area">
+            <div class="exp-bar-container">
+              <div class="exp-bar-fill" id="exp-bar-fill"></div>
+            </div>
+            <div class="exp-text">あと <strong id="exp-needed">50</strong> EXPでレベルアップ！</div>
+          </div>
+
           <div class="pet-character-container">
             <div class="pet-character-svg stage-1" id="pet-character-body">
               <svg viewBox="0 0 120 120" class="pet-svg-main">
@@ -94,13 +101,8 @@
           </div>
 
           <div class="pet-status">
-            <div class="love-container">
-              <div class="love-text">❤️ なつき度: <span id="pet-love">0</span>%</div>
-              <div class="love-bar-bg">
-                <div class="love-bar-fill" id="pet-love-bar" style="width: 0%;"></div>
-              </div>
-            </div>
-            <div class="coin-badge">💰 <span id="coin-count">0</span> コイン</div>
+            <div>なつき度: <span id="pet-love">0</span>%</div>
+            <div class="coin-badge">💰 <span id="coin-count">11</span> コイン</div>
           </div>
         </div>
 
@@ -142,16 +144,13 @@
             </div>
           </div>
         </div>
-            
-      
-          
 
         <!-- AIおしゃべり -->
         <div id="tab-content-talk" class="tab-content">
           <div class="chat-container">
             <div class="chat-history" id="chat-history">
               <div class="chat-bubble pet-bubble" id="pet-dialog">
-                はじめまして！たくさんおしゃべりしたり、お薬をのんで仲良くしてね！
+                今日もお薬飲んでえらいね！何かおはなしする？
               </div>
             </div>
             <div class="chat-input-row">
@@ -160,6 +159,9 @@
             </div>
           </div>
         </div>
+
+        <!-- データリセットボタン -->
+        <button class="reset-data-btn" id="reset-data-btn">データをリセットして最初から遊ぶ</button>
       </section>
 
       <!-- 画面3: 計算 -->
@@ -169,6 +171,7 @@
           <h2>脳トレ計算</h2>
         </div>
 
+        <!-- モード選択画面 -->
         <div id="calc-menu">
           <h3>モードを選択</h3>
           <div class="calc-op-list">
@@ -183,10 +186,12 @@
             <button class="menu-btn calc-diff-btn" data-diff="mid">中級</button>
             <button class="menu-btn calc-diff-btn" data-diff="hard">上級</button>
           </div>
-          <button class="action-btn" id="start-calc-btn">問題スタート！</button>
+          <button class="action-btn" id="start-calc-btn">10問テスト スタート！</button>
         </div>
 
+        <!-- 計算進行画面 -->
         <div id="calc-game" class="hidden">
+          <div class="calc-progress-badge" id="calc-progress-text">第 1 / 10 問</div>
           <div class="question-box"><span id="question-text">8 + 5 = ?</span></div>
           <div class="answer-box"><span id="user-answer"></span></div>
           <div class="numpad">
@@ -195,7 +200,21 @@
             <button class="num-btn">7</button><button class="num-btn">8</button><button class="num-btn">9</button>
             <button class="num-btn clear-btn">C</button><button class="num-btn">0</button><button class="num-btn submit-btn">確定</button>
           </div>
-          <button class="back-btn small-btn" id="calc-quit-btn">戻る</button>
+          <button class="back-btn small-btn" id="calc-quit-btn">やめる</button>
+        </div>
+
+        <!-- 10問終了後の結果画面 -->
+        <div id="calc-result" class="hidden">
+          <div class="result-card">
+            <div class="result-icon">🎉</div>
+            <h3>テスト終了！</h3>
+            <div class="result-score">10問中 <span id="result-correct-count">0</span> 問 正解！</div>
+            <div class="result-coin-box">
+              <span>獲得した報酬</span>
+              <div class="result-coins">💰 +<span id="result-earned-coins">0</span> コイン</div>
+            </div>
+            <button class="action-btn" id="calc-retry-btn">もう一度チャレンジ！</button>
+          </div>
         </div>
       </section>
 
