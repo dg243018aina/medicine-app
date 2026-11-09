@@ -36,167 +36,24 @@
               <span class="active-red"></span><span class="active-red"></span><span class="active-yellow"></span>
             </div>
           </div>
-          <div class="pet-avatar-mini">🐹</div>
+          <!-- ホーム画面のペットミニイラスト -->
+          <div class="pet-avatar-mini">
+            <svg viewBox="0 0 100 100" class="pet-svg-icon">
+              <circle cx="50" cy="55" r="35" fill="#f3a683"/>
+              <circle cx="50" cy="58" r="28" fill="#f8d7da"/>
+              <circle cx="30" cy="28" r="12" fill="#f3a683"/>
+              <circle cx="30" cy="28" r="7" fill="#f8a5c2"/>
+              <circle cx="70" cy="28" r="12" fill="#f3a683"/>
+              <circle cx="70" cy="28" r="7" fill="#f8a5c2"/>
+              <circle cx="38" cy="48" r="4" fill="#2d3436"/>
+              <circle cx="62" cy="48" r="4" fill="#2d3436"/>
+              <ellipse cx="50" cy="54" rx="5" ry="3" fill="#e77f67"/>
+              <path d="M 45 60 Q 50 65 55 60" stroke="#2d3436" stroke-width="2" fill="none"/>
+            </svg>
+          </div>
         </div>
 
         <nav class="home-nav">
           <button class="nav-btn btn-pet" data-target="screen-pet">ペット</button>
           <button class="nav-btn btn-med" data-target="screen-med">くすり</button>
-          <button class="nav-btn btn-calc" data-target="screen-calc">計算</button>
-        </nav>
-      </section>
-
-      <!-- 画面2: ペット -->
-      <section id="screen-pet" class="screen">
-        <div class="screen-header">
-          <button class="back-btn" data-target="screen-home">← ホーム</button>
-          <h2>ペット育成</h2>
-        </div>
-
-        <div class="pet-display">
-          <div class="pet-character">🐹</div>
-          <div class="pet-status">
-            <div>なつき度: <span id="pet-love">100</span>%</div>
-            <div class="coin-badge">💰 <span id="coin-count">11</span> コイン</div>
-          </div>
-        </div>
-
-        <div class="tab-controls">
-          <button class="tab-btn active" id="tab-btn-gohan">ごはん</button>
-          <button class="tab-btn" id="tab-btn-talk">おしゃべり</button>
-        </div>
-
-        <!-- ごはんショップ -->
-        <div id="tab-content-gohan" class="tab-content active">
-          <div class="food-grid">
-            <div class="food-card" data-cost="5" data-food="ひまわりの種">
-              <div class="food-img">🌻</div>
-              <div class="food-info">
-                <span>ひまわりの種</span>
-                <span class="food-cost">💰 5</span>
-              </div>
-            </div>
-            <div class="food-card" data-cost="8" data-food="スイカ">
-              <div class="food-img">🍉</div>
-              <div class="food-info">
-                <span>スイカ</span>
-                <span class="food-cost">💰 8</span>
-              </div>
-            </div>
-            <div class="food-card" data-cost="6" data-food="さつまいも">
-              <div class="food-img">🍠</div>
-              <div class="food-info">
-                <span>さつまいも</span>
-                <span class="food-cost">💰 6</span>
-              </div>
-            </div>
-            <div class="food-card" data-cost="3" data-food="ブロッコリー">
-              <div class="food-img">🥦</div>
-              <div class="food-info">
-                <span>ブロッコリー</span>
-                <span class="food-cost">💰 3</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- おしゃべり -->
-        <div id="tab-content-talk" class="tab-content">
-          <div class="chat-container">
-            <div class="chat-bubble" id="pet-dialog">
-              今日もお薬飲んでえらいね！何かおはなしする？
-            </div>
-            <div class="chat-input-row">
-              <input type="text" id="talk-input" placeholder="メッセージを入力...">
-              <button id="talk-send-btn">送信</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 画面3: 計算 -->
-      <section id="screen-calc" class="screen">
-        <div class="screen-header">
-          <button class="back-btn" data-target="screen-home">← ホーム</button>
-          <h2>脳トレ計算</h2>
-        </div>
-
-        <div id="calc-menu">
-          <h3>モードを選択</h3>
-          <div class="calc-op-list">
-            <button class="menu-btn calc-op-btn active" data-op="+">足し算</button>
-            <button class="menu-btn calc-op-btn" data-op="-">引き算</button>
-            <button class="menu-btn calc-op-btn" data-op="*">掛け算</button>
-            <button class="menu-btn calc-op-btn" data-op="/">割り算</button>
-          </div>
-          <h3>難易度を選択</h3>
-          <div class="calc-diff-list">
-            <button class="menu-btn calc-diff-btn active" data-diff="easy">初級</button>
-            <button class="menu-btn calc-diff-btn" data-diff="mid">中級</button>
-            <button class="menu-btn calc-diff-btn" data-diff="hard">上級</button>
-          </div>
-          <button class="action-btn" id="start-calc-btn">問題スタート！</button>
-        </div>
-
-        <div id="calc-game" class="hidden">
-          <div class="question-box">
-            <span id="question-text">8 + 5 = ?</span>
-          </div>
-          <div class="answer-box">
-            <span id="user-answer"></span>
-          </div>
-          <div class="numpad">
-            <button class="num-btn">1</button><button class="num-btn">2</button><button class="num-btn">3</button>
-            <button class="num-btn">4</button><button class="num-btn">5</button><button class="num-btn">6</button>
-            <button class="num-btn">7</button><button class="num-btn">8</button><button class="num-btn">9</button>
-            <button class="num-btn clear-btn">C</button><button class="num-btn">0</button><button class="num-btn submit-btn">確定</button>
-          </div>
-          <button class="back-btn small-btn" id="calc-quit-btn">戻る</button>
-        </div>
-      </section>
-
-      <!-- 画面4: くすり -->
-      <section id="screen-med" class="screen">
-        <div class="screen-header">
-          <button class="back-btn" data-target="screen-home">← ホーム</button>
-          <h2>お薬・生活スケジュール</h2>
-        </div>
-
-        <div class="patient-info-header">
-          <h3 id="patient-display-name">マノ コウタ (86)</h3>
-        </div>
-
-        <div class="med-layout">
-          <div class="card schedule-card">
-            <h4>生活時間</h4>
-            <ul id="schedule-list"></ul>
-          </div>
-
-          <div class="card meds-card">
-            <h4>処方お薬</h4>
-            <div id="medicine-list"></div>
-          </div>
-        </div>
-
-        <button class="alarm-test-btn" id="trigger-alarm-test-btn">⏰ 服薬アラームの表示テスト</button>
-      </section>
-
-    </main>
-  </div>
-
-  <!-- アラームモーダル -->
-  <div class="modal-overlay hidden" id="alarm-modal">
-    <div class="alarm-content">
-      <div class="alarm-clock-icon">⏰</div>
-      <h3>お薬の時間です！</h3>
-      <p id="alarm-medicine-info">処方薬の服薬時間です</p>
-      <div class="alarm-btn-group">
-        <button class="alarm-btn btn-taken" id="alarm-btn-yes">のんだ</button>
-        <button class="alarm-btn btn-not-taken" id="alarm-btn-no">のんでない</button>
-      </div>
-    </div>
-  </div>
-
-  <script src="patient.js"></script>
-</body>
-</html>
+          <button class="nav-btn btn-calc" data-target="screen-calc">計算</
