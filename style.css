@@ -37,11 +37,6 @@ body {
   border-bottom: 2px solid #f0f0f0;
 }
 
-.admin-header {
-  background-color: #fffaf0;
-  border-bottom: 2px solid #ffe0b2;
-}
-
 .header-title {
   font-size: 1.2rem;
   font-weight: 900;
@@ -69,13 +64,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
-.screen-header h2 {
-  font-size: 1.4rem;
-  color: #333;
-}
+.screen-header h2 { font-size: 1.4rem; color: #333; }
 
 .back-btn {
   background: #f0f0f0;
@@ -87,6 +79,7 @@ body {
   color: #555;
 }
 
+/* ホーム */
 .home-banner {
   border: 5px solid #2ecc71;
   border-radius: 24px;
@@ -138,7 +131,14 @@ body {
 .cal-grid .active-yellow { background: #e9c46a; }
 .cal-grid .active-red { background: #e76f51; }
 
-.pet-avatar-mini { font-size: 4.5rem; }
+.pet-avatar-mini {
+  width: 75px;
+  height: 75px;
+}
+.pet-svg-icon {
+  width: 100%;
+  height: 100%;
+}
 
 .home-nav {
   display: flex;
@@ -161,41 +161,75 @@ body {
 .btn-med { background-color: #2ecc71; color: #fff; }
 .btn-calc { background-color: #3498db; color: #fff; }
 
+/* ペットディスプレイ＆成長システム */
 .pet-display {
   background: #fff;
   border-radius: 20px;
-  padding: 20px;
+  padding: 15px;
   display: flex;
   flex-direction: column;
   align-items: center;
   border: 2px solid #eee;
   margin-bottom: 15px;
+  position: relative;
+  overflow: hidden;
 }
 
-.pet-character {
-  font-size: 6rem;
+.pet-level-badge {
+  background: #ffe0b2;
+  color: #e67e22;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 900;
+  font-size: 0.95rem;
   margin-bottom: 10px;
-  animation: bounce 2s infinite ease-in-out;
+}
+
+.pet-character-container {
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pet-character-svg {
+  width: 100px;
+  height: 100px;
+  transition: transform 0.5s ease-in-out;
+  transform-origin: center bottom;
+  animation: bounce 2.5s infinite ease-in-out;
+}
+
+/* 成長サイズ（JavaScriptでクラスを付与） */
+.pet-character-svg.stage-1 { transform: scale(0.85); }
+.pet-character-svg.stage-2 { transform: scale(1.05); }
+.pet-character-svg.stage-3 { transform: scale(1.25); }
+.pet-character-svg.stage-4 { transform: scale(1.45); }
+
+.pet-svg-main {
+  width: 100%;
+  height: 100%;
 }
 
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  50% { transform: translateY(-8px); }
 }
 
 .pet-status {
   display: flex;
   justify-content: space-between;
   width: 100%;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 700;
+  margin-top: 5px;
 }
 
 .tab-controls { display: flex; gap: 10px; margin-bottom: 15px; }
 
 .tab-btn {
   flex: 1; padding: 12px; border: none; border-radius: 14px;
-  font-size: 1.2rem; font-weight: 700; background: #e0e0e0; cursor: pointer;
+  font-size: 1.1rem; font-weight: 700; background: #e0e0e0; cursor: pointer;
 }
 
 .tab-btn.active { background: #f1c40f; color: #333; }
@@ -206,21 +240,38 @@ body {
 .food-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
 .food-card {
-  background: #fff; border-radius: 16px; padding: 12px;
-  border: 2px solid #eee; display: flex; align-items: center; gap: 10px; cursor: pointer;
+  background: #fff; border-radius: 16px; padding: 10px;
+  border: 2px solid #eee; display: flex; align-items: center; gap: 8px; cursor: pointer;
 }
 
-.food-img { font-size: 2.2rem; }
-.food-info { display: flex; flex-direction: column; font-weight: 700; }
-.food-cost { color: #f39c12; font-size: 0.95rem; }
+.food-img { font-size: 2rem; }
+.food-info { display: flex; flex-direction: column; font-weight: 700; font-size: 0.9rem; }
+.food-cost { color: #f39c12; font-size: 0.8rem; }
 
+/* AIチャット */
 .chat-container { background: #fff; border-radius: 16px; padding: 15px; border: 2px solid #eee; }
-.chat-bubble { background: #e8f8f5; border: 2px solid #2ecc71; border-radius: 16px; padding: 12px; font-size: 1rem; margin-bottom: 15px; font-weight: 700; }
+.chat-history {
+  max-height: 180px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.chat-bubble {
+  border-radius: 16px; padding: 10px 14px; font-size: 0.95rem; font-weight: 700; max-width: 85%;
+  line-height: 1.4;
+}
+
+.pet-bubble { background: #e8f8f5; border: 2px solid #2ecc71; align-self: flex-start; }
+.user-bubble { background: #ffe0b2; border: 2px solid #f39c12; align-self: flex-end; }
 
 .chat-input-row { display: flex; gap: 8px; }
-.chat-input-row input { flex: 1; padding: 10px; border-radius: 10px; border: 2px solid #ccc; font-size: 1rem; }
+.chat-input-row input { flex: 1; padding: 10px; border-radius: 10px; border: 2px solid #ccc; font-size: 0.95rem; }
 .chat-input-row button { padding: 10px 16px; background: #f39c12; border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; }
 
+/* 計算 */
 .calc-op-list, .calc-diff-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0 20px 0; }
 
 .menu-btn { padding: 14px; border: 2px solid #ffe0b2; background: #fff3e0; border-radius: 14px; font-size: 1.2rem; font-weight: 700; cursor: pointer; }
@@ -236,6 +287,7 @@ body {
 .clear-btn { background: #ffcdd2; color: #c62828; }
 .submit-btn { background: #c8e6c9; color: #2e7d32; }
 
+/* くすり */
 .patient-info-header { background: #e0f7fa; border-radius: 14px; padding: 12px; text-align: center; margin-bottom: 15px; color: #00838f; font-size: 1.2rem; }
 .med-layout { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
 .card { background: #fff; border: 2px solid #eee; border-radius: 16px; padding: 15px; }
@@ -249,15 +301,7 @@ body {
 
 .alarm-test-btn { width: 100%; padding: 14px; background: #e74c3c; color: #fff; border: none; border-radius: 14px; font-weight: 700; font-size: 1.1rem; cursor: pointer; }
 
-.patient-select-list { display: flex; flex-direction: column; gap: 10px; margin: 10px 0; }
-.patient-card-item { background: #fff; border: 2px solid #ddd; border-radius: 12px; padding: 12px; font-size: 1.1rem; font-weight: 700; cursor: pointer; }
-.patient-card-item.active { border-color: #e67e22; background: #fff3e0; }
-
-.divider { margin: 20px 0; border: 0; height: 1px; background: #ddd; }
-
-#edit-schedule-form, #add-med-form { display: flex; flex-direction: column; gap: 8px; }
-#edit-schedule-form input, #add-med-form input { padding: 10px; border: 2px solid #ccc; border-radius: 10px; font-size: 1rem; margin-bottom: 5px; }
-
+/* モーダル */
 .modal-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
 .alarm-content { background: #fff; border-radius: 24px; padding: 30px 20px; width: 100%; text-align: center; }
 .alarm-clock-icon { font-size: 4rem; animation: shake 0.5s infinite alternate; }
