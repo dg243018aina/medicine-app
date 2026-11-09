@@ -1,314 +1,318 @@
-// ====== Gemini API 設定エリア ======
-// ※ 独自のGemini APIキーをお持ちの場合は、下のダブルクォーテーション内に入力してください。
-// 空のままでも、可愛いAIキャラクター対話ロジックが自動的に作動します。
-const GEMINI_API_KEY = ""; 
-
-// 初期データ構造
-const defaultData = {
-  coins: 11,
-  love: 100,
-  exp: 0,
-  level: 1,
-  currentPatientId: 1,
-  patients: [
-    {
-      id: 1,
-      name: '眞野 宏太',
-      age: 86,
-      schedule: [
-        { label: '朝ごはん', time: '7:00' },
-        { label: '昼ごはん', time: '12:00' },
-        { label: '晩ごはん', time: '19:00' },
-        { label: 'お風呂', time: '17:00' }
-      ],
-      meds: [
-        { name: 'ロキソニン', instruction: '朝 食後 2錠' },
-        { name: '軟膏(塗り薬)', instruction: '朝洗顔後 入浴後 就寝前' }
-      ]
-    }
-  ]
-};
-
-function getData() {
-  const saved = localStorage.getItem('brain_med_app_data');
-  return saved ? JSON.parse(saved) : defaultData;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Zen Maru Gothic', sans-serif;
+  user-select: none;
 }
 
-function saveData(data) {
-  localStorage.setItem('brain_med_app_data', JSON.stringify(data));
+body {
+  background-color: #2c3e50;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
 }
 
-let appData = getData();
-let state = { selectedOp: '+', selectedDiff: 'easy', currentQuestion: { a: 0, b: 0, ans: 0 } };
-
-document.addEventListener('DOMContentLoaded', () => {
-  initNavigation();
-  initPetSystem();
-  initCalcSystem();
-  initAlarmSystem();
-  renderPatientData();
-  updatePetDisplay();
-});
-
-function initNavigation() {
-  document.querySelectorAll('[data-target]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const targetId = e.currentTarget.getAttribute('data-target');
-      showScreen(targetId);
-      if (targetId === 'screen-med') {
-        appData = getData();
-        renderPatientData();
-      }
-    });
-  });
+.phone-frame {
+  width: 100%;
+  max-width: 430px;
+  height: 92vh;
+  max-height: 880px;
+  background-color: #ffffff;
+  border-radius: 36px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 8px solid #1a252f;
 }
 
-function showScreen(screenId) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(screenId).classList.add('active');
+.app-header {
+  background-color: #ffffff;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #f0f0f0;
 }
 
-/* ================= ペット育成・サイズ変更 & AIおしゃべり ================= */
-function initPetSystem() {
-  const tabGohan = document.getElementById('tab-btn-gohan');
-  const tabTalk = document.getElementById('tab-btn-talk');
-  const contentGohan = document.getElementById('tab-content-gohan');
-  const contentTalk = document.getElementById('tab-content-talk');
-
-  tabGohan.addEventListener('click', () => {
-    tabGohan.classList.add('active'); tabTalk.classList.remove('active');
-    contentGohan.classList.add('active'); contentTalk.classList.remove('active');
-  });
-
-  tabTalk.addEventListener('click', () => {
-    tabTalk.classList.add('active'); tabGohan.classList.remove('active');
-    contentTalk.classList.add('active'); contentGohan.classList.remove('active');
-  });
-
-  // ごはんをあげる（EXP獲得とレベルアップ・サイズ変更）
-  document.querySelectorAll('.food-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const cost = parseInt(card.getAttribute('data-cost'));
-      const expGain = parseInt(card.getAttribute('data-exp'));
-      const foodName = card.getAttribute('data-food');
-
-      if (appData.coins >= cost) {
-        appData.coins -= cost;
-        appData.love = Math.min(100, appData.love + 5);
-        appData.exp = (appData.exp || 0) + expGain;
-
-        // レベル判定 (EXP 50ごとにレベルアップ)
-        const oldLevel = appData.level || 1;
-        appData.level = Math.floor(appData.exp / 50) + 1;
-
-        saveData(appData);
-        updatePetDisplay();
-
-        if (appData.level > oldLevel) {
-          alert(`🎉 ハムスターがレベルアップしました！ Lv.${appData.level} に成長し、体が少し大きくなりました！`);
-        } else {
-          alert(`ハムスターに${foodName}をあげました！ (EXP +${expGain})`);
-        }
-      } else {
-        alert('コインがたりません！計算をしてコインを集めましょう。');
-      }
-    });
-  });
-
-  // AIおしゃべり送信処理
-  const input = document.getElementById('talk-input');
-  const sendBtn = document.getElementById('talk-send-btn');
-
-  const sendMessage = async () => {
-    const text = input.value.trim();
-    if (!text) return;
-
-    appendChatBubble(text, 'user');
-    input.value = '';
-
-    // ローディング表示
-    const loadingBubble = appendChatBubble('考え中チュ...', 'pet');
-
-    // AIからの返答を取得
-    const reply = await fetchAIReply(text);
-    loadingBubble.textContent = reply;
-  };
-
-  sendBtn.addEventListener('click', sendMessage);
-  input.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') sendMessage();
-  });
+.header-title {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: #2ecc71;
 }
 
-// ペットの成長表示とサイズ拡大
-function updatePetDisplay() {
-  document.getElementById('coin-count').textContent = appData.coins;
-  document.getElementById('pet-love').textContent = appData.love;
-  
-  const level = appData.level || 1;
-  document.getElementById('pet-level').textContent = level;
-
-  const stageNames = ['赤ちゃんハム', 'ヤングハム', 'おとなハム', 'ジャンボハム'];
-  const stageIndex = Math.min(Math.floor((level - 1) / 2), 3);
-  document.getElementById('pet-stage-name').textContent = stageNames[stageIndex];
-
-  // CSSクラスの切り替えでサイズを拡大
-  const petBody = document.getElementById('pet-character-body');
-  petBody.className = `pet-character-svg stage-${stageIndex + 1}`;
+.app-content {
+  flex: 1;
+  overflow-y: auto;
+  background-color: #fcfcfc;
 }
 
-// チャットバブル追加
-function appendChatBubble(text, sender) {
-  const history = document.getElementById('chat-history');
-  const bubble = document.createElement('div');
-  bubble.className = `chat-bubble ${sender === 'user' ? 'user-bubble' : 'pet-bubble'}`;
-  bubble.textContent = text;
-  history.appendChild(bubble);
-  history.scrollTop = history.scrollHeight;
-  return bubble;
+.screen {
+  display: none;
+  padding: 20px;
+  min-height: 100%;
 }
 
-// AI（Gemini API連携 / フォールバック対話エンジン）
-async function fetchAIReply(userText) {
-  if (GEMINI_API_KEY) {
-    try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: `あなたは高齢者の患者さんを癒す親切で可愛いハムスターです。語尾に「チュ」「～のだ」をつけて、100文字以内の短く明るい言葉で親身に返答してください。質問: ${userText}`
-            }]
-          }]
-        })
-      });
-      const data = await response.json();
-      return data.candidates[0].content.parts[0].text;
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  // APIキー未設定・エラー時のスマートな対話AIロジック
-  return generateLocalAIResponse(userText);
+.screen.active {
+  display: flex;
+  flex-direction: column;
 }
 
-function generateLocalAIResponse(text) {
-  const petName = "ハムちゃん";
-  if (text.includes("元気") || text.includes("調子")) {
-    return "とっても元気チュ！ご飯を食べるともっと元気になるのだ！";
-  } else if (text.includes("くすり") || text.includes("薬")) {
-    return "お薬をしっかり飲んでえらいチュ！健康一番なのだ！";
-  } else if (text.includes("ありがと")) {
-    return "こちらこそいつも優しくしてくれてありがとうチュ！";
-  } else if (text.includes("つかれた") || text.includes("しんどい")) {
-    return "無理は禁物チュ。ゆっくり休んでリフレッシュするのだ！";
-  } else {
-    const randomReplies = [
-      `「${text}」なんだね！お話してくれてとっても嬉しいチュ！`,
-      `今日もお散歩とお昼寝が楽しみチュ！`,
-      `脳トレの計算、いっぱい解いてコインあつめようチュ！`
-    ];
-    return randomReplies[Math.floor(Math.random() * randomReplies.length)];
-  }
+.screen-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
 }
 
-/* ================= 脳トレ計算ゲーム ================= */
-function initCalcSystem() {
-  const menu = document.getElementById('calc-menu');
-  const game = document.getElementById('calc-game');
-  const userAns = document.getElementById('user-answer');
+.screen-header h2 { font-size: 1.4rem; color: #333; }
 
-  document.querySelectorAll('.calc-op-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      document.querySelectorAll('.calc-op-btn').forEach(b => b.classList.remove('active'));
-      e.target.classList.add('active');
-      state.selectedOp = e.target.getAttribute('data-op');
-    });
-  });
-
-  document.querySelectorAll('.calc-diff-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      document.querySelectorAll('.calc-diff-btn').forEach(b => b.classList.remove('active'));
-      e.target.classList.add('active');
-      state.selectedDiff = e.target.getAttribute('data-diff');
-    });
-  });
-
-  document.getElementById('start-calc-btn').addEventListener('click', () => {
-    menu.classList.add('hidden'); game.classList.remove('hidden');
-    generateQuestion();
-  });
-
-  document.getElementById('calc-quit-btn').addEventListener('click', () => {
-    game.classList.add('hidden'); menu.classList.remove('hidden');
-    userAns.textContent = '';
-  });
-
-  document.querySelectorAll('.num-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const val = e.target.textContent;
-      if (val === 'C') userAns.textContent = '';
-      else if (val === '確定') checkAnswer();
-      else if (userAns.textContent.length < 4) userAns.textContent += val;
-    });
-  });
+.back-btn {
+  background: #f0f0f0;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #555;
 }
 
-function generateQuestion() {
-  let max = state.selectedDiff === 'mid' ? 50 : (state.selectedDiff === 'hard' ? 100 : 10);
-  let a = Math.floor(Math.random() * max) + 1;
-  let b = Math.floor(Math.random() * max) + 1;
-  let ans = 0;
-
-  if (state.selectedOp === '+') ans = a + b;
-  if (state.selectedOp === '-') { if (a < b) [a, b] = [b, a]; ans = a - b; }
-  if (state.selectedOp === '*') ans = a * b;
-  if (state.selectedOp === '/') { ans = a; a = a * b; }
-
-  state.currentQuestion = { a, b, ans, op: state.selectedOp };
-  document.getElementById('question-text').textContent = `${a} ${state.selectedOp} ${b} = ?`;
-  document.getElementById('user-answer').textContent = '';
+/* ホーム */
+.home-banner {
+  border: 5px solid #2ecc71;
+  border-radius: 24px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 20px;
+  background: #fff;
 }
 
-function checkAnswer() {
-  const userVal = parseInt(document.getElementById('user-answer').textContent);
-  if (userVal === state.currentQuestion.ans) {
-    appData.coins += 3;
-    saveData(appData);
-    updatePetDisplay();
-    alert('正解です！ 💰 3コインを獲得しました！');
-    generateQuestion();
-  } else {
-    alert('ざんねん！ちがうよ。もう一度やってみよう！');
-    document.getElementById('user-answer').textContent = '';
-  }
+.home-banner h1 {
+  font-size: 2.2rem;
+  color: #2ecc71;
+  font-weight: 900;
+  line-height: 1.2;
 }
 
-function renderPatientData() {
-  const patient = appData.patients.find(p => p.id === appData.currentPatientId);
-  if (!patient) return;
+.home-banner h1 span { font-size: 1.8rem; }
 
-  document.getElementById('patient-display-name').textContent = `${patient.name} (${patient.age})`;
-  
-  const schedList = document.getElementById('schedule-list');
-  schedList.innerHTML = patient.schedule.map(s => 
-    `<li><span>${s.label}</span> <strong>${s.time}</strong></li>`
-  ).join('');
-
-  const medList = document.getElementById('medicine-list');
-  medList.innerHTML = patient.meds.map(m => 
-    `<div class="med-item">
-      <div class="med-name">${m.name}</div>
-      <div class="med-instruction">${m.instruction}</div>
-    </div>`
-  ).join('');
+.calendar-card {
+  background: #ffffff;
+  border-radius: 20px;
+  border: 2px solid #eee;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
 }
 
-function initAlarmSystem() {
-  const modal = document.getElementById('alarm-modal');
-  document.getElementById('trigger-alarm-test-btn').addEventListener('click', () => modal.classList.remove('hidden'));
-  document.getElementById('alarm-btn-yes').addEventListener('click', () => { modal.classList.add('hidden'); alert('のんだ記録を保存しました。'); });
-  document.getElementById('alarm-btn-no').addEventListener('click', () => { modal.classList.add('hidden'); alert('再通知に設定しました。'); });
+.calendar-icon {
+  width: 140px;
+  background: #fff;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  overflow: hidden;
 }
+
+.cal-header { background: #e76f51; height: 25px; }
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  padding: 10px;
+}
+
+.cal-grid span { height: 18px; background: #e0e0e0; border-radius: 4px; }
+.cal-grid .active-orange { background: #f4a261; }
+.cal-grid .active-yellow { background: #e9c46a; }
+.cal-grid .active-red { background: #e76f51; }
+
+.pet-avatar-mini {
+  width: 75px;
+  height: 75px;
+}
+.pet-svg-icon {
+  width: 100%;
+  height: 100%;
+}
+
+.home-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.nav-btn {
+  border: none;
+  border-radius: 20px;
+  padding: 18px;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #333;
+  cursor: pointer;
+  box-shadow: 0 6px 0px rgba(0,0,0,0.1);
+}
+
+.btn-pet { background-color: #f1c40f; }
+.btn-med { background-color: #2ecc71; color: #fff; }
+.btn-calc { background-color: #3498db; color: #fff; }
+
+/* ペット表示＆拡大処理 */
+.pet-display {
+  background: #fff;
+  border-radius: 20px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 2px solid #eee;
+  margin-bottom: 15px;
+  position: relative;
+  min-height: 220px;
+}
+
+.pet-level-badge {
+  background: #ffe0b2;
+  color: #e67e22;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 900;
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+}
+
+.pet-character-container {
+  height: 130px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pet-character-svg {
+  width: 100px;
+  height: 100px;
+  transition: transform 0.4s ease;
+  transform-origin: center center;
+  animation: bounce 2.5s infinite ease-in-out;
+}
+
+/* 成長サイズ（変形指定を安全に適用） */
+.pet-character-svg.stage-1 { transform: scale(0.85); }
+.pet-character-svg.stage-2 { transform: scale(1.0); }
+.pet-character-svg.stage-3 { transform: scale(1.15); }
+.pet-character-svg.stage-4 { transform: scale(1.3); }
+
+.pet-svg-main {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.pet-status {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-top: 10px;
+}
+
+.tab-controls { display: flex; gap: 10px; margin-bottom: 15px; }
+
+.tab-btn {
+  flex: 1; padding: 12px; border: none; border-radius: 14px;
+  font-size: 1.1rem; font-weight: 700; background: #e0e0e0; cursor: pointer;
+}
+
+.tab-btn.active { background: #f1c40f; color: #333; }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.food-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.food-card {
+  background: #fff; border-radius: 16px; padding: 10px;
+  border: 2px solid #eee; display: flex; align-items: center; gap: 8px; cursor: pointer;
+}
+
+.food-img { font-size: 2rem; }
+.food-info { display: flex; flex-direction: column; font-weight: 700; font-size: 0.9rem; }
+.food-cost { color: #f39c12; font-size: 0.8rem; }
+
+/* AIチャット */
+.chat-container { background: #fff; border-radius: 16px; padding: 15px; border: 2px solid #eee; }
+.chat-history {
+  max-height: 180px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.chat-bubble {
+  border-radius: 16px; padding: 10px 14px; font-size: 0.95rem; font-weight: 700; max-width: 85%;
+  line-height: 1.4;
+}
+
+.pet-bubble { background: #e8f8f5; border: 2px solid #2ecc71; align-self: flex-start; }
+.user-bubble { background: #ffe0b2; border: 2px solid #f39c12; align-self: flex-end; }
+
+.chat-input-row { display: flex; gap: 8px; }
+.chat-input-row input { flex: 1; padding: 10px; border-radius: 10px; border: 2px solid #ccc; font-size: 0.95rem; }
+.chat-input-row button { padding: 10px 16px; background: #f39c12; border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; }
+
+/* 計算 */
+.calc-op-list, .calc-diff-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0 20px 0; }
+
+.menu-btn { padding: 14px; border: 2px solid #ffe0b2; background: #fff3e0; border-radius: 14px; font-size: 1.2rem; font-weight: 700; cursor: pointer; }
+.menu-btn.active { background: #ffe0b2; border-color: #f39c12; }
+
+.action-btn { width: 100%; padding: 16px; background: #2ecc71; color: #fff; border: none; border-radius: 16px; font-size: 1.3rem; font-weight: 900; cursor: pointer; }
+
+.question-box { background: #fff3e0; border-radius: 20px; padding: 25px; text-align: center; font-size: 2.5rem; font-weight: 900; margin-bottom: 15px; }
+.answer-box { background: #fff; border: 3px solid #f39c12; border-radius: 14px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 900; margin-bottom: 15px; }
+
+.numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+.num-btn { padding: 15px; background: #fff; border: 2px solid #ddd; border-radius: 12px; font-size: 1.5rem; font-weight: 900; cursor: pointer; }
+.clear-btn { background: #ffcdd2; color: #c62828; }
+.submit-btn { background: #c8e6c9; color: #2e7d32; }
+
+/* くすり */
+.patient-info-header { background: #e0f7fa; border-radius: 14px; padding: 12px; text-align: center; margin-bottom: 15px; color: #00838f; font-size: 1.2rem; }
+.med-layout { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
+.card { background: #fff; border: 2px solid #eee; border-radius: 16px; padding: 15px; }
+.card h4 { font-size: 1.1rem; margin-bottom: 10px; color: #555; border-bottom: 2px solid #f0f0f0; padding-bottom: 5px; }
+
+#schedule-list { list-style: none; }
+#schedule-list li { display: flex; justify-content: space-between; padding: 8px 0; font-size: 1.1rem; border-bottom: 1px dashed #eee; }
+.med-item { padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+.med-name { font-size: 1.2rem; font-weight: 900; }
+.med-instruction { font-size: 1rem; color: #666; }
+
+.alarm-test-btn { width: 100%; padding: 14px; background: #e74c3c; color: #fff; border: none; border-radius: 14px; font-weight: 700; font-size: 1.1rem; cursor: pointer; }
+
+/* モーダル */
+.modal-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+.alarm-content { background: #fff; border-radius: 24px; padding: 30px 20px; width: 100%; text-align: center; }
+.alarm-clock-icon { font-size: 4rem; animation: shake 0.5s infinite alternate; }
+
+@keyframes shake { from { transform: rotate(-10deg); } to { transform: rotate(10deg); } }
+.alarm-content h3 { font-size: 1.5rem; margin: 15px 0 10px; }
+#alarm-medicine-info { font-size: 1.2rem; color: #555; margin-bottom: 25px; }
+.alarm-btn-group { display: flex; gap: 15px; }
+.alarm-btn { flex: 1; padding: 16px 0; border: none; border-radius: 16px; font-size: 1.3rem; font-weight: 900; cursor: pointer; }
+.btn-taken { background: #2ecc71; color: #fff; }
+.btn-not-taken { background: #e74c3c; color: #fff; }
+.hidden { display: none !important; }
