@@ -1,9 +1,4 @@
-// ====== Gemini API 設定エリア ======
-// ※ 独自のGemini APIキーをお持ちの場合は、下のダブルクォーテーション内に入力してください。
-// 空のままでも、可愛いAIキャラクター対話ロジックが自動的に作動します。
-const GEMINI_API_KEY = ""; 
-
-// 初期データ構造
+// 初期データ
 const defaultData = {
   coins: 11,
   love: 100,
@@ -29,9 +24,21 @@ const defaultData = {
   ]
 };
 
+// 安全にデータをロードする関数
 function getData() {
-  const saved = localStorage.getItem('brain_med_app_data');
-  return saved ? JSON.parse(saved) : defaultData;
+  try {
+    const saved = localStorage.getItem('brain_med_app_data');
+    if (!saved) return defaultData;
+    const data = JSON.parse(saved);
+    // 足りないプロパティを安全に補完
+    data.exp = data.exp || 0;
+    data.level = data.level || 1;
+    data.coins = data.coins ?? 11;
+    data.love = data.love ?? 100;
+    return data;
+  } catch (e) {
+    return defaultData;
+  }
 }
 
 function saveData(data) {
@@ -65,27 +72,28 @@ function initNavigation() {
 
 function showScreen(screenId) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(screenId).classList.add('active');
+  const targetElem = document.getElementById(screenId);
+  if (targetElem) targetElem.classList.add('active');
 }
 
-/* ================= ペット育成・サイズ変更 & AIおしゃべり ================= */
 function initPetSystem() {
   const tabGohan = document.getElementById('tab-btn-gohan');
   const tabTalk = document.getElementById('tab-btn-talk');
   const contentGohan = document.getElementById('tab-content-gohan');
   const contentTalk = document.getElementById('tab-content-talk');
 
-  tabGohan.addEventListener('click', () => {
-    tabGohan.classList.add('active'); tabTalk.classList.remove('active');
-    contentGohan.classList.add('active'); contentTalk.classList.remove('active');
-  });
+  if (tabGohan && tabTalk) {
+    tabGohan.addEventListener('click', () => {
+      tabGohan.classList.add('active'); tabTalk.classList.remove('active');
+      contentGohan.classList.add('active'); contentTalk.classList.remove('active');
+    });
 
-  tabTalk.addEventListener('click', () => {
-    tabTalk.classList.add('active'); tabGohan.classList.remove('active');
-    contentTalk.classList.add('active'); contentGohan.classList.remove('active');
-  });
+    tabTalk.addEventListener('click', () => {
+      tabTalk.classList.add('active'); tabGohan.classList.remove('active');
+      contentTalk.classList.add('active'); contentGohan.classList.remove('active');
+    });
+  }
 
-  // ごはんをあげる（EXP獲得とレベルアップ・サイズ変更）
   document.querySelectorAll('.food-card').forEach(card => {
     card.addEventListener('click', () => {
       const cost = parseInt(card.getAttribute('data-cost'));
@@ -97,7 +105,6 @@ function initPetSystem() {
         appData.love = Math.min(100, appData.love + 5);
         appData.exp = (appData.exp || 0) + expGain;
 
-        // レベル判定 (EXP 50ごとにレベルアップ)
         const oldLevel = appData.level || 1;
         appData.level = Math.floor(appData.exp / 50) + 1;
 
@@ -105,7 +112,7 @@ function initPetSystem() {
         updatePetDisplay();
 
         if (appData.level > oldLevel) {
-          alert(`🎉 ハムスターがレベルアップしました！ Lv.${appData.level} に成長し、体が少し大きくなりました！`);
+          alert(`🎉 ハムスターがレベルアップしました！ Lv.${appData.level} に成長しました！`);
         } else {
           alert(`ハムスターに${foodName}をあげました！ (EXP +${expGain})`);
         }
@@ -115,51 +122,53 @@ function initPetSystem() {
     });
   });
 
-  // AIおしゃべり送信処理
   const input = document.getElementById('talk-input');
   const sendBtn = document.getElementById('talk-send-btn');
 
-  const sendMessage = async () => {
-    const text = input.value.trim();
-    if (!text) return;
+  if (sendBtn && input) {
+    const sendMessage = async () => {
+      const text = input.value.trim();
+      if (!text) return;
 
-    appendChatBubble(text, 'user');
-    input.value = '';
+      appendChatBubble(text, 'user');
+      input.value = '';
 
-    // ローディング表示
-    const loadingBubble = appendChatBubble('考え中チュ...', 'pet');
+      const reply = generateLocalAIResponse(text);
+      appendChatBubble(reply, 'pet');
+    };
 
-    // AIからの返答を取得
-    const reply = await fetchAIReply(text);
-    loadingBubble.textContent = reply;
-  };
-
-  sendBtn.addEventListener('click', sendMessage);
-  input.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') sendMessage();
-  });
+    sendBtn.addEventListener('click', sendMessage);
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+  }
 }
 
-// ペットの成長表示とサイズ拡大
 function updatePetDisplay() {
-  document.getElementById('coin-count').textContent = appData.coins;
-  document.getElementById('pet-love').textContent = appData.love;
+  const coinElem = document.getElementById('coin-count');
+  const loveElem = document.getElementById('pet-love');
+  const levelElem = document.getElementById('pet-level');
+  const stageElem = document.getElementById('pet-stage-name');
+  const petBody = document.getElementById('pet-character-body');
+
+  if (coinElem) coinElem.textContent = appData.coins;
+  if (loveElem) loveElem.textContent = appData.love;
   
   const level = appData.level || 1;
-  document.getElementById('pet-level').textContent = level;
+  if (levelElem) levelElem.textContent = level;
 
   const stageNames = ['赤ちゃんハム', 'ヤングハム', 'おとなハム', 'ジャンボハム'];
   const stageIndex = Math.min(Math.floor((level - 1) / 2), 3);
-  document.getElementById('pet-stage-name').textContent = stageNames[stageIndex];
+  if (stageElem) stageElem.textContent = stageNames[stageIndex];
 
-  // CSSクラスの切り替えでサイズを拡大
-  const petBody = document.getElementById('pet-character-body');
-  petBody.className = `pet-character-svg stage-${stageIndex + 1}`;
+  if (petBody) {
+    petBody.className = `pet-character-svg stage-${stageIndex + 1}`;
+  }
 }
 
-// チャットバブル追加
 function appendChatBubble(text, sender) {
   const history = document.getElementById('chat-history');
+  if (!history) return;
   const bubble = document.createElement('div');
   bubble.className = `chat-bubble ${sender === 'user' ? 'user-bubble' : 'pet-bubble'}`;
   bubble.textContent = text;
@@ -168,34 +177,7 @@ function appendChatBubble(text, sender) {
   return bubble;
 }
 
-// AI（Gemini API連携 / フォールバック対話エンジン）
-async function fetchAIReply(userText) {
-  if (GEMINI_API_KEY) {
-    try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: `あなたは高齢者の患者さんを癒す親切で可愛いハムスターです。語尾に「チュ」「～のだ」をつけて、100文字以内の短く明るい言葉で親身に返答してください。質問: ${userText}`
-            }]
-          }]
-        })
-      });
-      const data = await response.json();
-      return data.candidates[0].content.parts[0].text;
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  // APIキー未設定・エラー時のスマートな対話AIロジック
-  return generateLocalAIResponse(userText);
-}
-
 function generateLocalAIResponse(text) {
-  const petName = "ハムちゃん";
   if (text.includes("元気") || text.includes("調子")) {
     return "とっても元気チュ！ご飯を食べるともっと元気になるのだ！";
   } else if (text.includes("くすり") || text.includes("薬")) {
@@ -236,22 +218,28 @@ function initCalcSystem() {
     });
   });
 
-  document.getElementById('start-calc-btn').addEventListener('click', () => {
-    menu.classList.add('hidden'); game.classList.remove('hidden');
-    generateQuestion();
-  });
+  const startBtn = document.getElementById('start-calc-btn');
+  if (startBtn) {
+    startBtn.addEventListener('click', () => {
+      menu.classList.add('hidden'); game.classList.remove('hidden');
+      generateQuestion();
+    });
+  }
 
-  document.getElementById('calc-quit-btn').addEventListener('click', () => {
-    game.classList.add('hidden'); menu.classList.remove('hidden');
-    userAns.textContent = '';
-  });
+  const quitBtn = document.getElementById('calc-quit-btn');
+  if (quitBtn) {
+    quitBtn.addEventListener('click', () => {
+      game.classList.add('hidden'); menu.classList.remove('hidden');
+      if (userAns) userAns.textContent = '';
+    });
+  }
 
   document.querySelectorAll('.num-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const val = e.target.textContent;
-      if (val === 'C') userAns.textContent = '';
+      if (val === 'C') { if (userAns) userAns.textContent = ''; }
       else if (val === '確定') checkAnswer();
-      else if (userAns.textContent.length < 4) userAns.textContent += val;
+      else if (userAns && userAns.textContent.length < 4) userAns.textContent += val;
     });
   });
 }
@@ -268,12 +256,16 @@ function generateQuestion() {
   if (state.selectedOp === '/') { ans = a; a = a * b; }
 
   state.currentQuestion = { a, b, ans, op: state.selectedOp };
-  document.getElementById('question-text').textContent = `${a} ${state.selectedOp} ${b} = ?`;
-  document.getElementById('user-answer').textContent = '';
+  const qText = document.getElementById('question-text');
+  const uAns = document.getElementById('user-answer');
+  if (qText) qText.textContent = `${a} ${state.selectedOp} ${b} = ?`;
+  if (uAns) uAns.textContent = '';
 }
 
 function checkAnswer() {
-  const userVal = parseInt(document.getElementById('user-answer').textContent);
+  const uAns = document.getElementById('user-answer');
+  if (!uAns) return;
+  const userVal = parseInt(uAns.textContent);
   if (userVal === state.currentQuestion.ans) {
     appData.coins += 3;
     saveData(appData);
@@ -282,7 +274,7 @@ function checkAnswer() {
     generateQuestion();
   } else {
     alert('ざんねん！ちがうよ。もう一度やってみよう！');
-    document.getElementById('user-answer').textContent = '';
+    uAns.textContent = '';
   }
 }
 
@@ -290,25 +282,34 @@ function renderPatientData() {
   const patient = appData.patients.find(p => p.id === appData.currentPatientId);
   if (!patient) return;
 
-  document.getElementById('patient-display-name').textContent = `${patient.name} (${patient.age})`;
+  const nameElem = document.getElementById('patient-display-name');
+  if (nameElem) nameElem.textContent = `${patient.name} (${patient.age})`;
   
   const schedList = document.getElementById('schedule-list');
-  schedList.innerHTML = patient.schedule.map(s => 
-    `<li><span>${s.label}</span> <strong>${s.time}</strong></li>`
-  ).join('');
+  if (schedList) {
+    schedList.innerHTML = patient.schedule.map(s => 
+      `<li><span>${s.label}</span> <strong>${s.time}</strong></li>`
+    ).join('');
+  }
 
   const medList = document.getElementById('medicine-list');
-  medList.innerHTML = patient.meds.map(m => 
-    `<div class="med-item">
-      <div class="med-name">${m.name}</div>
-      <div class="med-instruction">${m.instruction}</div>
-    </div>`
-  ).join('');
+  if (medList) {
+    medList.innerHTML = patient.meds.map(m => 
+      `<div class="med-item">
+        <div class="med-name">${m.name}</div>
+        <div class="med-instruction">${m.instruction}</div>
+      </div>`
+    ).join('');
+  }
 }
 
 function initAlarmSystem() {
   const modal = document.getElementById('alarm-modal');
-  document.getElementById('trigger-alarm-test-btn').addEventListener('click', () => modal.classList.remove('hidden'));
-  document.getElementById('alarm-btn-yes').addEventListener('click', () => { modal.classList.add('hidden'); alert('のんだ記録を保存しました。'); });
-  document.getElementById('alarm-btn-no').addEventListener('click', () => { modal.classList.add('hidden'); alert('再通知に設定しました。'); });
+  const triggerBtn = document.getElementById('trigger-alarm-test-btn');
+  const yesBtn = document.getElementById('alarm-btn-yes');
+  const noBtn = document.getElementById('alarm-btn-no');
+
+  if (triggerBtn) triggerBtn.addEventListener('click', () => modal.classList.remove('hidden'));
+  if (yesBtn) yesBtn.addEventListener('click', () => { modal.classList.add('hidden'); alert('のんだ記録を保存しました。'); });
+  if (noBtn) noBtn.addEventListener('click', () => { modal.classList.add('hidden'); alert('再通知に設定しました。'); });
 }
