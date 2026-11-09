@@ -1,4 +1,4 @@
-// 初期データ（なつき度は0からスタート）
+// 初期データ（なつき度: 0%）
 const defaultData = {
   coins: 11,
   love: 0,
@@ -24,7 +24,7 @@ const defaultData = {
   ]
 };
 
-// 安全にデータをロードする関数
+// localStorageからの読み込み
 function getData() {
   try {
     const saved = localStorage.getItem('brain_med_app_data');
@@ -45,7 +45,16 @@ function saveData(data) {
 }
 
 let appData = getData();
-let state = { selectedOp: '+', selectedDiff: 'easy', currentQuestion: { a: 0, b: 0, ans: 0 } };
+
+// 計算テスト用ステータス
+let calcState = {
+  selectedOp: '+',
+  selectedDiff: 'easy',
+  currentQuestion: { a: 0, b: 0, ans: 0 },
+  questionIndex: 0,
+  correctCount: 0,
+  earnedCoins: 0
+};
 
 document.addEventListener('DOMContentLoaded', () => {
   initNavigation();
@@ -75,6 +84,7 @@ function showScreen(screenId) {
   if (targetElem) targetElem.classList.add('active');
 }
 
+/* ================= ペット育成 & プログレスバー ================= */
 function initPetSystem() {
   const tabGohan = document.getElementById('tab-btn-gohan');
   const tabTalk = document.getElementById('tab-btn-talk');
@@ -93,7 +103,7 @@ function initPetSystem() {
     });
   }
 
-  // ごはんをあげる（なつき度＆EXP加算）
+  // ごはんをあげる
   document.querySelectorAll('.food-card').forEach(card => {
     card.addEventListener('click', () => {
       const cost = parseInt(card.getAttribute('data-cost'));
@@ -103,7 +113,6 @@ function initPetSystem() {
 
       if (appData.coins >= cost) {
         appData.coins -= cost;
-        // なつき度を加算（最大100%まで）
         appData.love = Math.min(100, (appData.love || 0) + loveGain);
         appData.exp = (appData.exp || 0) + expGain;
 
@@ -114,38 +123,48 @@ function initPetSystem() {
         updatePetDisplay();
 
         if (appData.level > oldLevel) {
-          alert(`🎉 ハムスターがレベルアップしました！ Lv.${appData.level} に成長し、なつき度も上がりました！`);
+          alert(`🎉 ハムスターがレベルアップ！ Lv.${appData.level} に成長し、体が大きくなりました！`);
         } else {
           alert(`ハムスターに${foodName}をあげました！ (なつき度 +${loveGain}% / EXP +${expGain})`);
         }
       } else {
-        alert('コインがたりません！計算をしてコインを集めましょう。');
+        alert('コインがたりません！10問計算をしてコインを集めましょう。');
       }
     });
   });
 
+  // チャット
   const input = document.getElementById('talk-input');
   const sendBtn = document.getElementById('talk-send-btn');
-
   if (sendBtn && input) {
-    const sendMessage = async () => {
+    const sendMessage = () => {
       const text = input.value.trim();
       if (!text) return;
-
       appendChatBubble(text, 'user');
       input.value = '';
-
       const reply = generateLocalAIResponse(text);
       appendChatBubble(reply, 'pet');
     };
-
     sendBtn.addEventListener('click', sendMessage);
-    input.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') sendMessage();
+    input.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+  }
+
+  // データリセットボタン
+  const resetBtn = document.getElementById('reset-data-btn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      if (confirm('なつき度やレベルなどを初期状態（なつき度0%）にリセットしますか？')) {
+        localStorage.removeItem('brain_med_app_data');
+        appData = defaultData;
+        saveData(appData);
+        updatePetDisplay();
+        alert('データをリセットしました。');
+      }
     });
   }
 }
 
+// ペット画面とプログレスバーの更新
 function updatePetDisplay() {
   const coinElem = document.getElementById('coin-count');
   const loveElem = document.getElementById('pet-love');
@@ -153,11 +172,21 @@ function updatePetDisplay() {
   const stageElem = document.getElementById('pet-stage-name');
   const petBody = document.getElementById('pet-character-body');
 
-  if (coinElem) coinElem.textContent = appData.coins;
+  if (coinElem) coinElem.textContent = appData.coins || 0;
   if (loveElem) loveElem.textContent = appData.love || 0;
   
   const level = appData.level || 1;
   if (levelElem) levelElem.textContent = level;
+
+  // 1レベル＝50EXPの進行度計算
+  const currentLevelExp = (appData.exp || 0) % 50;
+  const neededExp = 50 - currentLevelExp;
+  const progressPercent = (currentLevelExp / 50) * 100;
+
+  const barFill = document.getElementById('exp-bar-fill');
+  const neededElem = document.getElementById('exp-needed');
+  if (barFill) barFill.style.width = `${progressPercent}%`;
+  if (neededElem) neededElem.textContent = neededExp;
 
   const stageNames = ['赤ちゃんハム', 'ヤングハム', 'おとなハム', 'ジャンボハム'];
   const stageIndex = Math.min(Math.floor((level - 1) / 2), 3);
@@ -181,8 +210,6 @@ function appendChatBubble(text, sender) {
 
 function generateLocalAIResponse(text) {
   const love = appData.love || 0;
-  
-  // なつき度に応じた台詞の変化
   if (love < 30) {
     return "まだちょっと緊張してるチュ... ごはんをくれると仲良くなれる気がするのだ！";
   } else if (text.includes("元気") || text.includes("調子")) {
@@ -191,8 +218,6 @@ function generateLocalAIResponse(text) {
     return "お薬をしっかり飲んでえらいチュ！健康一番なのだ！";
   } else if (text.includes("ありがと")) {
     return "こちらこそいつも優しくしてくれてありがとうチュ！";
-  } else if (text.includes("つかれた") || text.includes("しんどい")) {
-    return "無理は禁物チュ。ゆっくり休んでリフレッシュするのだ！";
   } else {
     const randomReplies = [
       `「${text}」なんだね！お話してくれてとっても嬉しいチュ！`,
@@ -203,17 +228,19 @@ function generateLocalAIResponse(text) {
   }
 }
 
-/* ================= 脳トレ計算ゲーム ================= */
+/* ================= 脳トレ10問計算ゲーム ================= */
 function initCalcSystem() {
   const menu = document.getElementById('calc-menu');
   const game = document.getElementById('calc-game');
+  const result = document.getElementById('calc-result');
   const userAns = document.getElementById('user-answer');
 
+  // モード選択
   document.querySelectorAll('.calc-op-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       document.querySelectorAll('.calc-op-btn').forEach(b => b.classList.remove('active'));
       e.target.classList.add('active');
-      state.selectedOp = e.target.getAttribute('data-op');
+      calcState.selectedOp = e.target.getAttribute('data-op');
     });
   });
 
@@ -221,70 +248,100 @@ function initCalcSystem() {
     btn.addEventListener('click', (e) => {
       document.querySelectorAll('.calc-diff-btn').forEach(b => b.classList.remove('active'));
       e.target.classList.add('active');
-      state.selectedDiff = e.target.getAttribute('data-diff');
+      calcState.selectedDiff = e.target.getAttribute('data-diff');
     });
   });
 
-  const startBtn = document.getElementById('start-calc-btn');
-  if (startBtn) {
-    startBtn.addEventListener('click', () => {
-      menu.classList.add('hidden'); game.classList.remove('hidden');
-      generateQuestion();
-    });
-  }
+  // テストスタート
+  document.getElementById('start-calc-btn').addEventListener('click', () => {
+    calcState.questionIndex = 0;
+    calcState.correctCount = 0;
+    calcState.earnedCoins = 0;
+    menu.classList.add('hidden');
+    result.classList.add('hidden');
+    game.classList.remove('hidden');
+    generateQuestion();
+  });
 
-  const quitBtn = document.getElementById('calc-quit-btn');
-  if (quitBtn) {
-    quitBtn.addEventListener('click', () => {
-      game.classList.add('hidden'); menu.classList.remove('hidden');
-      if (userAns) userAns.textContent = '';
-    });
-  }
+  // やめる
+  document.getElementById('calc-quit-btn').addEventListener('click', () => {
+    game.classList.add('hidden');
+    menu.classList.remove('hidden');
+    if (userAns) userAns.textContent = '';
+  });
 
+  // もう一度チャレンジ
+  document.getElementById('calc-retry-btn').addEventListener('click', () => {
+    result.classList.add('hidden');
+    menu.classList.remove('hidden');
+  });
+
+  // テンキー操作
   document.querySelectorAll('.num-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const val = e.target.textContent;
       if (val === 'C') { if (userAns) userAns.textContent = ''; }
-      else if (val === '確定') checkAnswer();
+      else if (val === '確定') submitAnswer();
       else if (userAns && userAns.textContent.length < 4) userAns.textContent += val;
     });
   });
 }
 
 function generateQuestion() {
-  let max = state.selectedDiff === 'mid' ? 50 : (state.selectedDiff === 'hard' ? 100 : 10);
+  let max = calcState.selectedDiff === 'mid' ? 50 : (calcState.selectedDiff === 'hard' ? 100 : 10);
   let a = Math.floor(Math.random() * max) + 1;
   let b = Math.floor(Math.random() * max) + 1;
   let ans = 0;
 
-  if (state.selectedOp === '+') ans = a + b;
-  if (state.selectedOp === '-') { if (a < b) [a, b] = [b, a]; ans = a - b; }
-  if (state.selectedOp === '*') ans = a * b;
-  if (state.selectedOp === '/') { ans = a; a = a * b; }
+  if (calcState.selectedOp === '+') ans = a + b;
+  if (calcState.selectedOp === '-') { if (a < b) [a, b] = [b, a]; ans = a - b; }
+  if (calcState.selectedOp === '*') ans = a * b;
+  if (calcState.selectedOp === '/') { ans = a; a = a * b; }
 
-  state.currentQuestion = { a, b, ans, op: state.selectedOp };
-  const qText = document.getElementById('question-text');
-  const uAns = document.getElementById('user-answer');
-  if (qText) qText.textContent = `${a} ${state.selectedOp} ${b} = ?`;
-  if (uAns) uAns.textContent = '';
+  calcState.currentQuestion = { a, b, ans, op: calcState.selectedOp };
+  
+  document.getElementById('calc-progress-text').textContent = `第 ${calcState.questionIndex + 1} / 10 問`;
+  document.getElementById('question-text').textContent = `${a} ${calcState.selectedOp} ${b} = ?`;
+  document.getElementById('user-answer').textContent = '';
 }
 
-function checkAnswer() {
+function submitAnswer() {
   const uAns = document.getElementById('user-answer');
-  if (!uAns) return;
+  if (!uAns || uAns.textContent === '') return;
+  
   const userVal = parseInt(uAns.textContent);
-  if (userVal === state.currentQuestion.ans) {
-    appData.coins += 3;
-    saveData(appData);
-    updatePetDisplay();
-    alert('正解です！ 💰 3コインを獲得しました！');
+  if (userVal === calcState.currentQuestion.ans) {
+    calcState.correctCount++;
+    calcState.earnedCoins += 2; // 1問正解につき2コイン獲得
+  }
+
+  calcState.questionIndex++;
+
+  if (calcState.questionIndex < 10) {
     generateQuestion();
   } else {
-    alert('ざんねん！ちがうよ。もう一度やってみよう！');
-    uAns.textContent = '';
+    // 10問終了（リザルト画面）
+    showCalcResult();
   }
 }
 
+function showCalcResult() {
+  const game = document.getElementById('calc-game');
+  const result = document.getElementById('calc-result');
+
+  // コインを加算・保存
+  appData.coins = (appData.coins || 0) + calcState.earnedCoins;
+  saveData(appData);
+  updatePetDisplay();
+
+  document.getElementById('result-correct-count').textContent = calcState.correctCount;
+  document.getElementById('result-earned-coins').textContent = calcState.earnedCoins;
+
+  game.classList.add('hidden');
+  result.classList.remove('hidden');
+}
+
+/* ================= 服薬・生活データ ================= */
 function renderPatientData() {
   const patient = appData.patients.find(p => p.id === appData.currentPatientId);
   if (!patient) return;
