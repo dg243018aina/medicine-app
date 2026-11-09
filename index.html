@@ -36,7 +36,7 @@
               <span class="active-red"></span><span class="active-red"></span><span class="active-yellow"></span>
             </div>
           </div>
-          <!-- ホーム画面のペットミニイラスト -->
+          <!-- ホーム画面のペットアイコン -->
           <div class="pet-avatar-mini">
             <svg viewBox="0 0 100 100" class="pet-svg-icon">
               <circle cx="50" cy="55" r="35" fill="#f3a683"/>
@@ -68,33 +68,25 @@
         </div>
 
         <div class="pet-display">
-          <!-- 成長レベル表示 -->
           <div class="pet-level-badge">Lv.<span id="pet-level">1</span> <span id="pet-stage-name">赤ちゃんハム</span></div>
           
-          <!-- ペットSVGイラスト（成長でサイズ変化） -->
           <div class="pet-character-container">
-            <div class="pet-character-svg" id="pet-character-body">
+            <div class="pet-character-svg stage-1" id="pet-character-body">
               <svg viewBox="0 0 120 120" class="pet-svg-main">
-                <!-- 耳 -->
                 <circle cx="35" cy="30" r="14" fill="#f3a683"/>
                 <circle cx="35" cy="30" r="8" fill="#f8a5c2"/>
                 <circle cx="85" cy="30" r="14" fill="#f3a683"/>
                 <circle cx="85" cy="30" r="8" fill="#f8a5c2"/>
-                <!-- 体・顔 -->
                 <ellipse cx="60" cy="65" rx="42" ry="40" fill="#f3a683"/>
                 <ellipse cx="60" cy="70" rx="33" ry="32" fill="#fff5f5"/>
-                <!-- 目 -->
                 <circle cx="45" cy="55" r="5" fill="#2d3436"/>
                 <circle cx="43" cy="53" r="1.5" fill="#ffffff"/>
                 <circle cx="75" cy="55" r="5" fill="#2d3436"/>
                 <circle cx="73" cy="53" r="1.5" fill="#ffffff"/>
-                <!-- ほっぺ -->
                 <circle cx="36" cy="63" r="6" fill="#f8a5c2" opacity="0.6"/>
                 <circle cx="84" cy="63" r="6" fill="#f8a5c2" opacity="0.6"/>
-                <!-- 鼻・口 -->
                 <polygon points="60,61 56,66 64,66" fill="#e77f67"/>
                 <path d="M 54 70 Q 60 74 66 70" stroke="#2d3436" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-                <!-- 手 -->
                 <ellipse cx="46" cy="76" rx="6" ry="8" fill="#f8d7da"/>
                 <ellipse cx="74" cy="76" rx="6" ry="8" fill="#f8d7da"/>
               </svg>
@@ -228,7 +220,6 @@
     </main>
   </div>
 
-  <!-- アラームモーダル -->
   <div class="modal-overlay hidden" id="alarm-modal">
     <div class="alarm-content">
       <div class="alarm-clock-icon">⏰</div>
