@@ -14,14 +14,13 @@
   <div class="phone-frame">
     <!-- ヘッダー -->
     <header class="app-header">
-      <div class="header-title" id="header-title-text">脳トレ ＆ 薬管理</div>
-      <button class="mode-toggle-btn" id="mode-toggle-btn">ver薬剤師</button>
+      <div class="header-title">脳トレ ＆ 薬管理</div>
     </header>
 
-    <!-- メインコンテンツ領域 -->
+    <!-- メインコンテンツ -->
     <main class="app-content">
 
-      <!-- ================= 画面1: ホーム ================= -->
+      <!-- 画面1: ホーム -->
       <section id="screen-home" class="screen active">
         <div class="home-banner">
           <h1>脳トレ<br><span>＆</span><br>薬管理</h1>
@@ -37,7 +36,7 @@
               <span class="active-red"></span><span class="active-red"></span><span class="active-yellow"></span>
             </div>
           </div>
-          <div class="pet-avatar-mini" id="home-pet-avatar">🐹</div>
+          <div class="pet-avatar-mini">🐹</div>
         </div>
 
         <nav class="home-nav">
@@ -47,7 +46,7 @@
         </nav>
       </section>
 
-      <!-- ================= 画面2: ペット ================= -->
+      <!-- 画面2: ペット -->
       <section id="screen-pet" class="screen">
         <div class="screen-header">
           <button class="back-btn" data-target="screen-home">← ホーム</button>
@@ -55,7 +54,7 @@
         </div>
 
         <div class="pet-display">
-          <div class="pet-character" id="pet-character">🐹</div>
+          <div class="pet-character">🐹</div>
           <div class="pet-status">
             <div>なつき度: <span id="pet-love">100</span>%</div>
             <div class="coin-badge">💰 <span id="coin-count">11</span> コイン</div>
@@ -104,7 +103,7 @@
         <!-- おしゃべり -->
         <div id="tab-content-talk" class="tab-content">
           <div class="chat-container">
-            <div class="chat-bubble pet-bubble" id="pet-dialog">
+            <div class="chat-bubble" id="pet-dialog">
               今日もお薬飲んでえらいね！何かおはなしする？
             </div>
             <div class="chat-input-row">
@@ -115,32 +114,30 @@
         </div>
       </section>
 
-      <!-- ================= 画面3: 計算（脳トレ） ================= -->
+      <!-- 画面3: 計算 -->
       <section id="screen-calc" class="screen">
         <div class="screen-header">
           <button class="back-btn" data-target="screen-home">← ホーム</button>
           <h2>脳トレ計算</h2>
         </div>
 
-        <!-- 四則演算・難易度選択 -->
         <div id="calc-menu">
           <h3>モードを選択</h3>
           <div class="calc-op-list">
-            <button class="menu-btn calc-op-btn" data-op="+">足し算</button>
+            <button class="menu-btn calc-op-btn active" data-op="+">足し算</button>
             <button class="menu-btn calc-op-btn" data-op="-">引き算</button>
             <button class="menu-btn calc-op-btn" data-op="*">掛け算</button>
             <button class="menu-btn calc-op-btn" data-op="/">割り算</button>
           </div>
           <h3>難易度を選択</h3>
           <div class="calc-diff-list">
-            <button class="menu-btn calc-diff-btn" data-diff="easy">初級</button>
-            <button class="menu-btn calc-diff-btn active" data-diff="mid">中級</button>
+            <button class="menu-btn calc-diff-btn active" data-diff="easy">初級</button>
+            <button class="menu-btn calc-diff-btn" data-diff="mid">中級</button>
             <button class="menu-btn calc-diff-btn" data-diff="hard">上級</button>
           </div>
-          <button class="action-btn start-calc-btn" id="start-calc-btn">問題スタート！</button>
+          <button class="action-btn" id="start-calc-btn">問題スタート！</button>
         </div>
 
-        <!-- 計算問題プレイ画面 -->
         <div id="calc-game" class="hidden">
           <div class="question-box">
             <span id="question-text">8 + 5 = ?</span>
@@ -152,13 +149,13 @@
             <button class="num-btn">1</button><button class="num-btn">2</button><button class="num-btn">3</button>
             <button class="num-btn">4</button><button class="num-btn">5</button><button class="num-btn">6</button>
             <button class="num-btn">7</button><button class="num-btn">8</button><button class="num-btn">9</button>
-            <button class="num-btn clear-btn">C</button><button class="num-btn">0</button><button class="num-btn submit-btn" id="calc-submit-btn">確定</button>
+            <button class="num-btn clear-btn">C</button><button class="num-btn">0</button><button class="num-btn submit-btn">確定</button>
           </div>
-          <button class="back-btn small-btn" id="calc-quit-btn">モード選択へ戻る</button>
+          <button class="back-btn small-btn" id="calc-quit-btn">戻る</button>
         </div>
       </section>
 
-      <!-- ================= 画面4: くすり（患者モード） ================= -->
+      <!-- 画面4: くすり -->
       <section id="screen-med" class="screen">
         <div class="screen-header">
           <button class="back-btn" data-target="screen-home">← ホーム</button>
@@ -170,75 +167,29 @@
         </div>
 
         <div class="med-layout">
-          <!-- スケジュール -->
           <div class="card schedule-card">
             <h4>生活時間</h4>
-            <ul id="schedule-list">
-              <li><span>朝ごはん</span> <strong>7:00</strong></li>
-              <li><span>昼ごはん</span> <strong>12:00</strong></li>
-              <li><span>晩ごはん</span> <strong>19:00</strong></li>
-              <li><span>お風呂</span> <strong>17:00</strong></li>
-            </ul>
+            <ul id="schedule-list"></ul>
           </div>
 
-          <!-- 処方薬一覧 -->
           <div class="card meds-card">
             <h4>処方お薬</h4>
-            <div id="medicine-list">
-              <div class="med-item">
-                <div class="med-name">ロキソニン</div>
-                <div class="med-instruction">朝 食後 2錠</div>
-              </div>
-              <div class="med-item">
-                <div class="med-name">軟膏(塗り薬)</div>
-                <div class="med-instruction">朝洗顔後 / 入浴後 / 就寝前</div>
-              </div>
-            </div>
+            <div id="medicine-list"></div>
           </div>
         </div>
 
-        <!-- テスト用アラーム起動ボタン -->
         <button class="alarm-test-btn" id="trigger-alarm-test-btn">⏰ 服薬アラームの表示テスト</button>
-      </section>
-
-      <!-- ================= 画面5: 薬剤師管理モード ================= -->
-      <section id="screen-pharmacist" class="screen">
-        <div class="screen-header">
-          <h2>患者様 管理画面</h2>
-        </div>
-
-        <div class="pharmacist-container">
-          <h3>患者選択</h3>
-          <div class="patient-select-list" id="pharmacist-patient-list">
-            <!-- JavaScriptで動的生成 -->
-          </div>
-
-          <hr class="divider">
-
-          <div class="edit-patient-section">
-            <h3>スケジュール・処方追加</h3>
-            <form id="add-med-form">
-              <label>薬の名前</label>
-              <input type="text" id="input-med-name" placeholder="例: ロキソニン" required>
-              
-              <label>服用タイミング・用法</label>
-              <input type="text" id="input-med-instruction" placeholder="例: 朝 食後 2錠" required>
-              
-              <button type="submit" class="action-btn">登録する</button>
-            </form>
-          </div>
-        </div>
       </section>
 
     </main>
   </div>
 
-  <!-- 服薬アラーム モーダル -->
+  <!-- アラームモーダル -->
   <div class="modal-overlay hidden" id="alarm-modal">
     <div class="alarm-content">
       <div class="alarm-clock-icon">⏰</div>
       <h3>お薬の時間です！</h3>
-      <p id="alarm-medicine-info">ロキソニン 朝 食後 2錠</p>
+      <p id="alarm-medicine-info">処方薬の服薬時間です</p>
       <div class="alarm-btn-group">
         <button class="alarm-btn btn-taken" id="alarm-btn-yes">のんだ</button>
         <button class="alarm-btn btn-not-taken" id="alarm-btn-no">のんでない</button>
@@ -246,6 +197,6 @@
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script src="patient.js"></script>
 </body>
 </html>
