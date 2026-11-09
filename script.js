@@ -1,7 +1,7 @@
-// 初期データ
+// 初期データ（なつき度は0からスタート）
 const defaultData = {
   coins: 11,
-  love: 100,
+  love: 0,
   exp: 0,
   level: 1,
   currentPatientId: 1,
@@ -30,11 +30,10 @@ function getData() {
     const saved = localStorage.getItem('brain_med_app_data');
     if (!saved) return defaultData;
     const data = JSON.parse(saved);
-    // 足りないプロパティを安全に補完
     data.exp = data.exp || 0;
     data.level = data.level || 1;
     data.coins = data.coins ?? 11;
-    data.love = data.love ?? 100;
+    data.love = data.love ?? 0;
     return data;
   } catch (e) {
     return defaultData;
@@ -94,15 +93,18 @@ function initPetSystem() {
     });
   }
 
+  // ごはんをあげる（なつき度＆EXP加算）
   document.querySelectorAll('.food-card').forEach(card => {
     card.addEventListener('click', () => {
       const cost = parseInt(card.getAttribute('data-cost'));
       const expGain = parseInt(card.getAttribute('data-exp'));
+      const loveGain = parseInt(card.getAttribute('data-love') || "5");
       const foodName = card.getAttribute('data-food');
 
       if (appData.coins >= cost) {
         appData.coins -= cost;
-        appData.love = Math.min(100, appData.love + 5);
+        // なつき度を加算（最大100%まで）
+        appData.love = Math.min(100, (appData.love || 0) + loveGain);
         appData.exp = (appData.exp || 0) + expGain;
 
         const oldLevel = appData.level || 1;
@@ -112,9 +114,9 @@ function initPetSystem() {
         updatePetDisplay();
 
         if (appData.level > oldLevel) {
-          alert(`🎉 ハムスターがレベルアップしました！ Lv.${appData.level} に成長しました！`);
+          alert(`🎉 ハムスターがレベルアップしました！ Lv.${appData.level} に成長し、なつき度も上がりました！`);
         } else {
-          alert(`ハムスターに${foodName}をあげました！ (EXP +${expGain})`);
+          alert(`ハムスターに${foodName}をあげました！ (なつき度 +${loveGain}% / EXP +${expGain})`);
         }
       } else {
         alert('コインがたりません！計算をしてコインを集めましょう。');
@@ -152,7 +154,7 @@ function updatePetDisplay() {
   const petBody = document.getElementById('pet-character-body');
 
   if (coinElem) coinElem.textContent = appData.coins;
-  if (loveElem) loveElem.textContent = appData.love;
+  if (loveElem) loveElem.textContent = appData.love || 0;
   
   const level = appData.level || 1;
   if (levelElem) levelElem.textContent = level;
@@ -178,7 +180,12 @@ function appendChatBubble(text, sender) {
 }
 
 function generateLocalAIResponse(text) {
-  if (text.includes("元気") || text.includes("調子")) {
+  const love = appData.love || 0;
+  
+  // なつき度に応じた台詞の変化
+  if (love < 30) {
+    return "まだちょっと緊張してるチュ... ごはんをくれると仲良くなれる気がするのだ！";
+  } else if (text.includes("元気") || text.includes("調子")) {
     return "とっても元気チュ！ご飯を食べるともっと元気になるのだ！";
   } else if (text.includes("くすり") || text.includes("薬")) {
     return "お薬をしっかり飲んでえらいチュ！健康一番なのだ！";
