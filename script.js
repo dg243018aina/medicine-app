@@ -1,4 +1,4 @@
-// 初期データ（なつき度: 0%）
+// 初期データ
 const defaultData = {
   coins: 11,
   love: 0,
@@ -8,7 +8,7 @@ const defaultData = {
   patients: [
     {
       id: 1,
-      name: '眞野 宏太',
+      name: 'マノ コウタ',
       age: 86,
       schedule: [
         { label: '朝ごはん', time: '7:00' },
@@ -24,7 +24,6 @@ const defaultData = {
   ]
 };
 
-// localStorageからの読み込み
 function getData() {
   try {
     const saved = localStorage.getItem('brain_med_app_data');
@@ -46,7 +45,6 @@ function saveData(data) {
 
 let appData = getData();
 
-// 計算テスト用ステータス
 let calcState = {
   selectedOp: '+',
   selectedDiff: 'easy',
@@ -57,6 +55,7 @@ let calcState = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+  initOpening();
   initNavigation();
   initPetSystem();
   initCalcSystem();
@@ -64,6 +63,16 @@ document.addEventListener('DOMContentLoaded', () => {
   renderPatientData();
   updatePetDisplay();
 });
+
+// オープニング画面の「はじめる」ボタン処理
+function initOpening() {
+  const startBtn = document.getElementById('start-app-btn');
+  if (startBtn) {
+    startBtn.addEventListener('click', () => {
+      showScreen('screen-home');
+    });
+  }
+}
 
 function initNavigation() {
   document.querySelectorAll('[data-target]').forEach(btn => {
@@ -84,7 +93,7 @@ function showScreen(screenId) {
   if (targetElem) targetElem.classList.add('active');
 }
 
-/* ================= ペット育成 & プログレスバー ================= */
+/* ペット育成 */
 function initPetSystem() {
   const tabGohan = document.getElementById('tab-btn-gohan');
   const tabTalk = document.getElementById('tab-btn-talk');
@@ -123,12 +132,12 @@ function initPetSystem() {
         updatePetDisplay();
 
         if (appData.level > oldLevel) {
-          alert(`🎉 ハムスターがレベルアップ！ Lv.${appData.level} に成長し、体が大きくなりました！`);
+          alert(`🎉 ハムスターがレベルアップ！ Lv.${appData.level} に成長しました！`);
         } else {
-          alert(`ハムスターに${foodName}をあげました！ (なつき度 +${loveGain}% / EXP +${expGain})`);
+          alert(`ハムスターに${foodName}をあげました！`);
         }
       } else {
-        alert('コインがたりません！10問計算をしてコインを集めましょう。');
+        alert('コインが足りません！計算をしてコインを集めましょう。');
       }
     });
   });
@@ -149,22 +158,21 @@ function initPetSystem() {
     input.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
   }
 
-  // データリセットボタン
+  // リセット
   const resetBtn = document.getElementById('reset-data-btn');
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
-      if (confirm('なつき度やレベルなどを初期状態（なつき度0%）にリセットしますか？')) {
+      if (confirm('最初からやり直しますか？')) {
         localStorage.removeItem('brain_med_app_data');
         appData = defaultData;
         saveData(appData);
         updatePetDisplay();
-        alert('データをリセットしました。');
+        alert('リセットしました。');
       }
     });
   }
 }
 
-// ペット画面とプログレスバーの更新
 function updatePetDisplay() {
   const coinElem = document.getElementById('coin-count');
   const loveElem = document.getElementById('pet-love');
@@ -178,7 +186,6 @@ function updatePetDisplay() {
   const level = appData.level || 1;
   if (levelElem) levelElem.textContent = level;
 
-  // 1レベル＝50EXPの進行度計算
   const currentLevelExp = (appData.exp || 0) % 50;
   const neededExp = 50 - currentLevelExp;
   const progressPercent = (currentLevelExp / 50) * 100;
@@ -228,14 +235,13 @@ function generateLocalAIResponse(text) {
   }
 }
 
-/* ================= 脳トレ10問計算ゲーム ================= */
+/* 計算ゲーム */
 function initCalcSystem() {
   const menu = document.getElementById('calc-menu');
   const game = document.getElementById('calc-game');
   const result = document.getElementById('calc-result');
   const userAns = document.getElementById('user-answer');
 
-  // モード選択
   document.querySelectorAll('.calc-op-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       document.querySelectorAll('.calc-op-btn').forEach(b => b.classList.remove('active'));
@@ -252,7 +258,6 @@ function initCalcSystem() {
     });
   });
 
-  // テストスタート
   document.getElementById('start-calc-btn').addEventListener('click', () => {
     calcState.questionIndex = 0;
     calcState.correctCount = 0;
@@ -263,24 +268,21 @@ function initCalcSystem() {
     generateQuestion();
   });
 
-  // やめる
   document.getElementById('calc-quit-btn').addEventListener('click', () => {
     game.classList.add('hidden');
     menu.classList.remove('hidden');
     if (userAns) userAns.textContent = '';
   });
 
-  // もう一度チャレンジ
   document.getElementById('calc-retry-btn').addEventListener('click', () => {
     result.classList.add('hidden');
     menu.classList.remove('hidden');
   });
 
-  // テンキー操作
   document.querySelectorAll('.num-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const val = e.target.textContent;
-      if (val === 'C') { if (userAns) userAns.textContent = ''; }
+      if (val === '消す') { if (userAns) userAns.textContent = ''; }
       else if (val === '確定') submitAnswer();
       else if (userAns && userAns.textContent.length < 4) userAns.textContent += val;
     });
@@ -312,7 +314,7 @@ function submitAnswer() {
   const userVal = parseInt(uAns.textContent);
   if (userVal === calcState.currentQuestion.ans) {
     calcState.correctCount++;
-    calcState.earnedCoins += 2; // 1問正解につき2コイン獲得
+    calcState.earnedCoins += 2;
   }
 
   calcState.questionIndex++;
@@ -320,7 +322,6 @@ function submitAnswer() {
   if (calcState.questionIndex < 10) {
     generateQuestion();
   } else {
-    // 10問終了（リザルト画面）
     showCalcResult();
   }
 }
@@ -329,7 +330,6 @@ function showCalcResult() {
   const game = document.getElementById('calc-game');
   const result = document.getElementById('calc-result');
 
-  // コインを加算・保存
   appData.coins = (appData.coins || 0) + calcState.earnedCoins;
   saveData(appData);
   updatePetDisplay();
@@ -341,13 +341,13 @@ function showCalcResult() {
   result.classList.remove('hidden');
 }
 
-/* ================= 服薬・生活データ ================= */
+/* 服薬・生活データ */
 function renderPatientData() {
   const patient = appData.patients.find(p => p.id === appData.currentPatientId);
   if (!patient) return;
 
   const nameElem = document.getElementById('patient-display-name');
-  if (nameElem) nameElem.textContent = `${patient.name} (${patient.age})`;
+  if (nameElem) nameElem.textContent = `${patient.name} 様`;
   
   const schedList = document.getElementById('schedule-list');
   if (schedList) {
