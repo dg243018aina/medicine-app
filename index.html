@@ -7,26 +7,8 @@
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700;900&display=swap" rel="stylesheet">
 </head>
-  <script>
-window.addEventListener(" error", function(e){
-var d = document.createElement("div");
-d.style.cssText = "position:fixed;left:O;right:0;bottom:0;z-
-index:99999;background:#7a0000;color:#fff;font:14px/1.5 sans-serif;padding:10px 14px;white-space:pre-wrap;word-break:break-all;";
-d.textContent = "A I 5-: " + e.message + "In iT: " + elineno + " | 5J: "
-+ e.colno;
-(document.body || document.documentElement) appendChild(d);
-});
-window.addEventListener('unhandledrejection", function(e){
-var d = document.createElement("div");
-d.style.cssText = "position:fixed;left:O;right:0;bottom:0;z-
-index:99999;background:#7a0000;color:#fff;font:14px/1.5 sans-serif;padding:10px 14px;white-space:pre-wrap;word-break:break-all;";
-d.textContent = "A #F#| I >-: " + (e.reason && e.reason message ?
-e.reason.message: e.reason);
-(document.body || document.documentElement).appendChild(d);
-});
-</script>
 <body>
 
   <div class="phone-frame">
@@ -38,12 +20,34 @@ e.reason.message: e.reason);
     <!-- メインコンテンツ -->
     <main class="app-content">
 
-      <!-- 画面1: ホーム -->
-      <section id="screen-home" class="screen active">
-        <div class="home-banner">
-          <h1>脳トレ<br><span>＆</span><br>薬管理</h1>
+      <!-- 画面0: オープニング画面 -->
+      <section id="screen-opening" class="screen active">
+        <div class="opening-container">
+          <div class="opening-title">
+            <h1>脳トレ <span>＆</span><br>薬管理</h1>
+          </div>
+          <div class="opening-hero-pet">
+            <svg viewBox="0 0 100 100" class="pet-svg-opening">
+              <circle cx="50" cy="55" r="35" fill="#f3a683"/>
+              <circle cx="50" cy="58" r="28" fill="#f8d7da"/>
+              <circle cx="30" cy="28" r="12" fill="#f3a683"/>
+              <circle cx="30" cy="28" r="7" fill="#f8a5c2"/>
+              <circle cx="70" cy="28" r="12" fill="#f3a683"/>
+              <circle cx="70" cy="28" r="7" fill="#f8a5c2"/>
+              <circle cx="38" cy="48" r="4" fill="#2d3436"/>
+              <circle cx="62" cy="48" r="4" fill="#2d3436"/>
+              <ellipse cx="50" cy="54" rx="5" ry="3" fill="#e77f67"/>
+              <path d="M 45 60 Q 50 65 55 60" stroke="#2d3436" stroke-width="2" fill="none"/>
+            </svg>
+          </div>
+          <p class="opening-sub">毎日楽しく 脳トレとお薬管理！</p>
+          <button class="start-app-btn" id="start-app-btn">はじめる</button>
         </div>
-        
+      </section>
+
+      <!-- 画面1: メインホーム画面 -->
+      <section id="screen-home" class="screen">
+        <!-- カレンダーとペットの表示エリア -->
         <div class="calendar-card">
           <div class="calendar-icon">
             <div class="cal-header"></div>
@@ -70,29 +74,29 @@ e.reason.message: e.reason);
           </div>
         </div>
 
+        <!-- ナビゲーションボタン -->
         <nav class="home-nav">
-          <button class="nav-btn btn-pet" data-target="screen-pet">ペット</button>
-          <button class="nav-btn btn-med" data-target="screen-med">くすり</button>
-          <button class="nav-btn btn-calc" data-target="screen-calc">計算</button>
+          <button class="nav-btn btn-pet" data-target="screen-pet">🐹 ペット</button>
+          <button class="nav-btn btn-calc" data-target="screen-calc">✏️ 計算</button>
+          <button class="nav-btn btn-med" data-target="screen-med">💊 くすり</button>
         </nav>
       </section>
 
       <!-- 画面2: ペット -->
       <section id="screen-pet" class="screen">
         <div class="screen-header">
-          <button class="back-btn" data-target="screen-home">← ホーム</button>
+          <button class="back-btn" data-target="screen-home">← 戻る</button>
           <h2>ペット育成</h2>
         </div>
 
         <div class="pet-display">
           <div class="pet-level-badge">Lv.<span id="pet-level">1</span> <span id="pet-stage-name">赤ちゃんハム</span></div>
           
-          <!-- レベルのプログレスバー -->
           <div class="exp-bar-area">
             <div class="exp-bar-container">
               <div class="exp-bar-fill" id="exp-bar-fill"></div>
             </div>
-            <div class="exp-text">あと <strong id="exp-needed">50</strong> EXPでレベルアップ！</div>
+            <div class="exp-text">あと <strong id="exp-needed">50</strong> で成長！</div>
           </div>
 
           <div class="pet-character-container">
@@ -126,38 +130,38 @@ e.reason.message: e.reason);
 
         <div class="tab-controls">
           <button class="tab-btn active" id="tab-btn-gohan">ごはん</button>
-          <button class="tab-btn" id="tab-btn-talk">おしゃべり(AI)</button>
+          <button class="tab-btn" id="tab-btn-talk">おしゃべり</button>
         </div>
 
-        <!-- ごはんショップ -->
+        <!-- ごはんショップ（わかりやすく簡潔な表記） -->
         <div id="tab-content-gohan" class="tab-content active">
           <div class="food-grid">
             <div class="food-card" data-cost="5" data-exp="15" data-love="10" data-food="ひまわりの種">
               <div class="food-img">🌻</div>
               <div class="food-info">
-                <span>ひまわりの種</span>
-                <span class="food-cost">💰 5 (+10% / +15EXP)</span>
+                <span class="food-title">ひまわりの種</span>
+                <span class="food-cost">5コイン</span>
               </div>
             </div>
             <div class="food-card" data-cost="8" data-exp="25" data-love="15" data-food="スイカ">
               <div class="food-img">🍉</div>
               <div class="food-info">
-                <span>スイカ</span>
-                <span class="food-cost">💰 8 (+15% / +25EXP)</span>
+                <span class="food-title">スイカ</span>
+                <span class="food-cost">8コイン</span>
               </div>
             </div>
             <div class="food-card" data-cost="6" data-exp="20" data-love="12" data-food="さつまいも">
               <div class="food-img">🍠</div>
               <div class="food-info">
-                <span>さつまいも</span>
-                <span class="food-cost">💰 6 (+12% / +20EXP)</span>
+                <span class="food-title">さつまいも</span>
+                <span class="food-cost">6コイン</span>
               </div>
             </div>
             <div class="food-card" data-cost="3" data-exp="10" data-love="5" data-food="ブロッコリー">
               <div class="food-img">🥦</div>
               <div class="food-info">
-                <span>ブロッコリー</span>
-                <span class="food-cost">💰 3 (+5% / +10EXP)</span>
+                <span class="food-title">ブロッコリー</span>
+                <span class="food-cost">3コイン</span>
               </div>
             </div>
           </div>
@@ -172,42 +176,39 @@ e.reason.message: e.reason);
               </div>
             </div>
             <div class="chat-input-row">
-              <input type="text" id="talk-input" placeholder="ハムスターに話しかける...">
+              <input type="text" id="talk-input" placeholder="お話しを入力...">
               <button id="talk-send-btn">送信</button>
             </div>
           </div>
         </div>
 
-        <!-- データリセットボタン -->
-        <button class="reset-data-btn" id="reset-data-btn">データをリセットして最初から遊ぶ</button>
+        <button class="reset-data-btn" id="reset-data-btn">最初から遊ぶ（リセット）</button>
       </section>
 
       <!-- 画面3: 計算 -->
       <section id="screen-calc" class="screen">
         <div class="screen-header">
-          <button class="back-btn" data-target="screen-home">← ホーム</button>
+          <button class="back-btn" data-target="screen-home">← 戻る</button>
           <h2>脳トレ計算</h2>
         </div>
 
-        <!-- モード選択画面 -->
         <div id="calc-menu">
-          <h3>モードを選択</h3>
+          <h3>計算の種類を選択</h3>
           <div class="calc-op-list">
             <button class="menu-btn calc-op-btn active" data-op="+">足し算</button>
             <button class="menu-btn calc-op-btn" data-op="-">引き算</button>
             <button class="menu-btn calc-op-btn" data-op="*">掛け算</button>
             <button class="menu-btn calc-op-btn" data-op="/">割り算</button>
           </div>
-          <h3>難易度を選択</h3>
+          <h3>むずかしさ</h3>
           <div class="calc-diff-list">
-            <button class="menu-btn calc-diff-btn active" data-diff="easy">初級</button>
-            <button class="menu-btn calc-diff-btn" data-diff="mid">中級</button>
-            <button class="menu-btn calc-diff-btn" data-diff="hard">上級</button>
+            <button class="menu-btn calc-diff-btn active" data-diff="easy">かんたん</button>
+            <button class="menu-btn calc-diff-btn" data-diff="mid">ふつう</button>
+            <button class="menu-btn calc-diff-btn" data-diff="hard">むずかしい</button>
           </div>
           <button class="action-btn" id="start-calc-btn">10問テスト スタート！</button>
         </div>
 
-        <!-- 計算進行画面 -->
         <div id="calc-game" class="hidden">
           <div class="calc-progress-badge" id="calc-progress-text">第 1 / 10 問</div>
           <div class="question-box"><span id="question-text">8 + 5 = ?</span></div>
@@ -216,22 +217,21 @@ e.reason.message: e.reason);
             <button class="num-btn">1</button><button class="num-btn">2</button><button class="num-btn">3</button>
             <button class="num-btn">4</button><button class="num-btn">5</button><button class="num-btn">6</button>
             <button class="num-btn">7</button><button class="num-btn">8</button><button class="num-btn">9</button>
-            <button class="num-btn clear-btn">C</button><button class="num-btn">0</button><button class="num-btn submit-btn">確定</button>
+            <button class="num-btn clear-btn">消す</button><button class="num-btn">0</button><button class="num-btn submit-btn">確定</button>
           </div>
           <button class="back-btn small-btn" id="calc-quit-btn">やめる</button>
         </div>
 
-        <!-- 10問終了後の結果画面 -->
         <div id="calc-result" class="hidden">
           <div class="result-card">
             <div class="result-icon">🎉</div>
             <h3>テスト終了！</h3>
             <div class="result-score">10問中 <span id="result-correct-count">0</span> 問 正解！</div>
             <div class="result-coin-box">
-              <span>獲得した報酬</span>
+              <span>獲得したごほうび</span>
               <div class="result-coins">💰 +<span id="result-earned-coins">0</span> コイン</div>
             </div>
-            <button class="action-btn" id="calc-retry-btn">もう一度チャレンジ！</button>
+            <button class="action-btn" id="calc-retry-btn">もう一度やる</button>
           </div>
         </div>
       </section>
@@ -239,12 +239,12 @@ e.reason.message: e.reason);
       <!-- 画面4: くすり -->
       <section id="screen-med" class="screen">
         <div class="screen-header">
-          <button class="back-btn" data-target="screen-home">← ホーム</button>
-          <h2>お薬・生活スケジュール</h2>
+          <button class="back-btn" data-target="screen-home">← 戻る</button>
+          <h2>お薬・生活時間</h2>
         </div>
 
         <div class="patient-info-header">
-          <h3 id="patient-display-name">マノ コウタ (86)</h3>
+          <h3 id="patient-display-name">マノ コウタ 様</h3>
         </div>
 
         <div class="med-layout">
@@ -254,12 +254,12 @@ e.reason.message: e.reason);
           </div>
 
           <div class="card meds-card">
-            <h4>処方お薬</h4>
+            <h4>処方中のお薬</h4>
             <div id="medicine-list"></div>
           </div>
         </div>
 
-        <button class="alarm-test-btn" id="trigger-alarm-test-btn">⏰ 服薬アラームの表示テスト</button>
+        <button class="alarm-test-btn" id="trigger-alarm-test-btn">⏰ お薬アラームのテスト</button>
       </section>
 
     </main>
@@ -272,7 +272,7 @@ e.reason.message: e.reason);
       <p id="alarm-medicine-info">処方薬の服薬時間です</p>
       <div class="alarm-btn-group">
         <button class="alarm-btn btn-taken" id="alarm-btn-yes">のんだ</button>
-        <button class="alarm-btn btn-not-taken" id="alarm-btn-no">のんでない</button>
+        <button class="alarm-btn btn-not-taken" id="alarm-btn-no">まだ</button>
       </div>
     </div>
   </div>
