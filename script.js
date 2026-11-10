@@ -25,7 +25,8 @@ const defaultData = {
         { name: '軟膏(塗り薬)', instruction: '朝洗顔後 入浴後 就寝前' }
       ]
     }
-  ]
+  ],
+  events: {} // カレンダー予定管理用データ構造を追加
 };
 
 function getData() {
@@ -37,6 +38,7 @@ function getData() {
     data.level = data.level || 1;
     data.coins = data.coins ?? 11;
     data.love = data.love ?? 0;
+    data.events = data.events || {};
     return data;
   } catch (e) {
     return defaultData;
@@ -58,11 +60,18 @@ let calcState = {
   earnedCoins: 0
 };
 
+// カレンダー管理用状態
+let calendarState = {
+  currentDate: new Date(),
+  selectedDateStr: null
+};
+
 document.addEventListener('DOMContentLoaded', () => {
   initNavigation();
   initPetSystem();
   initCalcSystem();
   initAlarmSystem();
+  initCalendarSystem(); // カレンダーの初期化関数を追加
   renderPatientData();
   updatePetDisplay();
 });
@@ -75,6 +84,8 @@ function initNavigation() {
       if (targetId === 'screen-med') {
         appData = getData();
         renderPatientData();
+      } else if (targetId === 'screen-calendar') {
+        renderCalendar();
       }
     });
   });
@@ -165,6 +176,7 @@ function initPetSystem() {
         appData = defaultData;
         saveData(appData);
         updatePetDisplay();
+        renderCalendar();
         alert('リセットしました。');
       }
     });
@@ -426,3 +438,163 @@ function initAlarmSystem() {
   if (yesBtn) yesBtn.addEventListener('click', () => { modal.classList.add('hidden'); alert('のんだ記録を保存しました。'); });
   if (noBtn) noBtn.addEventListener('click', () => { modal.classList.add('hidden'); alert('再通知に設定しました。'); });
 }
+
+/* ====================================================
+   新規追加：カレンダー機能（描画・日付選択・予定登録・削除）
+   ==================================================== */
+function initCalendarSystem() {
+  const prevBtn = document.getElementById('prev-month-btn');
+  const nextBtn = document.getElementById('next-month-btn');
+  const openModalBtn = document.getElementById('open-add-event-btn');
+  const closeModalBtn = document.getElementById('close-event-modal-btn');
+  const eventForm = document.getElementById('event-form');
+  const eventModal = document.getElementById('event-modal');
+
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      calendarState.currentDate.setMonth(calendarState.currentDate.getMonth() - 1);
+      renderCalendar();
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      calendarState.currentDate.setMonth(calendarState.currentDate.getMonth() + 1);
+      renderCalendar();
+    });
+  }
+
+  if (openModalBtn) {
+    openModalBtn.addEventListener('click', () => {
+      if (!calendarState.selectedDateStr) {
+        alert('先にカレンダーから日付を選択してください。');
+        return;
+      }
+      if (eventModal) eventModal.classList.remove('hidden');
+    });
+  }
+
+  if (closeModalBtn && eventModal) {
+    closeModalBtn.addEventListener('click', () => {
+      eventModal.classList.add('hidden');
+    });
+  }
+
+  if (eventForm) {
+    eventForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const titleInput = document.getElementById('event-title');
+      const timeInput = document.getElementById('event-time');
+      const categorySelect = document.getElementById('event-category');
+
+      const title = titleInput.value.trim();
+      const time = timeInput ? timeInput.value : '';
+      let category = '';
+      if (categorySelect) {
+        category = categorySelect.options[categorySelect.selectedIndex].text.split(' ')[0];
+      }
+
+      const dateStr = calendarState.selectedDateStr;
+      if (!appData.events[dateStr]) appData.events[dateStr] = [];
+      appData.events[dateStr].push({ title, time, category });
+
+      saveData(appData);
+
+      titleInput.value = '';
+      if (timeInput) timeInput.value = '';
+      if (eventModal) eventModal.classList.add('hidden');
+
+      renderCalendar();
+      renderEvents();
+    });
+  }
+}
+
+function renderCalendar() {
+  const monthTitle = document.getElementById('calendar-month-title');
+  const daysGrid = document.getElementById('calendar-days-grid');
+  if (!monthTitle || !daysGrid) return;
+
+  const year = calendarState.currentDate.getFullYear();
+  const month = calendarState.currentDate.getMonth();
+
+  monthTitle.textContent = `${year}年 ${month + 1}月`;
+  daysGrid.innerHTML = '';
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const lastDate = new Date(year, month + 1, 0).getDate();
+
+  // 前月の埋めスペース
+  for (let i = 0; i < firstDay; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'day-cell other-month';
+    daysGrid.appendChild(cell);
+  }
+
+  // 当月の日付描画
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+  for (let date = 1; date <= lastDate; date++) {
+    const cell = document.createElement('div');
+    cell.className = 'day-cell';
+    cell.textContent = date;
+
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
+
+    if (dateStr === todayStr) cell.classList.add('today');
+    if (dateStr === calendarState.selectedDateStr) cell.classList.add('selected');
+
+    // 予定ドットの表示
+    if (appData.events[dateStr] && appData.events[dateStr].length > 0) {
+      const dot = document.createElement('div');
+      dot.className = 'event-dot';
+      cell.appendChild(dot);
+    }
+
+    cell.addEventListener('click', () => {
+      calendarState.selectedDateStr = dateStr;
+      const label = document.getElementById('selected-date-label');
+      if (label) label.textContent = `${dateStr} の予定`;
+      renderCalendar();
+      renderEvents();
+    });
+
+    daysGrid.appendChild(cell);
+  }
+}
+
+function renderEvents() {
+  const eventsList = document.getElementById('selected-day-events');
+  if (!eventsList) return;
+
+  eventsList.innerHTML = '';
+  const dateStr = calendarState.selectedDateStr;
+  const dayEvents = appData.events[dateStr] || [];
+
+  if (dayEvents.length === 0) {
+    eventsList.innerHTML = '<p class="empty-msg" style="font-size:12px;color:#888;">予定はありません</p>';
+    return;
+  }
+
+  dayEvents.forEach((ev, index) => {
+    const item = document.createElement('div');
+    item.className = 'event-item';
+    item.innerHTML = `
+      <span>${ev.category || ''} ${ev.time ? ev.time + ' ' : ''}${ev.title}</span>
+      <button class="delete-event-btn" onclick="deleteEvent('${dateStr}', ${index})">✕</button>
+    `;
+    eventsList.appendChild(item);
+  });
+}
+
+// 予定削除用関数（グローバル領域に登録）
+window.deleteEvent = function(dateStr, index) {
+  if (!appData.events[dateStr]) return;
+  appData.events[dateStr].splice(index, 1);
+  if (appData.events[dateStr].length === 0) delete appData.events[dateStr];
+  
+  saveData(appData);
+  renderCalendar();
+  renderEvents();
+};
