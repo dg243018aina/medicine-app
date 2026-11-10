@@ -1,3 +1,7 @@
+// ====== Gemini API 設定 ======
+// ご自身のGemini APIキーを取得された場合は、下のダブルクォーテーション内に入力してください。
+const GEMINI_API_KEY = ""; 
+
 // 初期データ
 const defaultData = {
   coins: 11,
@@ -64,7 +68,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initNavigation() {
-  // すべての data-target ボタン（はじめる、戻る、各メニューボタン）に一括対応
   document.querySelectorAll('[data-target]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const targetId = e.currentTarget.getAttribute('data-target');
@@ -132,18 +135,23 @@ function initPetSystem() {
     });
   });
 
-  // チャット
+  // おしゃべり機能（Gemini AI & 高度なローカル対話）
   const input = document.getElementById('talk-input');
   const sendBtn = document.getElementById('talk-send-btn');
+  
   if (sendBtn && input) {
-    const sendMessage = () => {
+    const sendMessage = async () => {
       const text = input.value.trim();
       if (!text) return;
+      
       appendChatBubble(text, 'user');
       input.value = '';
-      const reply = generateLocalAIResponse(text);
-      appendChatBubble(reply, 'pet');
+
+      const tempBubble = appendChatBubble("考え中チュ...", 'pet');
+      const reply = await fetchAIReply(text);
+      tempBubble.textContent = reply;
     };
+
     sendBtn.addEventListener('click', sendMessage);
     input.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
   }
@@ -161,6 +169,77 @@ function initPetSystem() {
       }
     });
   }
+}
+
+// Gemini API / 多彩な会話エンジン呼び出し
+async function fetchAIReply(userText) {
+  if (GEMINI_API_KEY) {
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `あなたは高齢者の患者さんを心から癒す親切で可愛い相棒ハムスターです。語尾に「チュ」「～のだ」をつけて、優しくわかりやすい丁寧な日本語（70文字以内）で返答してください。質問: ${userText}`
+            }]
+          }]
+        })
+      });
+      const data = await response.json();
+      if (data.candidates && data.candidates[0].content.parts[0].text) {
+        return data.candidates[0].content.parts[0].text.trim();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  // APIキーが無い場合でも多様なおしゃべりができる高度なロジック
+  return generateRichLocalAIResponse(userText);
+}
+
+function generateRichLocalAIResponse(text) {
+  const love = appData.love || 0;
+
+  if (love < 20) {
+    return "まだちょっと緊張してるチュ... ごはんをくれるともっと仲良くなれる気がするのだ！";
+  }
+
+  if (text.includes("天気") || text.includes("雨") || text.includes("晴れ") || text.includes("暑い") || text.includes("寒い")) {
+    return "今日もお外の空気をすうと気持ちいいチュ！無理せず快適にお過ごしくださいね！";
+  }
+  if (text.includes("ご飯") || text.includes("ごはん") || text.includes("食べ") || text.includes("腹")) {
+    return "美味しいものを食べると元気が湧いてくるチュ！お腹いっぱい食べてね！";
+  }
+  if (text.includes("散歩") || text.includes("歩") || text.includes("運動")) {
+    return "少し体を動かすと気分がすっきりするチュ！転ばないように気をつけてね！";
+  }
+  if (text.includes("元気") || text.includes("調子")) {
+    return "とっても元気チュ！いつも話しかけてくれて本当にありがとうなのだ！";
+  }
+  if (text.includes("くすり") || text.includes("薬") || text.includes("時間")) {
+    return "お薬をしっかり飲んで素晴らしいチュ！健康が一番大切なのだ！";
+  }
+  if (text.includes("ありがと") || text.includes("感謝")) {
+    return "こちらこそいつも温かくしてくれてありがとうチュ！大好きだよ！";
+  }
+  if (text.includes("つかれた") || text.includes("しんどい") || text.includes("痛い")) {
+    return "大丈夫チュ？無理は厳禁だよ。温かい飲み物を飲んでゆっくり休みましょうね。";
+  }
+  if (text.includes("名") || text.includes("誰") || text.includes("なまえ")) {
+    return "僕はあなたの健康を応援するハムスターチュ！ずっと一緒だよ！";
+  }
+
+  const randomReplies = [
+    `「${text}」って教えてくれてありがとうチュ！とっても興味深い話なのだ！`,
+    `お話できてすごく楽しいチュ！次は何をしようか？`,
+    `脳トレの計算テストも頑張って、ごほうびコインをあつめようチュ！`,
+    `いつも優しく話しかけてくれて、心があたたかくなるチュ！`,
+    `何か困ったことがあったら、看護師さんにも相談してね！`
+  ];
+
+  return randomReplies[Math.floor(Math.random() * randomReplies.length)];
 }
 
 function updatePetDisplay() {
@@ -203,26 +282,6 @@ function appendChatBubble(text, sender) {
   history.appendChild(bubble);
   history.scrollTop = history.scrollHeight;
   return bubble;
-}
-
-function generateLocalAIResponse(text) {
-  const love = appData.love || 0;
-  if (love < 30) {
-    return "まだちょっと緊張してるチュ... ごはんをくれると仲良くなれる気がするのだ！";
-  } else if (text.includes("元気") || text.includes("調子")) {
-    return "とっても元気チュ！ご飯を食べるともっと元気になるのだ！";
-  } else if (text.includes("くすり") || text.includes("薬")) {
-    return "お薬をしっかり飲んでえらいチュ！健康一番なのだ！";
-  } else if (text.includes("ありがと")) {
-    return "こちらこそいつも優しくしてくれてありがとうチュ！";
-  } else {
-    const randomReplies = [
-      `「${text}」なんだね！お話してくれてとっても嬉しいチュ！`,
-      `今日もお散歩とお昼寝が楽しみチュ！`,
-      `脳トレの計算、いっぱい解いてコインあつめようチュ！`
-    ];
-    return randomReplies[Math.floor(Math.random() * randomReplies.length)];
-  }
 }
 
 /* 計算ゲーム */
