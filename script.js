@@ -55,7 +55,6 @@ let calcState = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-  initOpening();
   initNavigation();
   initPetSystem();
   initCalcSystem();
@@ -64,17 +63,8 @@ document.addEventListener('DOMContentLoaded', () => {
   updatePetDisplay();
 });
 
-// オープニング画面の「はじめる」ボタン処理
-function initOpening() {
-  const startBtn = document.getElementById('start-app-btn');
-  if (startBtn) {
-    startBtn.addEventListener('click', () => {
-      showScreen('screen-home');
-    });
-  }
-}
-
 function initNavigation() {
+  // すべての data-target ボタン（はじめる、戻る、各メニューボタン）に一括対応
   document.querySelectorAll('[data-target]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const targetId = e.currentTarget.getAttribute('data-target');
