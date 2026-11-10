@@ -12,7 +12,6 @@
 <body>
 
   <div class="phone-frame">
-    <!-- メインコンテンツ -->
     <main class="app-content">
 
       <!-- 画面0: オープニング画面 -->
@@ -42,39 +41,50 @@
 
       <!-- 画面1: メインホーム画面 -->
       <section id="screen-home" class="screen">
-        <!-- カレンダーとペットの表示エリア -->
-        <div class="calendar-card">
-          <div class="calendar-icon">
-            <div class="cal-header"></div>
-            <div class="cal-grid">
-              <span></span><span></span><span></span>
-              <span></span><span></span><span></span>
-              <span class="active-orange"></span><span class="active-yellow"></span><span></span>
-              <span class="active-red"></span><span class="active-red"></span><span class="active-yellow"></span>
+        <div class="home-container">
+          <!-- カレンダーとペットの表示カード -->
+          <div class="calendar-card">
+            <div class="calendar-icon">
+              <div class="cal-header"></div>
+              <div class="cal-grid">
+                <span></span><span></span><span></span>
+                <span></span><span></span><span></span>
+                <span class="active-orange"></span><span class="active-yellow"></span><span></span>
+                <span class="active-red"></span><span class="active-red"></span><span class="active-yellow"></span>
+              </div>
+            </div>
+            <div class="pet-avatar-mini">
+              <svg viewBox="0 0 100 100" class="pet-svg-icon">
+                <circle cx="50" cy="55" r="35" fill="#f3a683"/>
+                <circle cx="50" cy="58" r="28" fill="#f8d7da"/>
+                <circle cx="30" cy="28" r="12" fill="#f3a683"/>
+                <circle cx="30" cy="28" r="7" fill="#f8a5c2"/>
+                <circle cx="70" cy="28" r="12" fill="#f3a683"/>
+                <circle cx="70" cy="28" r="7" fill="#f8a5c2"/>
+                <circle cx="38" cy="48" r="4" fill="#2d3436"/>
+                <circle cx="62" cy="48" r="4" fill="#2d3436"/>
+                <ellipse cx="50" cy="54" rx="5" ry="3" fill="#e77f67"/>
+                <path d="M 45 60 Q 50 65 55 60" stroke="#2d3436" stroke-width="2" fill="none"/>
+              </svg>
             </div>
           </div>
-          <div class="pet-avatar-mini">
-            <svg viewBox="0 0 100 100" class="pet-svg-icon">
-              <circle cx="50" cy="55" r="35" fill="#f3a683"/>
-              <circle cx="50" cy="58" r="28" fill="#f8d7da"/>
-              <circle cx="30" cy="28" r="12" fill="#f3a683"/>
-              <circle cx="30" cy="28" r="7" fill="#f8a5c2"/>
-              <circle cx="70" cy="28" r="12" fill="#f3a683"/>
-              <circle cx="70" cy="28" r="7" fill="#f8a5c2"/>
-              <circle cx="38" cy="48" r="4" fill="#2d3436"/>
-              <circle cx="62" cy="48" r="4" fill="#2d3436"/>
-              <ellipse cx="50" cy="54" rx="5" ry="3" fill="#e77f67"/>
-              <path d="M 45 60 Q 50 65 55 60" stroke="#2d3436" stroke-width="2" fill="none"/>
-            </svg>
-          </div>
-        </div>
 
-        <!-- ナビゲーションボタン -->
-        <nav class="home-nav">
-          <button class="nav-btn btn-pet" data-target="screen-pet">🐹 ペット</button>
-          <button class="nav-btn btn-calc" data-target="screen-calc">✏️ 計算</button>
-          <button class="nav-btn btn-med" data-target="screen-med">💊 くすり</button>
-        </nav>
+          <!-- バランスを整えたナビゲーションボタン -->
+          <nav class="home-nav">
+            <button class="nav-btn btn-pet" data-target="screen-pet">
+              <span class="nav-icon">🐹</span>
+              <span class="nav-text">ペット</span>
+            </button>
+            <button class="nav-btn btn-calc" data-target="screen-calc">
+              <span class="nav-icon">✏️</span>
+              <span class="nav-text">計算</span>
+            </button>
+            <button class="nav-btn btn-med" data-target="screen-med">
+              <span class="nav-icon">💊</span>
+              <span class="nav-text">くすり</span>
+            </button>
+          </nav>
+        </div>
       </section>
 
       <!-- 画面2: ペット -->
@@ -167,11 +177,11 @@
           <div class="chat-container">
             <div class="chat-history" id="chat-history">
               <div class="chat-bubble pet-bubble" id="pet-dialog">
-                今日もお薬飲んでえらいね！何かおはなしする？
+                こんにちは！今日もお薬飲んでえらいチュ！何でも気軽にお話ししてね！
               </div>
             </div>
             <div class="chat-input-row">
-              <input type="text" id="talk-input" placeholder="お話しを入力...">
+              <input type="text" id="talk-input" placeholder="なんでも話しかけてね...">
               <button id="talk-send-btn">送信</button>
             </div>
           </div>
