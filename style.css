@@ -6,7 +6,9 @@
   user-select: none;
 }
 
-body {
+html, body {
+  width: 100%;
+  overflow-x: hidden;
   background-color: #2c3e50;
   display: flex;
   justify-content: center;
@@ -31,16 +33,19 @@ body {
 
 .app-content {
   flex: 1;
+  width: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
   background-color: #fcfcfc;
   position: relative;
 }
 
 .screen {
   display: none;
-  padding: 18px;
+  width: 100%;
+  padding: 16px;
   min-height: 100%;
-  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .screen.active {
@@ -56,24 +61,28 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  gap: 8px;
+  margin-bottom: 14px;
 }
 
 .screen-header h2 {
-  font-size: 1.75rem;
+  font-size: 1.55rem;
   color: #333;
+  white-space: nowrap;
 }
 
 .back-btn {
   background: #dfe6e9;
   border: 3px solid #b2bec3;
-  padding: 14px 22px;
+  padding: 12px 18px;
   border-radius: 18px;
   font-weight: 900;
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   cursor: pointer;
   color: #2d3436;
   box-shadow: 0 4px 0 #b2bec3;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .back-btn:active {
@@ -90,46 +99,57 @@ body {
   align-items: center;
   justify-content: center;
   flex: 1;
-  padding: 30px 10px;
+  padding: 20px 8px;
   text-align: center;
 }
 
 .opening-title h1 {
-  font-size: 2.8rem;
+  font-size: 2.6rem;
   color: #2ecc71;
   font-weight: 900;
   line-height: 1.3;
 }
 
 .opening-title h1 span {
-  font-size: 2.2rem;
+  font-size: 2.1rem;
   color: #f39c12;
 }
 
+.opening-user-badge {
+  margin-top: 12px;
+  background: #e3fafc;
+  border: 2px solid #99e9f2;
+  color: #0b7285;
+  padding: 6px 18px;
+  border-radius: 20px;
+  font-size: 1.15rem;
+  font-weight: 900;
+}
+
 .opening-hero-pet {
-  width: 170px;
-  height: 170px;
-  margin: 25px 0;
+  width: 155px;
+  height: 155px;
+  margin: 18px 0;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .opening-sub {
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: #555;
-  margin-bottom: 35px;
+  margin-bottom: 24px;
 }
 
 .start-app-btn {
   width: 100%;
-  padding: 24px;
+  padding: 22px;
   background-color: #2ecc71;
   color: #fff;
   border: none;
   border-radius: 26px;
-  font-size: 2.2rem;
+  font-size: 2.1rem;
   font-weight: 900;
   box-shadow: 0 8px 0px #27ae60;
   cursor: pointer;
@@ -140,6 +160,19 @@ body {
   box-shadow: 0 4px 0px #27ae60;
 }
 
+.sub-link-btn {
+  margin-top: 16px;
+  background: #f1f3f5;
+  border: 2px solid #ced4da;
+  color: #495057;
+  padding: 12px 18px;
+  border-radius: 16px;
+  font-size: 1.05rem;
+  font-weight: 900;
+  cursor: pointer;
+  width: 100%;
+}
+
 /* ====================================================
    メインホーム画面
    ==================================================== */
@@ -148,14 +181,14 @@ body {
   flex-direction: column;
   justify-content: space-between;
   flex: 1;
-  gap: 16px;
+  gap: 14px;
 }
 
 .calendar-hero-card {
   background: linear-gradient(135deg, #fff9f0 0%, #eef9ff 100%);
   border-radius: 28px;
   border: 4px solid #a29bfe;
-  padding: 16px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -172,11 +205,11 @@ body {
 .calendar-hero-top {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
 }
 
 .big-calendar-illust {
-  width: 115px;
+  width: 105px;
   background: #ffffff;
   border: 4px solid #2d3436;
   border-radius: 20px;
@@ -188,28 +221,28 @@ body {
 .cal-illust-top {
   background: #ff6b6b;
   color: #ffffff;
-  padding: 6px 10px;
+  padding: 5px 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 900;
 }
 
 .cal-ring {
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   background: #ffffff;
   border-radius: 50%;
 }
 
 .cal-illust-body {
-  padding: 8px 6px;
+  padding: 6px 4px;
   text-align: center;
 }
 
 .cal-big-day {
-  font-size: 2.4rem;
+  font-size: 2.2rem;
   font-weight: 900;
   color: #2d3436;
   line-height: 1.1;
@@ -223,8 +256,8 @@ body {
 }
 
 .cal-mini-dots span {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
 }
 .dot-o { background: #ff9f43; }
@@ -235,54 +268,56 @@ body {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
 .hint-badge {
   display: inline-block;
   background: #a29bfe;
   color: #fff;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   padding: 4px 10px;
   border-radius: 12px;
   width: fit-content;
 }
 
 .calendar-tap-hint h3 {
-  font-size: 1.7rem;
+  font-size: 1.6rem;
   color: #2d3436;
 }
 
 .calendar-tap-hint p {
-  font-size: 1.05rem;
+  font-size: 1rem;
   color: #636e72;
 }
 
-/* カレンダー右下の育成ハムスター＆吹き出し */
 .home-pet-corner {
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 8px;
   margin-top: 10px;
-  min-height: 92px;
+  min-height: 88px;
 }
 
 .home-speech-bubble {
   flex: 1;
+  min-width: 0;
   background: #ffffff;
   border: 3px solid #f39c12;
   border-radius: 18px;
-  padding: 10px 14px;
-  font-size: 1.05rem;
+  padding: 10px 12px;
+  font-size: 1rem;
   font-weight: 900;
   color: #2d3436;
   line-height: 1.4;
   box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+  word-break: break-word;
 }
 
 .home-pet-avatar {
-  width: 82px;
-  height: 82px;
+  width: 78px;
+  height: 78px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -293,24 +328,24 @@ body {
 .home-nav {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   flex: 1;
   justify-content: center;
 }
 
 .nav-btn {
   flex: 1;
-  min-height: 78px;
+  min-height: 72px;
   border: none;
   border-radius: 26px;
-  padding: 16px 24px;
+  padding: 14px 20px;
   font-weight: 900;
   cursor: pointer;
   box-shadow: 0 8px 0px rgba(0,0,0,0.16);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 18px;
+  gap: 16px;
   transition: transform 0.1s ease;
 }
 
@@ -319,46 +354,47 @@ body {
   box-shadow: 0 4px 0px rgba(0,0,0,0.16);
 }
 
-.nav-icon { font-size: 2.6rem; }
-.nav-text { font-size: 2.1rem; letter-spacing: 3px; }
+.nav-icon { font-size: 2.4rem; }
+.nav-text { font-size: 2rem; letter-spacing: 3px; }
 
 .btn-pet { background-color: #f1c40f; color: #2c3e50; }
 .btn-med { background-color: #2ecc71; color: #ffffff; }
 .btn-calc { background-color: #3498db; color: #ffffff; }
 
 /* ====================================================
-   ペット画面
+   ペット画面（横はみ出しゼロ設計）
    ==================================================== */
 .pet-display {
   background: #fff;
   border-radius: 24px;
-  padding: 15px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
   align-items: center;
   border: 3px solid #eee;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
+  width: 100%;
 }
 
 .pet-level-badge {
   background: #ffe0b2;
   color: #d35400;
-  padding: 6px 18px;
+  padding: 6px 16px;
   border-radius: 20px;
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 900;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .exp-bar-area {
   width: 100%;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   text-align: center;
 }
 
 .exp-bar-container {
   width: 100%;
-  height: 16px;
+  height: 14px;
   background: #e0e0e0;
   border-radius: 8px;
   overflow: hidden;
@@ -372,21 +408,21 @@ body {
   transition: width 0.3s ease;
 }
 
-.exp-text { font-size: 1.05rem; color: #555; }
+.exp-text { font-size: 1rem; color: #555; }
 
 .pet-character-container {
-  height: 145px;
+  height: 135px;
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 4px 0;
+  margin: 2px 0;
   overflow: hidden;
 }
 
 .pet-character-svg {
-  width: 112px;
-  height: 112px;
+  width: 106px;
+  height: 106px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -402,25 +438,27 @@ body {
   width: 100%;
   display: flex;
   justify-content: space-around;
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-weight: 900;
   color: #333;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
 .tab-controls {
   display: flex;
-  gap: 12px;
-  margin-bottom: 14px;
+  gap: 10px;
+  margin-bottom: 12px;
+  width: 100%;
 }
 
 .tab-btn {
   flex: 1;
-  padding: 16px;
+  min-width: 0;
+  padding: 14px 8px;
   border: 3px solid #ddd;
   background: #fff;
   border-radius: 18px;
-  font-size: 1.4rem;
+  font-size: 1.35rem;
   font-weight: 900;
   cursor: pointer;
   color: #555;
@@ -432,25 +470,32 @@ body {
   border-color: #ff7675;
 }
 
-.tab-content { display: none; }
-.tab-content.active { display: block; }
+.tab-content {
+  display: none;
+  width: 100%;
+}
+.tab-content.active {
+  display: block;
+}
 
 .food-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
 }
 
 .food-card {
   background: #fff;
   border: 3px solid #ddd;
   border-radius: 20px;
-  padding: 16px 12px;
+  padding: 14px 10px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
   box-shadow: 0 5px 0 #ddd;
+  min-width: 0;
 }
 
 .food-card:active {
@@ -458,47 +503,41 @@ body {
   box-shadow: 0 2px 0 #ddd;
 }
 
-.food-img { font-size: 2.5rem; }
-.food-info { display: flex; flex-direction: column; }
-.food-title { font-size: 1.15rem; font-weight: 900; color: #333; }
-.food-cost { font-size: 1.15rem; font-weight: 900; color: #e67e22; }
+.food-img { font-size: 2.2rem; flex-shrink: 0; }
+.food-info { display: flex; flex-direction: column; min-width: 0; }
+.food-title { font-size: 1.05rem; font-weight: 900; color: #333; }
+.food-cost { font-size: 1.05rem; font-weight: 900; color: #e67e22; }
 
-.talk-repertoire-info {
-  background: #fff8e1;
-  border: 2px solid #ffe082;
-  border-radius: 12px;
-  padding: 8px 12px;
-  margin-bottom: 8px;
-  font-size: 1rem;
-  color: #d35400;
-  text-align: center;
-}
-
+/* おしゃべりエリア（送信ボタンが絶対にはみ出さない設計） */
 .chat-container {
   background: #f8f9fa;
   border: 3px solid #ddd;
   border-radius: 20px;
-  padding: 14px;
+  padding: 10px;
+  width: 100%;
+  overflow: hidden;
 }
 
 .chat-history {
-  height: 150px;
+  height: 155px;
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .chat-bubble {
-  padding: 12px 16px;
+  padding: 10px 14px;
   border-radius: 16px;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   line-height: 1.4;
-  max-width: 85%;
+  max-width: 88%;
   align-self: flex-start;
   background: #e3fafc;
   color: #333;
+  word-break: break-word;
 }
 
 .chat-bubble.user-bubble {
@@ -508,63 +547,56 @@ body {
 
 .chat-input-row {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
 }
 
 .chat-input-row input {
   flex: 1;
-  padding: 14px;
+  min-width: 0;
+  width: 100%;
+  padding: 12px 10px;
   border: 3px solid #ccc;
   border-radius: 14px;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
 }
 
 .chat-input-row button {
-  padding: 14px 20px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding: 12px 14px;
   background: #3498db;
   color: #fff;
   border: none;
   border-radius: 14px;
-  font-size: 1.25rem;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.reset-data-btn {
-  width: 100%;
-  margin-top: 18px;
-  padding: 14px;
-  background: #dfe6e9;
-  border: none;
-  border-radius: 14px;
-  color: #636e72;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 900;
   cursor: pointer;
 }
 
 /* ====================================================
-   計算画面（1問ごとの○×・答え表示を追加）
+   計算画面
    ==================================================== */
 #calc-menu h3 {
-  font-size: 1.35rem;
+  font-size: 1.3rem;
   color: #333;
   margin-bottom: 10px;
 }
 
 .calc-op-list, .calc-diff-list {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 20px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
 }
 
 .menu-btn {
-  padding: 16px 12px;
+  padding: 14px 10px;
   border: 3px solid #ccc;
   background: #fff;
   border-radius: 18px;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   font-weight: 900;
   cursor: pointer;
   color: #333;
@@ -573,7 +605,7 @@ body {
 }
 
 .menu-btn small {
-  font-size: 1rem;
+  font-size: 0.95rem;
   opacity: 0.85;
 }
 
@@ -586,12 +618,12 @@ body {
 
 .action-btn {
   width: 100%;
-  padding: 22px;
+  padding: 20px 14px;
   background: #2ecc71;
   color: #fff;
   border: none;
   border-radius: 22px;
-  font-size: 1.6rem;
+  font-size: 1.45rem;
   font-weight: 900;
   box-shadow: 0 7px 0 #27ae60;
   cursor: pointer;
@@ -604,29 +636,28 @@ body {
 
 .calc-progress-badge {
   text-align: center;
-  font-size: 1.3rem;
+  font-size: 1.25rem;
   font-weight: 900;
   color: #3498db;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .question-box {
   background: #fff3e0;
   border: 3px solid #ffe0b2;
   border-radius: 20px;
-  padding: 16px;
-  font-size: 2.5rem;
+  padding: 14px;
+  font-size: 2.3rem;
   font-weight: 900;
   text-align: center;
   margin-bottom: 10px;
   color: #2c3e50;
 }
 
-/* 解答ごとの○×・答え表示ボックス */
 .calc-feedback {
   border-radius: 18px;
-  padding: 12px 16px;
-  font-size: 1.55rem;
+  padding: 10px 14px;
+  font-size: 1.45rem;
   font-weight: 900;
   text-align: center;
   margin-bottom: 10px;
@@ -645,29 +676,29 @@ body {
 }
 
 .answer-box {
-  height: 60px;
+  height: 56px;
   border: 3px solid #3498db;
   border-radius: 18px;
   background: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.3rem;
+  font-size: 2.2rem;
   font-weight: 900;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
   color: #2c3e50;
 }
 
 .numpad {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .num-btn {
-  padding: 18px 10px;
-  font-size: 2rem;
+  padding: 16px 8px;
+  font-size: 1.9rem;
   font-weight: 900;
   border: 3px solid #ccc;
   background: #fff;
@@ -685,42 +716,42 @@ body {
   background: #ffeaa7;
   border-color: #fdcb6e;
   box-shadow: 0 5px 0 #fdcb6e;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
 }
 
 .num-btn.submit-btn {
   background: #55efc4;
   border-color: #00b894;
   box-shadow: 0 5px 0 #00b894;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
 }
 
 #calc-quit-btn {
   width: 100%;
-  padding: 16px;
-  font-size: 1.35rem;
+  padding: 14px;
+  font-size: 1.3rem;
 }
 
 .result-card {
   background: #fff;
   border: 4px solid #f1c40f;
   border-radius: 24px;
-  padding: 24px 16px;
+  padding: 22px 14px;
   text-align: center;
 }
 
-.result-icon { font-size: 4rem; margin-bottom: 8px; }
-.result-card h3 { font-size: 1.9rem; color: #333; }
-.result-score { font-size: 1.6rem; font-weight: 900; color: #3498db; margin: 14px 0; }
+.result-icon { font-size: 3.8rem; margin-bottom: 8px; }
+.result-card h3 { font-size: 1.8rem; color: #333; }
+.result-score { font-size: 1.5rem; font-weight: 900; color: #3498db; margin: 14px 0; }
 .result-coin-box {
   background: #fff8e1;
   border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 20px;
-  font-size: 1.3rem;
+  padding: 14px;
+  margin-bottom: 18px;
+  font-size: 1.25rem;
   color: #d35400;
 }
-.result-coins { font-size: 2rem; font-weight: 900; margin-top: 4px; }
+.result-coins { font-size: 1.9rem; font-weight: 900; margin-top: 4px; }
 
 /* ====================================================
    くすり・生活時間画面
@@ -728,25 +759,36 @@ body {
 .patient-info-header {
   background: #e3fafc;
   border: 3px solid #99e9f2;
-  padding: 14px;
+  padding: 12px;
   border-radius: 18px;
   text-align: center;
-  margin-bottom: 14px;
-  font-size: 1.4rem;
+  margin-bottom: 12px;
   color: #0b7285;
+}
+
+.patient-info-header h3 {
+  font-size: 1.45rem;
+}
+
+.patient-id-sub {
+  display: inline-block;
+  margin-top: 2px;
+  font-size: 0.95rem;
+  color: #1098ad;
 }
 
 .card {
   background: #fff;
   border: 3px solid #eee;
   border-radius: 20px;
-  padding: 16px;
-  margin-bottom: 14px;
+  padding: 14px;
+  margin-bottom: 12px;
+  width: 100%;
 }
 
 .card h4 {
-  font-size: 1.35rem;
-  color: #555;
+  font-size: 1.25rem;
+  color: #444;
   border-bottom: 2px solid #f0f0f0;
   padding-bottom: 6px;
   margin-bottom: 10px;
@@ -757,33 +799,33 @@ body {
 #schedule-list li {
   display: flex;
   justify-content: space-between;
-  padding: 10px 4px;
-  font-size: 1.35rem;
+  padding: 9px 4px;
+  font-size: 1.3rem;
   border-bottom: 1px dashed #eee;
 }
 
 .med-item {
-  padding: 10px 4px;
+  padding: 9px 4px;
   border-bottom: 1px solid #f0f0f0;
 }
 .med-item:last-child { border-bottom: none; }
-.med-name { font-size: 1.4rem; font-weight: 900; color: #2c3e50; }
-.med-instruction { font-size: 1.2rem; color: #e67e22; margin-top: 2px; }
+.med-name { font-size: 1.35rem; font-weight: 900; color: #2c3e50; }
+.med-instruction { font-size: 1.15rem; color: #e67e22; margin-top: 2px; }
 
 .med-action-buttons {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .med-done-btn {
   width: 100%;
-  padding: 20px;
+  padding: 18px;
   background: #2ecc71;
   color: #fff;
   border: none;
   border-radius: 20px;
-  font-size: 1.5rem;
+  font-size: 1.45rem;
   font-weight: 900;
   box-shadow: 0 6px 0 #27ae60;
   cursor: pointer;
@@ -791,15 +833,155 @@ body {
 
 .alarm-test-btn {
   width: 100%;
-  padding: 18px;
+  padding: 16px;
   background: #e74c3c;
   color: #fff;
   border: none;
   border-radius: 20px;
-  font-size: 1.35rem;
+  font-size: 1.3rem;
   font-weight: 900;
   box-shadow: 0 6px 0 #c0392b;
   cursor: pointer;
+}
+
+.pharma-link-btn {
+  width: 100%;
+  padding: 14px;
+  background: #f1f3f5;
+  color: #495057;
+  border: 2px solid #ced4da;
+  border-radius: 18px;
+  font-size: 1.1rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+/* ====================================================
+   薬剤師連携・利用者設定画面
+   ==================================================== */
+.helper-text {
+  font-size: 0.95rem;
+  color: #636e72;
+  line-height: 1.4;
+  margin-bottom: 10px;
+}
+
+.sub-section-label {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: #2c3e50;
+  margin-bottom: 6px;
+}
+
+.editor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.editor-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 8px 10px;
+  font-size: 1.05rem;
+}
+
+.editor-item span {
+  min-width: 0;
+  word-break: break-word;
+}
+
+.editor-del-btn {
+  background: #ffe3e3;
+  color: #e03131;
+  border: none;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-weight: 900;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.add-row-box {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+
+.add-row-box input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 8px;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  font-size: 0.95rem;
+}
+
+.mini-add-btn {
+  flex-shrink: 0;
+  background: #3498db;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-weight: 900;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.inline-btn-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.btn-secondary {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 8px;
+  background: #e9ecef;
+  color: #2d3436;
+  border: 2px solid #ced4da;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.btn-import {
+  width: 100%;
+  padding: 16px;
+  background: #6c5ce7;
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  font-size: 1.15rem;
+  font-weight: 900;
+  box-shadow: 0 5px 0 #4834d4;
+  cursor: pointer;
+}
+
+.section-divider {
+  border: none;
+  border-top: 2px dashed #dee2e6;
+  margin: 14px 0;
+}
+
+#pharma-export-code {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #ccc;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  background: #f8f9fa;
+  resize: none;
 }
 
 /* ====================================================
@@ -809,37 +991,37 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
-.calendar-month-nav h3 { font-size: 1.5rem; color: #333; }
+.calendar-month-nav h3 { font-size: 1.45rem; color: #333; }
 
 .month-nav-btn {
   background: #dfe6e9;
   border: 2px solid #b2bec3;
-  padding: 12px 16px;
+  padding: 10px 14px;
   border-radius: 14px;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 900;
   cursor: pointer;
 }
 
 .calendar-weekdays {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   text-align: center;
   font-weight: 900;
-  font-size: 1.15rem;
-  margin-bottom: 8px;
+  font-size: 1.1rem;
+  margin-bottom: 6px;
 }
 .calendar-weekdays .sun { color: #ff6b6b; }
 .calendar-weekdays .sat { color: #4d96ff; }
 
 .calendar-days-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
-  margin-bottom: 16px;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+  margin-bottom: 14px;
 }
 
 .day-cell {
@@ -852,7 +1034,7 @@ body {
   align-items: center;
   justify-content: flex-start;
   padding-top: 4px;
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   font-weight: 900;
   cursor: pointer;
 }
@@ -862,8 +1044,8 @@ body {
 .day-cell.today { color: #e74c3c; background: #fff5f5; }
 
 .event-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   background: #ff7675;
   border-radius: 50%;
   margin-top: 2px;
@@ -873,7 +1055,7 @@ body {
   background: #f8f9fa;
   border: 3px solid #eee;
   border-radius: 20px;
-  padding: 16px;
+  padding: 14px;
 }
 
 .schedule-header-row {
@@ -881,31 +1063,33 @@ body {
   justify-content: space-between;
   align-items: center;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
-.schedule-header-row h4 { font-size: 1.2rem; color: #333; }
+.schedule-header-row h4 { font-size: 1.15rem; color: #333; }
 
 .action-btn.small-btn {
   width: auto;
-  padding: 12px 16px;
-  font-size: 1.15rem;
+  padding: 10px 14px;
+  font-size: 1.1rem;
   background: #6c5ce7;
   box-shadow: 0 5px 0 #4834d4;
   border-radius: 14px;
+  white-space: nowrap;
 }
 
-.empty-msg { font-size: 1.15rem; color: #888; }
+.empty-msg { font-size: 1.1rem; color: #888; }
 
 .event-item {
   background: #fff;
-  padding: 12px 14px;
+  padding: 10px 12px;
   border-radius: 14px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 1.2rem;
+  gap: 8px;
+  font-size: 1.15rem;
   border-left: 6px solid #6c5ce7;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
@@ -914,11 +1098,12 @@ body {
   background: #ffe3e3;
   border: none;
   color: #e03131;
-  padding: 8px 14px;
+  padding: 6px 12px;
   border-radius: 10px;
   font-weight: 900;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 /* ====================================================
@@ -935,42 +1120,42 @@ body {
   align-items: center;
   justify-content: center;
   z-index: 100;
-  padding: 20px;
+  padding: 16px;
 }
 
 .modal-content, .alarm-content {
   background: #fff;
   width: 100%;
-  padding: 24px 20px;
+  padding: 22px 18px;
   border-radius: 26px;
   text-align: center;
 }
 
-.modal-content h3, .alarm-content h3 { font-size: 1.7rem; margin-bottom: 14px; color: #333; }
-.alarm-content p { font-size: 1.3rem; color: #555; margin-bottom: 14px; }
+.modal-content h3, .alarm-content h3 { font-size: 1.6rem; margin-bottom: 12px; color: #333; }
+.alarm-content p { font-size: 1.25rem; color: #555; margin-bottom: 12px; }
 
-.form-group { margin-bottom: 14px; text-align: left; }
-.form-group label { display: block; font-size: 1.15rem; margin-bottom: 6px; color: #333; }
+.form-group { margin-bottom: 12px; text-align: left; }
+.form-group label { display: block; font-size: 1.1rem; margin-bottom: 4px; color: #333; }
 .form-group input, .form-group select {
   width: 100%;
-  padding: 14px;
+  padding: 12px;
   border: 3px solid #ccc;
   border-radius: 14px;
-  font-size: 1.25rem;
+  font-size: 1.15rem;
 }
 
 .modal-btn-group, .alarm-btn-group {
   display: flex;
-  gap: 12px;
-  margin-top: 20px;
+  gap: 10px;
+  margin-top: 16px;
 }
 
 .btn-cancel, .btn-not-taken, .btn-submit, .btn-taken {
   flex: 1;
   border: none;
-  padding: 18px 12px;
+  padding: 16px 10px;
   border-radius: 16px;
-  font-size: 1.35rem;
+  font-size: 1.3rem;
   font-weight: 900;
   cursor: pointer;
 }
