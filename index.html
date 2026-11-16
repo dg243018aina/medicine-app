@@ -7,52 +7,58 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="patient.css">
 </head>
 <body>
 
   <div class="phone-frame">
     <main class="app-content">
 
-      <!-- 画面0: オープニング画面 -->
-      <section id="screen-opening" class="screen active">
+      <!-- 初回起動時のみ表示：患者ID入力画面 -->
+      <section id="screen-id-login" class="screen">
+        <div class="id-login-container">
+          <div class="id-login-icon">🐹💊</div>
+          <h1 class="id-login-title">脳トレ ＆ 薬管理</h1>
+          <p class="id-login-desc">
+            薬剤師さんから受け取った<br>
+            <strong>あなたの患者ID</strong> を入力してください
+          </p>
+
+          <form id="patient-id-login-form" class="id-login-form">
+            <input
+              type="text"
+              id="login-patient-id-input"
+              inputmode="numeric"
+              placeholder="例: 1001"
+              autocomplete="off"
+              required
+            >
+            <p id="id-login-error" class="id-login-error hidden"></p>
+            <button type="submit" class="start-app-btn">IDを決定してはじめる</button>
+          </form>
+
+          <p class="id-login-note">
+            ※一度IDを登録すると、次回からは自動でご本人専用の画面が開きます。
+          </p>
+        </div>
+      </section>
+
+      <!-- 画面0: オープニング画面（ID登録完了後はここから起動） -->
+      <section id="screen-opening" class="screen">
         <div class="opening-container">
           <div class="opening-title">
             <h1>脳トレ <span>＆</span><br>薬管理</h1>
           </div>
-          <div class="opening-user-badge" id="opening-user-badge">マノ コウタ 様 専用</div>
-          <div class="opening-hero-pet" id="opening-pet-slot">
-            <svg viewBox="0 0 120 120" class="hamster-svg-art">
-              <circle cx="35" cy="31" r="12" fill="#f5b062" stroke="#5c3a21" stroke-width="3"/>
-              <circle cx="35" cy="32" r="6.5" fill="#ffb8c6"/>
-              <circle cx="85" cy="31" r="12" fill="#f5b062" stroke="#5c3a21" stroke-width="3"/>
-              <circle cx="85" cy="32" r="6.5" fill="#ffb8c6"/>
-              <path d="M 55 24 L 58 19 L 60 23 L 63 19 L 65 24" stroke="#5c3a21" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M 32 45 C 32 27, 88 27, 88 45 C 97 53, 98 66, 91 74 C 95 88, 86 102, 60 102 C 34 102, 25 88, 29 74 C 22 66, 23 53, 32 45 Z" fill="#f5b062" stroke="#5c3a21" stroke-width="3"/>
-              <path d="M 43 56 C 43 49, 77 49, 77 56 C 84 63, 86 98, 60 98 C 34 98, 36 63, 43 56 Z" fill="#fff9eb"/>
-              <ellipse cx="44" cy="103" rx="8" ry="4.5" fill="#ffc9c9" stroke="#5c3a21" stroke-width="2.5"/>
-              <ellipse cx="76" cy="103" rx="8" ry="4.5" fill="#ffc9c9" stroke="#5c3a21" stroke-width="2.5"/>
-              <path d="M 38 52 Q 44 47 50 52" stroke="#5c3a21" stroke-width="3" fill="none" stroke-linecap="round"/>
-              <circle cx="76" cy="52" r="5.5" fill="#3d2616"/>
-              <circle cx="74.5" cy="50" r="2" fill="#ffffff"/>
-              <ellipse cx="34" cy="61" rx="7" ry="4.5" fill="#ff8fa3" opacity="0.75"/>
-              <ellipse cx="86" cy="61" rx="7" ry="4.5" fill="#ff8fa3" opacity="0.75"/>
-              <ellipse cx="60" cy="56" rx="3.5" ry="2.5" fill="#ff8787"/>
-              <path d="M 53 60 Q 56.5 64 60 60 Q 63.5 64 67 60" stroke="#5c3a21" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-              <path d="M 32 68 Q 26 54 36 52 Q 42 54 41 68" fill="#f5b062" stroke="#5c3a21" stroke-width="2.5" stroke-linecap="round"/>
-              <path d="M 72 74 Q 67 78 72 82" stroke="#5c3a21" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-            </svg>
-          </div>
+          <div class="opening-user-badge" id="opening-user-badge">--- 様 専用</div>
+          <div class="opening-hero-pet" id="opening-pet-slot"></div>
           <p class="opening-sub">毎日楽しく 脳トレとお薬管理！</p>
           <button class="start-app-btn" id="start-app-btn" data-target="screen-home">はじめる</button>
-          <button class="sub-link-btn" id="open-patient-setup-btn">🔗 利用者登録・薬剤師連携</button>
         </div>
       </section>
 
       <!-- 画面1: メインホーム画面 -->
       <section id="screen-home" class="screen">
         <div class="home-container">
-          <!-- 上部：大きなカレンダーイラスト（タップでカレンダーへ）＋右下に育成ハムスター -->
           <div class="calendar-hero-card" data-target="screen-calendar">
             <div class="calendar-hero-top">
               <div class="big-calendar-illust">
@@ -75,42 +81,14 @@
               </div>
             </div>
 
-            <!-- カレンダーの右下に表示される育成中のハムスターとコメント -->
             <div class="home-pet-corner">
               <div class="home-speech-bubble" id="home-pet-speech">
                 今日もお薬と脳トレがんばろうチュ！
               </div>
-              <div class="home-pet-avatar" id="home-pet-body">
-                <svg viewBox="0 0 120 120" class="hamster-svg-art">
-                  <circle cx="35" cy="31" r="12" fill="#f5b062" stroke="#5c3a21" stroke-width="3"/>
-                  <circle cx="35" cy="32" r="6.5" fill="#ffb8c6"/>
-                  <circle cx="85" cy="31" r="12" fill="#f5b062" stroke="#5c3a21" stroke-width="3"/>
-                  <circle cx="85" cy="32" r="6.5" fill="#ffb8c6"/>
-                  <path d="M 55 24 L 58 19 L 60 23 L 63 19 L 65 24" stroke="#5c3a21" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M 32 45 C 32 27, 88 27, 88 45 C 97 53, 98 66, 91 74 C 95 88, 86 102, 60 102 C 34 102, 25 88, 29 74 C 22 66, 23 53, 32 45 Z" fill="#f5b062" stroke="#5c3a21" stroke-width="3"/>
-                  <path d="M 43 56 C 43 49, 77 49, 77 56 C 84 63, 86 98, 60 98 C 34 98, 36 63, 43 56 Z" fill="#fff9eb"/>
-                  <ellipse cx="44" cy="103" rx="8" ry="4.5" fill="#ffc9c9" stroke="#5c3a21" stroke-width="2.5"/>
-                  <ellipse cx="76" cy="103" rx="8" ry="4.5" fill="#ffc9c9" stroke="#5c3a21" stroke-width="2.5"/>
-                  <circle cx="44" cy="51" r="5.8" fill="#3d2616"/>
-                  <circle cx="42" cy="49" r="2.2" fill="#ffffff"/>
-                  <circle cx="76" cy="51" r="5.8" fill="#3d2616"/>
-                  <circle cx="74" cy="49" r="2.2" fill="#ffffff"/>
-                  <ellipse cx="34" cy="60" rx="7" ry="4.5" fill="#ff8fa3" opacity="0.7"/>
-                  <ellipse cx="86" cy="60" rx="7" ry="4.5" fill="#ff8fa3" opacity="0.7"/>
-                  <ellipse cx="60" cy="56" rx="3.5" ry="2.5" fill="#ff8787"/>
-                  <path d="M 53 60 Q 56.5 64 60 60 Q 63.5 64 67 60" stroke="#5c3a21" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-                  <ellipse cx="60" cy="78" rx="8" ry="13" fill="#635852" stroke="#5c3a21" stroke-width="2.5"/>
-                  <path d="M 57 67 Q 55 78 57 89" stroke="#f1f3f5" stroke-width="1.8" fill="none"/>
-                  <path d="M 60 66 L 60 90" stroke="#f1f3f5" stroke-width="1.8"/>
-                  <path d="M 63 67 Q 65 78 63 89" stroke="#f1f3f5" stroke-width="1.8" fill="none"/>
-                  <ellipse cx="50" cy="78" rx="5.5" ry="4.5" fill="#ffc9c9" stroke="#5c3a21" stroke-width="2.5"/>
-                  <ellipse cx="70" cy="78" rx="5.5" ry="4.5" fill="#ffc9c9" stroke="#5c3a21" stroke-width="2.5"/>
-                </svg>
-              </div>
+              <div class="home-pet-avatar" id="home-pet-body"></div>
             </div>
           </div>
 
-          <!-- 下部：ペット・薬・計算の3つの大きなボタン -->
           <nav class="home-nav">
             <button class="nav-btn btn-pet" data-target="screen-pet">
               <span class="nav-icon">🐹</span>
@@ -146,33 +124,7 @@
           </div>
 
           <div class="pet-character-container">
-            <div class="pet-character-svg" id="pet-character-body">
-              <svg viewBox="0 0 120 120" class="hamster-svg-art">
-                <circle cx="35" cy="31" r="12" fill="#f5b062" stroke="#5c3a21" stroke-width="3"/>
-                <circle cx="35" cy="32" r="6.5" fill="#ffb8c6"/>
-                <circle cx="85" cy="31" r="12" fill="#f5b062" stroke="#5c3a21" stroke-width="3"/>
-                <circle cx="85" cy="32" r="6.5" fill="#ffb8c6"/>
-                <path d="M 55 24 L 58 19 L 60 23 L 63 19 L 65 24" stroke="#5c3a21" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M 32 45 C 32 27, 88 27, 88 45 C 97 53, 98 66, 91 74 C 95 88, 86 102, 60 102 C 34 102, 25 88, 29 74 C 22 66, 23 53, 32 45 Z" fill="#f5b062" stroke="#5c3a21" stroke-width="3"/>
-                <path d="M 43 56 C 43 49, 77 49, 77 56 C 84 63, 86 98, 60 98 C 34 98, 36 63, 43 56 Z" fill="#fff9eb"/>
-                <ellipse cx="44" cy="103" rx="8" ry="4.5" fill="#ffc9c9" stroke="#5c3a21" stroke-width="2.5"/>
-                <ellipse cx="76" cy="103" rx="8" ry="4.5" fill="#ffc9c9" stroke="#5c3a21" stroke-width="2.5"/>
-                <circle cx="44" cy="51" r="5.8" fill="#3d2616"/>
-                <circle cx="42" cy="49" r="2.2" fill="#ffffff"/>
-                <circle cx="76" cy="51" r="5.8" fill="#3d2616"/>
-                <circle cx="74" cy="49" r="2.2" fill="#ffffff"/>
-                <ellipse cx="34" cy="60" rx="7" ry="4.5" fill="#ff8fa3" opacity="0.7"/>
-                <ellipse cx="86" cy="60" rx="7" ry="4.5" fill="#ff8fa3" opacity="0.7"/>
-                <ellipse cx="60" cy="56" rx="3.5" ry="2.5" fill="#ff8787"/>
-                <path d="M 53 60 Q 56.5 64 60 60 Q 63.5 64 67 60" stroke="#5c3a21" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-                <ellipse cx="60" cy="78" rx="8" ry="13" fill="#635852" stroke="#5c3a21" stroke-width="2.5"/>
-                <path d="M 57 67 Q 55 78 57 89" stroke="#f1f3f5" stroke-width="1.8" fill="none"/>
-                <path d="M 60 66 L 60 90" stroke="#f1f3f5" stroke-width="1.8"/>
-                <path d="M 63 67 Q 65 78 63 89" stroke="#f1f3f5" stroke-width="1.8" fill="none"/>
-                <ellipse cx="50" cy="78" rx="5.5" ry="4.5" fill="#ffc9c9" stroke="#5c3a21" stroke-width="2.5"/>
-                <ellipse cx="70" cy="78" rx="5.5" ry="4.5" fill="#ffc9c9" stroke="#5c3a21" stroke-width="2.5"/>
-              </svg>
-            </div>
+            <div class="pet-character-svg" id="pet-character-body"></div>
           </div>
 
           <div class="pet-status">
@@ -296,8 +248,8 @@
         </div>
 
         <div class="patient-info-header">
-          <h3 id="patient-display-name">マノ コウタ 様</h3>
-          <span class="patient-id-sub" id="patient-display-id">ID: PT-1001</span>
+          <h3 id="patient-display-name">--- 様</h3>
+          <span class="patient-id-sub" id="patient-display-id">患者ID: ----</span>
         </div>
 
         <div class="med-layout">
@@ -315,7 +267,6 @@
         <div class="med-action-buttons">
           <button class="med-done-btn" id="mark-med-taken-btn">✅ 今日のお薬をのんだ！</button>
           <button class="alarm-test-btn" id="trigger-alarm-test-btn">⏰ お薬アラームのテスト</button>
-          <button class="pharma-link-btn" id="open-pharmacist-btn">👩‍⚕️ 薬剤師アプリ連携・利用者設定</button>
         </div>
       </section>
 
@@ -348,73 +299,6 @@
           <div id="selected-day-events" class="events-list">
             <p class="empty-msg">予定はありません</p>
           </div>
-        </div>
-      </section>
-
-      <!-- 画面6: 薬剤師アプリ連携 ＆ 利用者専用設定画面 -->
-      <section id="screen-pharmacist" class="screen">
-        <div class="screen-header">
-          <button class="back-btn" data-target="screen-med">← 戻る</button>
-          <h2>薬剤師連携</h2>
-        </div>
-
-        <div class="card">
-          <h4>① このスマホの利用者（患者本人）</h4>
-          <p class="helper-text">このスマホには選択中の利用者本人のペットとお薬だけが表示されます。</p>
-          <div class="form-group">
-            <label for="pharma-patient-select">登録済み利用者</label>
-            <select id="pharma-patient-select"></select>
-          </div>
-          <div class="inline-btn-row">
-            <button type="button" class="btn-secondary" id="pharma-new-patient-btn">＋ 新しい利用者を登録</button>
-          </div>
-        </div>
-
-        <div class="card">
-          <h4>② 処方薬・生活時間の編集（薬剤師入力）</h4>
-          <div class="form-group">
-            <label for="pharma-edit-name">お名前</label>
-            <input type="text" id="pharma-edit-name" placeholder="例: マノ コウタ">
-          </div>
-
-          <label class="sub-section-label">生活時間</label>
-          <div id="pharma-schedule-editor" class="editor-list"></div>
-          <div class="add-row-box">
-            <input type="text" id="new-sched-label" placeholder="項目(例:朝ごはん)">
-            <input type="text" id="new-sched-time" placeholder="時間(例:7:30)">
-            <button type="button" id="add-sched-item-btn" class="mini-add-btn">追加</button>
-          </div>
-
-          <label class="sub-section-label" style="margin-top:12px;">処方中のお薬</label>
-          <div id="pharma-meds-editor" class="editor-list"></div>
-          <div class="add-row-box">
-            <input type="text" id="new-med-name" placeholder="薬名(例:ロキソニン)">
-            <input type="text" id="new-med-inst" placeholder="飲み方(例:朝食後)">
-            <button type="button" id="add-med-item-btn" class="mini-add-btn">追加</button>
-          </div>
-
-          <button type="button" class="action-btn" id="pharma-save-patient-btn" style="margin-top:14px;">💾 この内容で保存＆連携コード発行</button>
-        </div>
-
-        <div class="card">
-          <h4>③ 他のスマホへ連携（患者スマホ用）</h4>
-          <p class="helper-text">薬剤師側で発行した連携コードを、患者さんのスマホに入力すると本人専用データとして反映されます。</p>
-          <div class="form-group">
-            <label for="pharma-export-code">発行された連携コード</label>
-            <textarea id="pharma-export-code" rows="2" readonly placeholder="保存ボタンを押すとコードが発行されます"></textarea>
-          </div>
-          <div class="inline-btn-row">
-            <button type="button" class="btn-secondary" id="copy-link-code-btn">📋 コードをコピー</button>
-            <button type="button" class="btn-secondary" id="copy-link-url-btn">🔗 連携URLをコピー</button>
-          </div>
-
-          <hr class="section-divider">
-
-          <div class="form-group">
-            <label for="patient-import-code">連携コードの読み込み（患者スマホ側）</label>
-            <input type="text" id="patient-import-code" placeholder="HAM-... または連携URLを貼り付け">
-          </div>
-          <button type="button" class="btn-import" id="apply-link-code-btn">📲 このスマホに連携データを反映する</button>
         </div>
       </section>
 
@@ -463,6 +347,6 @@
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script src="patient.js"></script>
 </body>
 </html>
