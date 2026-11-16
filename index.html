@@ -20,20 +20,7 @@
           <div class="opening-title">
             <h1>脳トレ <span>＆</span><br>薬管理</h1>
           </div>
-          <div class="opening-hero-pet">
-            <svg viewBox="0 0 100 100" class="pet-svg-opening">
-              <circle cx="50" cy="55" r="35" fill="#f3a683"/>
-              <circle cx="50" cy="58" r="28" fill="#f8d7da"/>
-              <circle cx="30" cy="28" r="12" fill="#f3a683"/>
-              <circle cx="30" cy="28" r="7" fill="#f8a5c2"/>
-              <circle cx="70" cy="28" r="12" fill="#f3a683"/>
-              <circle cx="70" cy="28" r="7" fill="#f8a5c2"/>
-              <circle cx="38" cy="48" r="4" fill="#2d3436"/>
-              <circle cx="62" cy="48" r="4" fill="#2d3436"/>
-              <ellipse cx="50" cy="54" rx="5" ry="3" fill="#e77f67"/>
-              <path d="M 45 60 Q 50 65 55 60" stroke="#2d3436" stroke-width="2" fill="none"/>
-            </svg>
-          </div>
+          <div class="opening-hero-pet" id="opening-pet-slot"></div>
           <p class="opening-sub">毎日楽しく 脳トレとお薬管理！</p>
           <button class="start-app-btn" id="start-app-btn" data-target="screen-home">はじめる</button>
         </div>
@@ -70,26 +57,7 @@
               <div class="home-speech-bubble" id="home-pet-speech">
                 今日もお薬と脳トレがんばろうチュ！
               </div>
-              <div class="home-pet-avatar stage-1" id="home-pet-body">
-                <svg viewBox="0 0 120 120" class="pet-svg-main">
-                  <circle cx="35" cy="30" r="14" fill="#f3a683"/>
-                  <circle cx="35" cy="30" r="8" fill="#f8a5c2"/>
-                  <circle cx="85" cy="30" r="14" fill="#f3a683"/>
-                  <circle cx="85" cy="30" r="8" fill="#f8a5c2"/>
-                  <ellipse cx="60" cy="65" rx="42" ry="40" fill="#f3a683"/>
-                  <ellipse cx="60" cy="70" rx="33" ry="32" fill="#fff5f5"/>
-                  <circle cx="45" cy="55" r="5" fill="#2d3436"/>
-                  <circle cx="43" cy="53" r="1.5" fill="#ffffff"/>
-                  <circle cx="75" cy="55" r="5" fill="#2d3436"/>
-                  <circle cx="73" cy="53" r="1.5" fill="#ffffff"/>
-                  <circle cx="36" cy="63" r="6" fill="#f8a5c2" opacity="0.6"/>
-                  <circle cx="84" cy="63" r="6" fill="#f8a5c2" opacity="0.6"/>
-                  <polygon points="60,61 56,66 64,66" fill="#e77f67"/>
-                  <path d="M 54 70 Q 60 74 66 70" stroke="#2d3436" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-                  <ellipse cx="46" cy="76" rx="6" ry="8" fill="#f8d7da"/>
-                  <ellipse cx="74" cy="76" rx="6" ry="8" fill="#f8d7da"/>
-                </svg>
-              </div>
+              <div class="home-pet-avatar" id="home-pet-body"></div>
             </div>
           </div>
 
@@ -125,30 +93,11 @@
             <div class="exp-bar-container">
               <div class="exp-bar-fill" id="exp-bar-fill"></div>
             </div>
-            <div class="exp-text">あと <strong id="exp-needed">50</strong> で成長！</div>
+            <div class="exp-text" id="exp-status-text">あと <strong id="exp-needed">30</strong> でレベルアップ！</div>
           </div>
 
           <div class="pet-character-container">
-            <div class="pet-character-svg stage-1" id="pet-character-body">
-              <svg viewBox="0 0 120 120" class="pet-svg-main">
-                <circle cx="35" cy="30" r="14" fill="#f3a683"/>
-                <circle cx="35" cy="30" r="8" fill="#f8a5c2"/>
-                <circle cx="85" cy="30" r="14" fill="#f3a683"/>
-                <circle cx="85" cy="30" r="8" fill="#f8a5c2"/>
-                <ellipse cx="60" cy="65" rx="42" ry="40" fill="#f3a683"/>
-                <ellipse cx="60" cy="70" rx="33" ry="32" fill="#fff5f5"/>
-                <circle cx="45" cy="55" r="5" fill="#2d3436"/>
-                <circle cx="43" cy="53" r="1.5" fill="#ffffff"/>
-                <circle cx="75" cy="55" r="5" fill="#2d3436"/>
-                <circle cx="73" cy="53" r="1.5" fill="#ffffff"/>
-                <circle cx="36" cy="63" r="6" fill="#f8a5c2" opacity="0.6"/>
-                <circle cx="84" cy="63" r="6" fill="#f8a5c2" opacity="0.6"/>
-                <polygon points="60,61 56,66 64,66" fill="#e77f67"/>
-                <path d="M 54 70 Q 60 74 66 70" stroke="#2d3436" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-                <ellipse cx="46" cy="76" rx="6" ry="8" fill="#f8d7da"/>
-                <ellipse cx="74" cy="76" rx="6" ry="8" fill="#f8d7da"/>
-              </svg>
-            </div>
+            <div class="pet-character-svg" id="pet-character-body"></div>
           </div>
 
           <div class="pet-status">
@@ -196,6 +145,9 @@
         </div>
 
         <div id="tab-content-talk" class="tab-content">
+          <div class="talk-repertoire-info">
+            💬 会話の引き出し：<strong id="talk-repertoire-count">レベル1（基本）</strong>
+          </div>
           <div class="chat-container">
             <div class="chat-history" id="chat-history">
               <div class="chat-bubble pet-bubble" id="pet-dialog">
@@ -227,11 +179,11 @@
             <button class="menu-btn calc-op-btn" data-op="*">掛け算</button>
             <button class="menu-btn calc-op-btn" data-op="/">割り算</button>
           </div>
-          <h3>むずかしさ</h3>
+          <h3>むずかしさ（1問のコイン）</h3>
           <div class="calc-diff-list">
-            <button class="menu-btn calc-diff-btn active" data-diff="easy">かんたん</button>
-            <button class="menu-btn calc-diff-btn" data-diff="mid">ふつう</button>
-            <button class="menu-btn calc-diff-btn" data-diff="hard">むずかしい</button>
+            <button class="menu-btn calc-diff-btn active" data-diff="easy">かんたん<br><small>1コイン</small></button>
+            <button class="menu-btn calc-diff-btn" data-diff="mid">ふつう<br><small>2コイン</small></button>
+            <button class="menu-btn calc-diff-btn" data-diff="hard">むずかしい<br><small>3コイン</small></button>
           </div>
           <button class="action-btn" id="start-calc-btn">10問テスト スタート！</button>
         </div>
@@ -239,6 +191,10 @@
         <div id="calc-game" class="hidden">
           <div class="calc-progress-badge" id="calc-progress-text">第 1 / 10 問</div>
           <div class="question-box"><span id="question-text">8 + 5 = ?</span></div>
+          
+          <!-- 解答ごとの○×・答え表示ボックス -->
+          <div id="calc-feedback" class="calc-feedback hidden"></div>
+
           <div class="answer-box"><span id="user-answer"></span></div>
           <div class="numpad">
             <button class="num-btn">1</button><button class="num-btn">2</button><button class="num-btn">3</button>
