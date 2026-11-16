@@ -20,6 +20,7 @@
           <div class="opening-title">
             <h1>脳トレ <span>＆</span><br>薬管理</h1>
           </div>
+          <div class="opening-user-badge" id="opening-user-badge">マノ コウタ 様 専用</div>
           <div class="opening-hero-pet" id="opening-pet-slot">
             <svg viewBox="0 0 120 120" class="hamster-svg-art">
               <circle cx="35" cy="31" r="12" fill="#f5b062" stroke="#5c3a21" stroke-width="3"/>
@@ -44,6 +45,7 @@
           </div>
           <p class="opening-sub">毎日楽しく 脳トレとお薬管理！</p>
           <button class="start-app-btn" id="start-app-btn" data-target="screen-home">はじめる</button>
+          <button class="sub-link-btn" id="open-patient-setup-btn">🔗 利用者登録・薬剤師連携</button>
         </div>
       </section>
 
@@ -140,7 +142,7 @@
             <div class="exp-bar-container">
               <div class="exp-bar-fill" id="exp-bar-fill"></div>
             </div>
-            <div class="exp-text" id="exp-status-text">あと <strong id="exp-needed">30</strong> でレベルアップ！</div>
+            <div class="exp-text" id="exp-status-text">あと <strong>30</strong> でレベルアップ！</div>
           </div>
 
           <div class="pet-character-container">
@@ -218,9 +220,6 @@
         </div>
 
         <div id="tab-content-talk" class="tab-content">
-          <div class="talk-repertoire-info">
-            💬 会話の引き出し：<strong id="talk-repertoire-count">段階1（基本）</strong>
-          </div>
           <div class="chat-container">
             <div class="chat-history" id="chat-history">
               <div class="chat-bubble pet-bubble" id="pet-dialog">
@@ -228,13 +227,11 @@
               </div>
             </div>
             <div class="chat-input-row">
-              <input type="text" id="talk-input" placeholder="なんでも話しかけてね...">
+              <input type="text" id="talk-input" placeholder="話しかけてね...">
               <button id="talk-send-btn">送信</button>
             </div>
           </div>
         </div>
-
-        <button class="reset-data-btn" id="reset-data-btn">最初から遊ぶ（リセット）</button>
       </section>
 
       <!-- 画面3: 計算 -->
@@ -300,6 +297,7 @@
 
         <div class="patient-info-header">
           <h3 id="patient-display-name">マノ コウタ 様</h3>
+          <span class="patient-id-sub" id="patient-display-id">ID: PT-1001</span>
         </div>
 
         <div class="med-layout">
@@ -317,6 +315,7 @@
         <div class="med-action-buttons">
           <button class="med-done-btn" id="mark-med-taken-btn">✅ 今日のお薬をのんだ！</button>
           <button class="alarm-test-btn" id="trigger-alarm-test-btn">⏰ お薬アラームのテスト</button>
+          <button class="pharma-link-btn" id="open-pharmacist-btn">👩‍⚕️ 薬剤師アプリ連携・利用者設定</button>
         </div>
       </section>
 
@@ -349,6 +348,73 @@
           <div id="selected-day-events" class="events-list">
             <p class="empty-msg">予定はありません</p>
           </div>
+        </div>
+      </section>
+
+      <!-- 画面6: 薬剤師アプリ連携 ＆ 利用者専用設定画面 -->
+      <section id="screen-pharmacist" class="screen">
+        <div class="screen-header">
+          <button class="back-btn" data-target="screen-med">← 戻る</button>
+          <h2>薬剤師連携</h2>
+        </div>
+
+        <div class="card">
+          <h4>① このスマホの利用者（患者本人）</h4>
+          <p class="helper-text">このスマホには選択中の利用者本人のペットとお薬だけが表示されます。</p>
+          <div class="form-group">
+            <label for="pharma-patient-select">登録済み利用者</label>
+            <select id="pharma-patient-select"></select>
+          </div>
+          <div class="inline-btn-row">
+            <button type="button" class="btn-secondary" id="pharma-new-patient-btn">＋ 新しい利用者を登録</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h4>② 処方薬・生活時間の編集（薬剤師入力）</h4>
+          <div class="form-group">
+            <label for="pharma-edit-name">お名前</label>
+            <input type="text" id="pharma-edit-name" placeholder="例: マノ コウタ">
+          </div>
+
+          <label class="sub-section-label">生活時間</label>
+          <div id="pharma-schedule-editor" class="editor-list"></div>
+          <div class="add-row-box">
+            <input type="text" id="new-sched-label" placeholder="項目(例:朝ごはん)">
+            <input type="text" id="new-sched-time" placeholder="時間(例:7:30)">
+            <button type="button" id="add-sched-item-btn" class="mini-add-btn">追加</button>
+          </div>
+
+          <label class="sub-section-label" style="margin-top:12px;">処方中のお薬</label>
+          <div id="pharma-meds-editor" class="editor-list"></div>
+          <div class="add-row-box">
+            <input type="text" id="new-med-name" placeholder="薬名(例:ロキソニン)">
+            <input type="text" id="new-med-inst" placeholder="飲み方(例:朝食後)">
+            <button type="button" id="add-med-item-btn" class="mini-add-btn">追加</button>
+          </div>
+
+          <button type="button" class="action-btn" id="pharma-save-patient-btn" style="margin-top:14px;">💾 この内容で保存＆連携コード発行</button>
+        </div>
+
+        <div class="card">
+          <h4>③ 他のスマホへ連携（患者スマホ用）</h4>
+          <p class="helper-text">薬剤師側で発行した連携コードを、患者さんのスマホに入力すると本人専用データとして反映されます。</p>
+          <div class="form-group">
+            <label for="pharma-export-code">発行された連携コード</label>
+            <textarea id="pharma-export-code" rows="2" readonly placeholder="保存ボタンを押すとコードが発行されます"></textarea>
+          </div>
+          <div class="inline-btn-row">
+            <button type="button" class="btn-secondary" id="copy-link-code-btn">📋 コードをコピー</button>
+            <button type="button" class="btn-secondary" id="copy-link-url-btn">🔗 連携URLをコピー</button>
+          </div>
+
+          <hr class="section-divider">
+
+          <div class="form-group">
+            <label for="patient-import-code">連携コードの読み込み（患者スマホ側）</label>
+            <input type="text" id="patient-import-code" placeholder="HAM-... または連携URLを貼り付け">
+          </div>
+          <button type="button" class="btn-import" id="apply-link-code-btn">📲 このスマホに連携データを反映する</button>
         </div>
       </section>
 
