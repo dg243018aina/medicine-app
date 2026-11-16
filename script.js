@@ -1,13 +1,11 @@
-// ====== Gemini API 設定 ======
-// ご自身のGemini APIキーを取得された場合は、下のダブルクォーテーション内に入力してください。
-const GEMINI_API_KEY = ""; 
+const GEMINI_API_KEY = "";
 
-// 初期データ
 const defaultData = {
   coins: 11,
   love: 0,
   exp: 0,
   level: 1,
+  medTakenDate: "", // 今日お薬を飲んだ日（YYYY-MM-DD）を記録
   currentPatientId: 1,
   patients: [
     {
@@ -26,22 +24,28 @@ const defaultData = {
       ]
     }
   ],
-  events: {} // カレンダー予定管理用データ構造を追加
+  events: {}
 };
+
+function getTodayStr() {
+  const today = new Date();
+  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+}
 
 function getData() {
   try {
     const saved = localStorage.getItem('brain_med_app_data');
-    if (!saved) return defaultData;
+    if (!saved) return JSON.parse(JSON.stringify(defaultData));
     const data = JSON.parse(saved);
     data.exp = data.exp || 0;
     data.level = data.level || 1;
     data.coins = data.coins ?? 11;
     data.love = data.love ?? 0;
+    data.medTakenDate = data.medTakenDate || "";
     data.events = data.events || {};
     return data;
   } catch (e) {
-    return defaultData;
+    return JSON.parse(JSON.stringify(defaultData));
   }
 }
 
@@ -60,7 +64,6 @@ let calcState = {
   earnedCoins: 0
 };
 
-// カレンダー管理用状態
 let calendarState = {
   currentDate: new Date(),
   selectedDateStr: null
@@ -71,9 +74,10 @@ document.addEventListener('DOMContentLoaded', () => {
   initPetSystem();
   initCalcSystem();
   initAlarmSystem();
-  initCalendarSystem(); // カレンダーの初期化関数を追加
+  initCalendarSystem();
   renderPatientData();
   updatePetDisplay();
+  updateHomeCalendarAndPet();
 });
 
 function initNavigation() {
@@ -81,7 +85,9 @@ function initNavigation() {
     btn.addEventListener('click', (e) => {
       const targetId = e.currentTarget.getAttribute('data-target');
       showScreen(targetId);
-      if (targetId === 'screen-med') {
+      if (targetId === 'screen-home') {
+        updateHomeCalendarAndPet();
+      } else if (targetId === 'screen-med') {
         appData = getData();
         renderPatientData();
       } else if (targetId === 'screen-calendar') {
@@ -97,7 +103,42 @@ function showScreen(screenId) {
   if (targetElem) targetElem.classList.add('active');
 }
 
-/* ペット育成 */
+/* ====================================================
+   ホーム画面：カレンダーイラスト日付＆ハムスターのコメント更新
+   ==================================================== */
+function updateHomeCalendarAndPet() {
+  const today = new Date();
+  const monthEl = document.getElementById('home-cal-month');
+  const dayEl = document.getElementById('home-cal-day');
+  if (monthEl) monthEl.textContent = `${today.getMonth() + 1}月`;
+  if (dayEl) dayEl.textContent = today.getDate();
+
+  const speechEl = document.getElementById('home-pet-speech');
+  if (!speechEl) return;
+
+  const todayStr = getTodayStr();
+  const todayEvents = appData.events[todayStr] || [];
+  const isMedTakenToday = (appData.medTakenDate === todayStr);
+
+  const eventNames = todayEvents.map(ev => ev.title).join('・');
+  let message = "";
+
+  if (todayEvents.length > 0 && !isMedTakenToday) {
+    message = `今日の予定は「${eventNames}」があるよ！それと、まだ今日のお薬を飲んでいないよチュ！`;
+  } else if (todayEvents.length > 0 && isMedTakenToday) {
+    message = `今日の予定は「${eventNames}」があるよチュ！お薬も飲んでえらいのだ！`;
+  } else if (todayEvents.length === 0 && !isMedTakenToday) {
+    message = `まだ今日のお薬を飲んでいないよチュ！忘れずに飲もうね！`;
+  } else {
+    message = `今日のお薬はバッチリ飲んだね！予定はないからゆっくり過ごそうチュ！`;
+  }
+
+  speechEl.textContent = message;
+}
+
+/* ====================================================
+   ペット育成 ＆ おしゃべり
+   ==================================================== */
 function initPetSystem() {
   const tabGohan = document.getElementById('tab-btn-gohan');
   const tabTalk = document.getElementById('tab-btn-talk');
@@ -116,7 +157,6 @@ function initPetSystem() {
     });
   }
 
-  // ごはんをあげる
   document.querySelectorAll('.food-card').forEach(card => {
     card.addEventListener('click', () => {
       const cost = parseInt(card.getAttribute('data-cost'));
@@ -146,15 +186,14 @@ function initPetSystem() {
     });
   });
 
-  // おしゃべり機能（Gemini AI & 高度なローカル対話）
   const input = document.getElementById('talk-input');
   const sendBtn = document.getElementById('talk-send-btn');
-  
+
   if (sendBtn && input) {
     const sendMessage = async () => {
       const text = input.value.trim();
       if (!text) return;
-      
+
       appendChatBubble(text, 'user');
       input.value = '';
 
@@ -167,15 +206,15 @@ function initPetSystem() {
     input.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
   }
 
-  // リセット
   const resetBtn = document.getElementById('reset-data-btn');
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
       if (confirm('最初からやり直しますか？')) {
         localStorage.removeItem('brain_med_app_data');
-        appData = defaultData;
+        appData = JSON.parse(JSON.stringify(defaultData));
         saveData(appData);
         updatePetDisplay();
+        updateHomeCalendarAndPet();
         renderCalendar();
         alert('リセットしました。');
       }
@@ -183,7 +222,6 @@ function initPetSystem() {
   }
 }
 
-// Gemini API / 多彩な会話エンジン呼び出し
 async function fetchAIReply(userText) {
   if (GEMINI_API_KEY) {
     try {
@@ -206,29 +244,19 @@ async function fetchAIReply(userText) {
       console.error(e);
     }
   }
-
-  // APIキーが無い場合でも多様なおしゃべりができる高度なロジック
   return generateRichLocalAIResponse(userText);
 }
 
 function generateRichLocalAIResponse(text) {
   const love = appData.love || 0;
-
   if (love < 20) {
     return "まだちょっと緊張してるチュ... ごはんをくれるともっと仲良くなれる気がするのだ！";
   }
-
   if (text.includes("天気") || text.includes("雨") || text.includes("晴れ") || text.includes("暑い") || text.includes("寒い")) {
     return "今日もお外の空気をすうと気持ちいいチュ！無理せず快適にお過ごしくださいね！";
   }
   if (text.includes("ご飯") || text.includes("ごはん") || text.includes("食べ") || text.includes("腹")) {
     return "美味しいものを食べると元気が湧いてくるチュ！お腹いっぱい食べてね！";
-  }
-  if (text.includes("散歩") || text.includes("歩") || text.includes("運動")) {
-    return "少し体を動かすと気分がすっきりするチュ！転ばないように気をつけてね！";
-  }
-  if (text.includes("元気") || text.includes("調子")) {
-    return "とっても元気チュ！いつも話しかけてくれて本当にありがとうなのだ！";
   }
   if (text.includes("くすり") || text.includes("薬") || text.includes("時間")) {
     return "お薬をしっかり飲んで素晴らしいチュ！健康が一番大切なのだ！";
@@ -239,18 +267,13 @@ function generateRichLocalAIResponse(text) {
   if (text.includes("つかれた") || text.includes("しんどい") || text.includes("痛い")) {
     return "大丈夫チュ？無理は厳禁だよ。温かい飲み物を飲んでゆっくり休みましょうね。";
   }
-  if (text.includes("名") || text.includes("誰") || text.includes("なまえ")) {
-    return "僕はあなたの健康を応援するハムスターチュ！ずっと一緒だよ！";
-  }
 
   const randomReplies = [
     `「${text}」って教えてくれてありがとうチュ！とっても興味深い話なのだ！`,
     `お話できてすごく楽しいチュ！次は何をしようか？`,
     `脳トレの計算テストも頑張って、ごほうびコインをあつめようチュ！`,
-    `いつも優しく話しかけてくれて、心があたたかくなるチュ！`,
-    `何か困ったことがあったら、看護師さんにも相談してね！`
+    `いつも優しく話しかけてくれて、心があたたかくなるチュ！`
   ];
-
   return randomReplies[Math.floor(Math.random() * randomReplies.length)];
 }
 
@@ -260,10 +283,11 @@ function updatePetDisplay() {
   const levelElem = document.getElementById('pet-level');
   const stageElem = document.getElementById('pet-stage-name');
   const petBody = document.getElementById('pet-character-body');
+  const homePetBody = document.getElementById('home-pet-body');
 
   if (coinElem) coinElem.textContent = appData.coins || 0;
   if (loveElem) loveElem.textContent = appData.love || 0;
-  
+
   const level = appData.level || 1;
   if (levelElem) levelElem.textContent = level;
 
@@ -283,6 +307,9 @@ function updatePetDisplay() {
   if (petBody) {
     petBody.className = `pet-character-svg stage-${stageIndex + 1}`;
   }
+  if (homePetBody) {
+    homePetBody.className = `home-pet-avatar stage-${stageIndex + 1}`;
+  }
 }
 
 function appendChatBubble(text, sender) {
@@ -296,7 +323,9 @@ function appendChatBubble(text, sender) {
   return bubble;
 }
 
-/* 計算ゲーム */
+/* ====================================================
+   計算ゲーム
+   ==================================================== */
 function initCalcSystem() {
   const menu = document.getElementById('calc-menu');
   const game = document.getElementById('calc-game');
@@ -345,7 +374,7 @@ function initCalcSystem() {
       const val = e.target.textContent;
       if (val === '消す') { if (userAns) userAns.textContent = ''; }
       else if (val === '確定') submitAnswer();
-      else if (userAns && userAns.textContent.length < 4) userAns.textContent += val;
+      else if (userAns && userAns.textContent.length < 5) userAns.textContent += val;
     });
   });
 }
@@ -362,16 +391,17 @@ function generateQuestion() {
   if (calcState.selectedOp === '/') { ans = a; a = a * b; }
 
   calcState.currentQuestion = { a, b, ans, op: calcState.selectedOp };
-  
+  const opSymbol = calcState.selectedOp === '*' ? '×' : (calcState.selectedOp === '/' ? '÷' : calcState.selectedOp);
+
   document.getElementById('calc-progress-text').textContent = `第 ${calcState.questionIndex + 1} / 10 問`;
-  document.getElementById('question-text').textContent = `${a} ${calcState.selectedOp} ${b} = ?`;
+  document.getElementById('question-text').textContent = `${a} ${opSymbol} ${b} = ?`;
   document.getElementById('user-answer').textContent = '';
 }
 
 function submitAnswer() {
   const uAns = document.getElementById('user-answer');
   if (!uAns || uAns.textContent === '') return;
-  
+
   const userVal = parseInt(uAns.textContent);
   if (userVal === calcState.currentQuestion.ans) {
     calcState.correctCount++;
@@ -379,7 +409,6 @@ function submitAnswer() {
   }
 
   calcState.questionIndex++;
-
   if (calcState.questionIndex < 10) {
     generateQuestion();
   } else {
@@ -402,24 +431,26 @@ function showCalcResult() {
   result.classList.remove('hidden');
 }
 
-/* 服薬・生活データ */
+/* ====================================================
+   服薬・生活データ ＆ アラーム
+   ==================================================== */
 function renderPatientData() {
   const patient = appData.patients.find(p => p.id === appData.currentPatientId);
   if (!patient) return;
 
   const nameElem = document.getElementById('patient-display-name');
   if (nameElem) nameElem.textContent = `${patient.name} 様`;
-  
+
   const schedList = document.getElementById('schedule-list');
   if (schedList) {
-    schedList.innerHTML = patient.schedule.map(s => 
+    schedList.innerHTML = patient.schedule.map(s =>
       `<li><span>${s.label}</span> <strong>${s.time}</strong></li>`
     ).join('');
   }
 
   const medList = document.getElementById('medicine-list');
   if (medList) {
-    medList.innerHTML = patient.meds.map(m => 
+    medList.innerHTML = patient.meds.map(m =>
       `<div class="med-item">
         <div class="med-name">${m.name}</div>
         <div class="med-instruction">${m.instruction}</div>
@@ -428,19 +459,38 @@ function renderPatientData() {
   }
 }
 
+function recordMedTaken() {
+  appData.medTakenDate = getTodayStr();
+  saveData(appData);
+  updateHomeCalendarAndPet();
+  alert('今日のお薬をのんだ記録を保存しました！えらいですね！');
+}
+
 function initAlarmSystem() {
   const modal = document.getElementById('alarm-modal');
   const triggerBtn = document.getElementById('trigger-alarm-test-btn');
+  const doneBtn = document.getElementById('mark-med-taken-btn');
   const yesBtn = document.getElementById('alarm-btn-yes');
   const noBtn = document.getElementById('alarm-btn-no');
 
+  if (doneBtn) doneBtn.addEventListener('click', recordMedTaken);
   if (triggerBtn) triggerBtn.addEventListener('click', () => modal.classList.remove('hidden'));
-  if (yesBtn) yesBtn.addEventListener('click', () => { modal.classList.add('hidden'); alert('のんだ記録を保存しました。'); });
-  if (noBtn) noBtn.addEventListener('click', () => { modal.classList.add('hidden'); alert('再通知に設定しました。'); });
+  if (yesBtn) {
+    yesBtn.addEventListener('click', () => {
+      modal.classList.add('hidden');
+      recordMedTaken();
+    });
+  }
+  if (noBtn) {
+    noBtn.addEventListener('click', () => {
+      modal.classList.add('hidden');
+      alert('再通知に設定しました。忘れずに飲みましょうね。');
+    });
+  }
 }
 
 /* ====================================================
-   新規追加：カレンダー機能（描画・日付選択・予定登録・削除）
+   カレンダー機能
    ==================================================== */
 function initCalendarSystem() {
   const prevBtn = document.getElementById('prev-month-btn');
@@ -499,6 +549,7 @@ function initCalendarSystem() {
       appData.events[dateStr].push({ title, time, category });
 
       saveData(appData);
+      updateHomeCalendarAndPet();
 
       titleInput.value = '';
       if (timeInput) timeInput.value = '';
@@ -524,16 +575,13 @@ function renderCalendar() {
   const firstDay = new Date(year, month, 1).getDay();
   const lastDate = new Date(year, month + 1, 0).getDate();
 
-  // 前月の埋めスペース
   for (let i = 0; i < firstDay; i++) {
     const cell = document.createElement('div');
     cell.className = 'day-cell other-month';
     daysGrid.appendChild(cell);
   }
 
-  // 当月の日付描画
-  const today = new Date();
-  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const todayStr = getTodayStr();
 
   for (let date = 1; date <= lastDate; date++) {
     const cell = document.createElement('div');
@@ -545,7 +593,6 @@ function renderCalendar() {
     if (dateStr === todayStr) cell.classList.add('today');
     if (dateStr === calendarState.selectedDateStr) cell.classList.add('selected');
 
-    // 予定ドットの表示
     if (appData.events[dateStr] && appData.events[dateStr].length > 0) {
       const dot = document.createElement('div');
       dot.className = 'event-dot';
@@ -573,7 +620,7 @@ function renderEvents() {
   const dayEvents = appData.events[dateStr] || [];
 
   if (dayEvents.length === 0) {
-    eventsList.innerHTML = '<p class="empty-msg" style="font-size:12px;color:#888;">予定はありません</p>';
+    eventsList.innerHTML = '<p class="empty-msg">予定はありません</p>';
     return;
   }
 
@@ -588,13 +635,13 @@ function renderEvents() {
   });
 }
 
-// 予定削除用関数（グローバル領域に登録）
 window.deleteEvent = function(dateStr, index) {
   if (!appData.events[dateStr]) return;
   appData.events[dateStr].splice(index, 1);
   if (appData.events[dateStr].length === 0) delete appData.events[dateStr];
-  
+
   saveData(appData);
+  updateHomeCalendarAndPet();
   renderCalendar();
   renderEvents();
 };
