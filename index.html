@@ -7,234 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700;900&display=swap" rel="stylesheet">
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Zen Maru Gothic', sans-serif;
-    }
-    body {
-      background-color: #f0f2f5;
-      display: flex;
-      justify-content: center;
-      padding: 20px 0;
-    }
-    .phone-frame {
-      width: 375px;
-      height: 700px;
-      background: #fff;
-      border-radius: 30px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      border: 8px solid #333;
-      position: relative;
-    }
-    .app-header {
-      background: #ff9f43;
-      color: white;
-      padding: 15px;
-      text-align: center;
-      font-weight: 700;
-    }
-    .app-content {
-      flex: 1;
-      overflow-y: auto;
-      position: relative;
-    }
-    .screen {
-      display: none;
-      padding: 15px;
-      height: 100%;
-      box-sizing: border-box;
-    }
-    .screen.active {
-      display: block;
-    }
-    .hidden {
-      display: none !important;
-    }
-    .screen-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 15px;
-    }
-    .back-btn {
-      background: #eee;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 15px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    /* オープニング画面 */
-    .opening-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      text-align: center;
-    }
-    .opening-title h1 {
-      font-size: 28px;
-      color: #2d3436;
-      margin-bottom: 15px;
-    }
-    .opening-title span { color: #ff7675; }
-    .pet-svg-opening { width: 120px; height: 120px; margin-bottom: 15px; }
-    .opening-sub { font-size: 14px; color: #636e72; margin-bottom: 25px; }
-    .start-app-btn {
-      padding: 12px 40px;
-      background: #ff7675;
-      color: white;
-      border: none;
-      border-radius: 25px;
-      font-size: 18px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    /* ホーム画面 */
-    .calendar-card {
-      background: #e3fafc;
-      padding: 15px;
-      border-radius: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-      cursor: pointer;
-    }
-    .home-nav {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    .nav-btn {
-      padding: 15px;
-      border: none;
-      border-radius: 15px;
-      font-size: 16px;
-      font-weight: bold;
-      color: white;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
-    }
-    .nav-icon { font-size: 24px; }
-    .btn-pet { background: #ff7675; }
-    .btn-calc { background: #55efc4; color: #2d3436; }
-    .btn-med { background: #74b9ff; }
-    .btn-calendar { background: #a29bfe; }
-
-    /* ペットUI */
-    .pet-display {
-      background: #fff5f5;
-      padding: 15px;
-      border-radius: 15px;
-      text-align: center;
-      margin-bottom: 15px;
-    }
-    .pet-level-badge { font-weight: bold; margin-bottom: 8px; }
-    .exp-bar-area { margin-bottom: 12px; }
-    .exp-bar-container {
-      width: 100%;
-      height: 10px;
-      background: #ddd;
-      border-radius: 5px;
-      overflow: hidden;
-      margin-bottom: 4px;
-    }
-    .exp-bar-fill { width: 0%; height: 100%; background: #ff7675; transition: width 0.3s; }
-    .exp-text { font-size: 12px; color: #666; }
-    .pet-character-container { display: flex; justify-content: center; margin: 10px 0; }
-    .pet-svg-main { width: 100px; height: 100px; }
-    .pet-status { display: flex; justify-content: space-around; font-size: 14px; font-weight: bold; }
-    .tab-controls { display: flex; gap: 10px; margin-bottom: 10px; }
-    .tab-btn {
-      flex: 1; padding: 8px; border: 1px solid #ccc; background: #fff; border-radius: 8px; cursor: pointer;
-    }
-    .tab-btn.active { background: #ff7675; color: white; border-color: #ff7675; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    .food-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .food-card {
-      background: #f8f9fa; border: 1px solid #eee; border-radius: 10px; padding: 10px; text-align: center; cursor: pointer;
-    }
-    .food-img { font-size: 24px; }
-    .food-info { font-size: 12px; display: flex; flex-direction: column; }
-    .food-cost { color: #e67e22; font-weight: bold; }
-    .chat-container { background: #f8f9fa; border-radius: 10px; padding: 10px; }
-    .chat-history { height: 120px; overflow-y: auto; margin-bottom: 10px; }
-    .chat-bubble { background: #e3fafc; padding: 8px 12px; border-radius: 12px; font-size: 13px; margin-bottom: 6px; }
-    .chat-bubble.user-bubble { background: #dfe6e9; text-align: right; }
-    .chat-input-row { display: flex; gap: 5px; }
-    .chat-input-row input { flex: 1; padding: 6px; border: 1px solid #ccc; border-radius: 6px; }
-    .chat-input-row button { padding: 6px 12px; background: #74b9ff; color: white; border: none; border-radius: 6px; cursor: pointer; }
-    .reset-data-btn { width: 100%; margin-top: 15px; padding: 8px; background: #fab1a0; border: none; border-radius: 8px; color: #d63031; font-size: 12px; cursor: pointer; }
-
-    /* 計算UI */
-    .calc-op-list, .calc-diff-list { display: flex; gap: 8px; margin-bottom: 12px; }
-    .menu-btn { flex: 1; padding: 8px; border: 1px solid #ccc; background: #fff; border-radius: 8px; cursor: pointer; }
-    .menu-btn.active { background: #55efc4; border-color: #00b894; font-weight: bold; }
-    .action-btn { width: 100%; padding: 12px; background: #00b894; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; }
-    .calc-progress-badge { text-align: center; font-weight: bold; margin-bottom: 10px; }
-    .question-box { font-size: 28px; text-align: center; margin-bottom: 10px; font-weight: bold; }
-    .answer-box { height: 40px; border: 2px solid #55efc4; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; margin-bottom: 15px; }
-    .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
-    .num-btn { padding: 12px; font-size: 18px; border: 1px solid #ccc; background: #fff; border-radius: 8px; cursor: pointer; }
-    .num-btn.submit-btn { background: #55efc4; font-weight: bold; }
-    .num-btn.clear-btn { background: #ffeaa7; }
-    .result-card { text-align: center; background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-    .result-icon { font-size: 40px; }
-    .result-score { font-size: 18px; margin: 10px 0; }
-    .result-coin-box { margin-bottom: 15px; font-weight: bold; color: #e67e22; }
-
-    /* くすりUI */
-    .patient-info-header { background: #e3fafc; padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: center; }
-    .card { background: #f8f9fa; padding: 12px; border-radius: 10px; margin-bottom: 12px; }
-    .alarm-test-btn { width: 100%; padding: 10px; background: #74b9ff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-
-    /* カレンダーUI */
-    .calendar-month-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .month-nav-btn { background: #f0f0f0; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-    .calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
-    .calendar-weekdays .sun { color: #ff6b6b; }
-    .calendar-weekdays .sat { color: #4d96ff; }
-    .calendar-days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 15px; }
-    .day-cell {
-      aspect-ratio: 1; border: 1px solid #eee; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 4px; cursor: pointer; font-size: 13px; position: relative; background: #fff;
-    }
-    .day-cell.other-month { opacity: 0.3; }
-    .day-cell.selected { border: 2px solid #a29bfe; background: #f3f0ff; }
-    .day-cell.today { font-weight: bold; color: #ff7675; }
-    .event-dot { width: 6px; height: 6px; background: #ff7675; border-radius: 50%; margin-top: 2px; }
-    .selected-day-schedule { background: #f8f9fa; padding: 12px; border-radius: 12px; }
-    .schedule-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .action-btn.small-btn { padding: 5px 10px; font-size: 12px; background: #a29bfe; color: white; border: none; border-radius: 8px; cursor: pointer; width: auto; }
-    .event-item { background: white; padding: 8px 12px; border-radius: 6px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; border-left: 4px solid #a29bfe; }
-    .delete-event-btn { background: none; border: none; color: #ff6b6b; cursor: pointer; font-weight: bold; }
-
-    /* モーダル */
-    .modal-overlay {
-      position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100;
-    }
-    .modal-content, .alarm-content { background: white; width: 80%; padding: 20px; border-radius: 15px; text-align: center; }
-    .form-group { margin-bottom: 12px; text-align: left; }
-    .form-group label { display: block; font-size: 12px; margin-bottom: 4px; }
-    .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; }
-    .modal-btn-group, .alarm-btn-group { display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px; }
-    .btn-cancel, .btn-not-taken { background: #ccc; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; }
-    .btn-submit, .btn-taken { background: #a29bfe; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; }
-    .btn-taken { background: #55efc4; color: #2d3436; }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -269,36 +42,70 @@
       <!-- 画面1: メインホーム画面 -->
       <section id="screen-home" class="screen">
         <div class="home-container">
-          <!-- カレンダーとペットの表示カード（クリックでカレンダーへ移行） -->
-          <div class="calendar-card" data-target="screen-calendar">
-            <div class="calendar-icon">
-              📅 カレンダーを開く
+          <!-- 上部：大きなカレンダーイラスト（タップでカレンダーへ）＋右下に育成ハムスター -->
+          <div class="calendar-hero-card" data-target="screen-calendar">
+            <div class="calendar-hero-top">
+              <div class="big-calendar-illust">
+                <div class="cal-illust-top">
+                  <span class="cal-ring"></span>
+                  <span class="cal-month-label" id="home-cal-month">11月</span>
+                  <span class="cal-ring"></span>
+                </div>
+                <div class="cal-illust-body">
+                  <div class="cal-big-day" id="home-cal-day">16</div>
+                  <div class="cal-mini-dots">
+                    <span class="dot-o"></span><span class="dot-y"></span><span class="dot-g"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="calendar-tap-hint">
+                <span class="hint-badge">👆 タップで開く</span>
+                <h3>カレンダー</h3>
+                <p>予定の確認・追加</p>
+              </div>
             </div>
-            <div class="pet-avatar-mini">
-              <svg viewBox="0 0 100 100" class="pet-svg-icon" style="width:30px;height:30px;">
-                <circle cx="50" cy="55" r="35" fill="#f3a683"/>
-                <circle cx="38" cy="48" r="4" fill="#2d3436"/>
-                <circle cx="62" cy="48" r="4" fill="#2d3436"/>
-              </svg>
+
+            <!-- カレンダーの右下に表示される育成中のハムスターとコメント -->
+            <div class="home-pet-corner">
+              <div class="home-speech-bubble" id="home-pet-speech">
+                今日もお薬と脳トレがんばろうチュ！
+              </div>
+              <div class="home-pet-avatar stage-1" id="home-pet-body">
+                <svg viewBox="0 0 120 120" class="pet-svg-main">
+                  <circle cx="35" cy="30" r="14" fill="#f3a683"/>
+                  <circle cx="35" cy="30" r="8" fill="#f8a5c2"/>
+                  <circle cx="85" cy="30" r="14" fill="#f3a683"/>
+                  <circle cx="85" cy="30" r="8" fill="#f8a5c2"/>
+                  <ellipse cx="60" cy="65" rx="42" ry="40" fill="#f3a683"/>
+                  <ellipse cx="60" cy="70" rx="33" ry="32" fill="#fff5f5"/>
+                  <circle cx="45" cy="55" r="5" fill="#2d3436"/>
+                  <circle cx="43" cy="53" r="1.5" fill="#ffffff"/>
+                  <circle cx="75" cy="55" r="5" fill="#2d3436"/>
+                  <circle cx="73" cy="53" r="1.5" fill="#ffffff"/>
+                  <circle cx="36" cy="63" r="6" fill="#f8a5c2" opacity="0.6"/>
+                  <circle cx="84" cy="63" r="6" fill="#f8a5c2" opacity="0.6"/>
+                  <polygon points="60,61 56,66 64,66" fill="#e77f67"/>
+                  <path d="M 54 70 Q 60 74 66 70" stroke="#2d3436" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                  <ellipse cx="46" cy="76" rx="6" ry="8" fill="#f8d7da"/>
+                  <ellipse cx="74" cy="76" rx="6" ry="8" fill="#f8d7da"/>
+                </svg>
+              </div>
             </div>
           </div>
 
+          <!-- 下部：ペット・薬・計算の3つの大きなボタン -->
           <nav class="home-nav">
             <button class="nav-btn btn-pet" data-target="screen-pet">
               <span class="nav-icon">🐹</span>
               <span class="nav-text">ペット</span>
             </button>
-            <button class="nav-btn btn-calc" data-target="screen-calc">
-              <span class="nav-icon">✏️</span>
-              <span class="nav-text">計算</span>
-            </button>
             <button class="nav-btn btn-med" data-target="screen-med">
               <span class="nav-icon">💊</span>
               <span class="nav-text">くすり</span>
             </button>
-            <button class="nav-btn btn-calendar" data-target="screen-calendar">
-              <span class="nav-icon">📅</span>
-              <span class="nav-text">カレンダー</span>
+            <button class="nav-btn btn-calc" data-target="screen-calc">
+              <span class="nav-icon">✏️</span>
+              <span class="nav-text">計算</span>
             </button>
           </nav>
         </div>
@@ -439,7 +246,7 @@
             <button class="num-btn">7</button><button class="num-btn">8</button><button class="num-btn">9</button>
             <button class="num-btn clear-btn">消す</button><button class="num-btn">0</button><button class="num-btn submit-btn">確定</button>
           </div>
-          <button class="back-btn small-btn" id="calc-quit-btn">やめる</button>
+          <button class="back-btn" id="calc-quit-btn">やめる</button>
         </div>
 
         <div id="calc-result" class="hidden">
@@ -470,26 +277,22 @@
         <div class="med-layout">
           <div class="card schedule-card">
             <h4>生活時間</h4>
-            <ul id="schedule-list">
-              <li>08:00 朝食・食後薬</li>
-              <li>12:30 昼食・食後薬</li>
-              <li>18:30 夕食・食後薬</li>
-            </ul>
+            <ul id="schedule-list"></ul>
           </div>
 
           <div class="card meds-card">
             <h4>処方中のお薬</h4>
-            <div id="medicine-list">
-              <p>💊 降圧剤 (朝)</p>
-              <p>💊 胃腸薬 (朝・夕)</p>
-            </div>
+            <div id="medicine-list"></div>
           </div>
         </div>
 
-        <button class="alarm-test-btn" id="trigger-alarm-test-btn">⏰ お薬アラームのテスト</button>
+        <div class="med-action-buttons">
+          <button class="med-done-btn" id="mark-med-taken-btn">✅ 今日のお薬をのんだ！</button>
+          <button class="alarm-test-btn" id="trigger-alarm-test-btn">⏰ お薬アラームのテスト</button>
+        </div>
       </section>
 
-      <!-- 画面5: カレンダー画面（新規追加） -->
+      <!-- 画面5: カレンダー画面 -->
       <section id="screen-calendar" class="screen">
         <div class="screen-header">
           <button class="back-btn" data-target="screen-home">← 戻る</button>
@@ -498,9 +301,9 @@
 
         <div class="calendar-view-container">
           <div class="calendar-month-nav">
-            <button id="prev-month-btn" class="month-nav-btn">&lt; 前月</button>
+            <button id="prev-month-btn" class="month-nav-btn">< 前月</button>
             <h3 id="calendar-month-title"></h3>
-            <button id="next-month-btn" class="month-nav-btn">次月 &gt;</button>
+            <button id="next-month-btn" class="month-nav-btn">次月 ></button>
           </div>
 
           <div class="calendar-weekdays">
@@ -516,7 +319,7 @@
             <button id="open-add-event-btn" class="action-btn small-btn">+ 予定を追加</button>
           </div>
           <div id="selected-day-events" class="events-list">
-            <p class="empty-msg" style="font-size:12px;color:#888;">予定はありません</p>
+            <p class="empty-msg">予定はありません</p>
           </div>
         </div>
       </section>
@@ -527,7 +330,7 @@
   <!-- 服薬アラーム モーダル -->
   <div class="modal-overlay hidden" id="alarm-modal">
     <div class="alarm-content">
-      <div class="alarm-clock-icon" style="font-size:36px;">⏰</div>
+      <div class="alarm-clock-icon" style="font-size:48px;">⏰</div>
       <h3>お薬の時間です！</h3>
       <p id="alarm-medicine-info">処方薬の服薬時間です</p>
       <div class="alarm-btn-group">
@@ -566,231 +369,6 @@
     </div>
   </div>
 
-  <script>
-    // ----------------------------------------------------
-    // 画面切り替え & タブ切り替え
-    // ----------------------------------------------------
-    document.querySelectorAll('[data-target]').forEach(button => {
-      button.addEventListener('click', () => {
-        const targetId = button.getAttribute('data-target');
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(targetId).classList.add('active');
-      });
-    });
-
-    document.getElementById('tab-btn-gohan').addEventListener('click', () => {
-      document.getElementById('tab-btn-gohan').classList.add('active');
-      document.getElementById('tab-btn-talk').classList.remove('active');
-      document.getElementById('tab-content-gohan').classList.add('active');
-      document.getElementById('tab-content-talk').classList.remove('active');
-    });
-
-    document.getElementById('tab-btn-talk').addEventListener('click', () => {
-      document.getElementById('tab-btn-talk').classList.add('active');
-      document.getElementById('tab-btn-gohan').classList.remove('active');
-      document.getElementById('tab-content-talk').classList.add('active');
-      document.getElementById('tab-content-gohan').classList.remove('active');
-    });
-
-    // 服薬アラームテスト
-    const alarmModal = document.getElementById('alarm-modal');
-    document.getElementById('trigger-alarm-test-btn').addEventListener('click', () => {
-      alarmModal.classList.remove('hidden');
-    });
-    document.getElementById('alarm-btn-yes').addEventListener('click', () => {
-      alarmModal.classList.add('hidden');
-      alert('服薬を記録しました！');
-    });
-    document.getElementById('alarm-btn-no').addEventListener('click', () => {
-      alarmModal.classList.add('hidden');
-    });
-
-    // ----------------------------------------------------
-    // ペット育成＆AIチャットロジック
-    // ----------------------------------------------------
-    let coins = 11;
-    let exp = 0;
-    let love = 0;
-
-    document.querySelectorAll('.food-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const cost = parseInt(card.getAttribute('data-cost'));
-        const gainExp = parseInt(card.getAttribute('data-exp'));
-        const gainLove = parseInt(card.getAttribute('data-love'));
-
-        if (coins >= cost) {
-          coins -= cost;
-          exp += gainExp;
-          love = Math.min(100, love + gainLove);
-          document.getElementById('coin-count').textContent = coins;
-          document.getElementById('pet-love').textContent = love;
-          document.getElementById('exp-bar-fill').style.width = Math.min(100, (exp / 50) * 100) + '%';
-          alert(`${card.getAttribute('data-food')}をあげました！`);
-        } else {
-          alert('コインが足りません！');
-        }
-      });
-    });
-
-    document.getElementById('talk-send-btn').addEventListener('click', () => {
-      const input = document.getElementById('talk-input');
-      const text = input.value.trim();
-      if (!text) return;
-
-      const history = document.getElementById('chat-history');
-      const userMsg = document.createElement('div');
-      userMsg.className = 'chat-bubble user-bubble';
-      userMsg.textContent = text;
-      history.appendChild(userMsg);
-
-      input.value = '';
-
-      setTimeout(() => {
-        const petMsg = document.createElement('div');
-        petMsg.className = 'chat-bubble pet-bubble';
-        petMsg.textContent = 'きょうも元気にすごそうチュ！';
-        history.appendChild(petMsg);
-        history.scrollTop = history.scrollHeight;
-      }, 500);
-    });
-
-    // ----------------------------------------------------
-    // カレンダー＆予定追加・管理機能
-    // ----------------------------------------------------
-    let currentDate = new Date();
-    let selectedDateStr = null;
-    let events = JSON.parse(localStorage.getItem('calendar_events') || '{}');
-
-    const monthTitle = document.getElementById('calendar-month-title');
-    const daysGrid = document.getElementById('calendar-days-grid');
-    const selectedDateLabel = document.getElementById('selected-date-label');
-    const eventsList = document.getElementById('selected-day-events');
-    const eventModal = document.getElementById('event-modal');
-
-    function renderCalendar() {
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth();
-
-      monthTitle.textContent = `${year}年 ${month + 1}月`;
-      daysGrid.innerHTML = '';
-
-      const firstDay = new Date(year, month, 1).getDay();
-      const lastDate = new Date(year, month + 1, 0).getDate();
-
-      // 前月部分のパディングセル
-      for (let i = 0; i < firstDay; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'day-cell other-month';
-        daysGrid.appendChild(cell);
-      }
-
-      // 当月の日付枠の生成
-      const today = new Date();
-      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-      
-      for (let date = 1; date <= lastDate; date++) {
-        const cell = document.createElement('div');
-        cell.className = 'day-cell';
-        cell.textContent = date;
-
-        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
-        
-        if (dateStr === todayStr) cell.classList.add('today');
-        if (dateStr === selectedDateStr) cell.classList.add('selected');
-
-        // 予定が存在する場合、ドットを表示
-        if (events[dateStr] && events[dateStr].length > 0) {
-          const dot = document.createElement('div');
-          dot.className = 'event-dot';
-          cell.appendChild(dot);
-        }
-
-        cell.addEventListener('click', () => selectDate(dateStr));
-        daysGrid.appendChild(cell);
-      }
-    }
-
-    function selectDate(dateStr) {
-      selectedDateStr = dateStr;
-      selectedDateLabel.textContent = `${dateStr} の予定`;
-      renderCalendar();
-      renderEvents();
-    }
-
-    function renderEvents() {
-      eventsList.innerHTML = '';
-      const dayEvents = events[selectedDateStr] || [];
-
-      if (dayEvents.length === 0) {
-        eventsList.innerHTML = '<p class="empty-msg" style="font-size:12px;color:#888;">予定はありません</p>';
-        return;
-      }
-
-      dayEvents.forEach((ev, index) => {
-        const item = document.createElement('div');
-        item.className = 'event-item';
-        item.innerHTML = `
-          <span>${ev.category || ''} ${ev.time ? ev.time + ' ' : ''}${ev.title}</span>
-          <button class="delete-event-btn" onclick="deleteEvent('${selectedDateStr}', ${index})">✕</button>
-        `;
-        eventsList.appendChild(item);
-      });
-    }
-
-    window.deleteEvent = function(dateStr, index) {
-      events[dateStr].splice(index, 1);
-      if (events[dateStr].length === 0) delete events[dateStr];
-      localStorage.setItem('calendar_events', JSON.stringify(events));
-      renderCalendar();
-      renderEvents();
-    };
-
-    // 月切り替えボタン
-    document.getElementById('prev-month-btn').addEventListener('click', () => {
-      currentDate.setMonth(currentDate.getMonth() - 1);
-      renderCalendar();
-    });
-    document.getElementById('next-month-btn').addEventListener('click', () => {
-      currentDate.setMonth(currentDate.getMonth() + 1);
-      renderCalendar();
-    });
-
-    // 予定追加モーダルの表示・非表示
-    document.getElementById('open-add-event-btn').addEventListener('click', () => {
-      if (!selectedDateStr) {
-        alert('先にカレンダーから日付を選択してください。');
-        return;
-      }
-      eventModal.classList.remove('hidden');
-    });
-
-    document.getElementById('close-event-modal-btn').addEventListener('click', () => {
-      eventModal.classList.add('hidden');
-    });
-
-    // フォーム送信時の予定保存
-    document.getElementById('event-form').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const title = document.getElementById('event-title').value;
-      const time = document.getElementById('event-time').value;
-      const categorySelect = document.getElementById('event-category');
-      const category = categorySelect.options[categorySelect.selectedIndex].text.split(' ')[0];
-
-      if (!events[selectedDateStr]) events[selectedDateStr] = [];
-      events[selectedDateStr].push({ title, time, category });
-
-      localStorage.setItem('calendar_events', JSON.stringify(events));
-
-      document.getElementById('event-title').value = '';
-      document.getElementById('event-time').value = '';
-      eventModal.classList.add('hidden');
-
-      renderCalendar();
-      renderEvents();
-    });
-
-    // 初期生成
-    renderCalendar();
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
