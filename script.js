@@ -1,4 +1,4 @@
-const GEMINI_API_KEY = "";
+const GROQ_API_KEY = ""; // ← ここに取得したGroqのAPIキー（gsk_...）を貼り付けてください
 
 const defaultData = {
   coins: 11,
@@ -109,43 +109,35 @@ function showScreen(screenId) {
 }
 
 /* ====================================================
-   添付画像ベースの可愛いハムスターSVG生成（Lv5ごと変化・Lv100上限）
+   可愛いハムスターSVG生成（Lv5ごと変化・Lv100上限）
    ==================================================== */
 function createCuteHamsterSVG(level, mood) {
-  // Lv100以上は見た目もサイズも変化しない（Lv100でカンスト）
   const cappedLevel = Math.min(level || 1, 100);
-  // Lv5ごとに進化段階（0〜20の21段階）
   const evoTier = Math.floor(cappedLevel / 5);
 
-  // Lv5ごとのワンポイント装飾（Lv100でカンスト）
   let accessorySVG = '';
   if (evoTier >= 20) {
-    // Lv100以上：王冠＋キラキラオーラ
     accessorySVG = `
       <polygon points="44,24 50,11 60,18 70,11 76,24" fill="#ffd43b" stroke="#5c3a21" stroke-width="2.5" stroke-linejoin="round"/>
       <circle cx="50" cy="11" r="2.5" fill="#ff6b6b"/><circle cx="60" cy="18" r="2.5" fill="#339af0"/><circle cx="70" cy="11" r="2.5" fill="#51cf66"/>
       <text x="14" y="34" font-size="14">✨</text><text x="92" y="34" font-size="14">✨</text>
     `;
   } else if (evoTier >= 15) {
-    // Lv75〜99：金のティアラ
     accessorySVG = `
       <polygon points="46,24 52,13 60,19 68,13 74,24" fill="#fcc419" stroke="#5c3a21" stroke-width="2.5" stroke-linejoin="round"/>
       <circle cx="60" cy="19" r="2.5" fill="#ff6b6b"/>
     `;
   } else if (evoTier >= 12) {
-    // Lv60〜74：天使の羽
     accessorySVG = `
       <path d="M 22 68 Q 6 54 16 44 Q 26 52 26 64 Z" fill="#ffffff" stroke="#5c3a21" stroke-width="2.5"/>
       <path d="M 98 68 Q 114 54 104 44 Q 94 52 94 64 Z" fill="#ffffff" stroke="#5c3a21" stroke-width="2.5"/>
     `;
   } else if (evoTier >= 9) {
-    // Lv45〜59：赤いおしゃれマフラー
     accessorySVG = `
       <path d="M 33 78 Q 60 88 87 78 L 84 88 Q 60 97 36 88 Z" fill="#ff6b6b" stroke="#5c3a21" stroke-width="2.5"/>
       <rect x="68" y="83" width="11" height="18" rx="4" fill="#fa5252" stroke="#5c3a21" stroke-width="2.5"/>
     `;
   } else if (evoTier >= 6) {
-    // Lv30〜44：お花の髪飾り
     accessorySVG = `
       <circle cx="80" cy="24" r="5" fill="#ff8787" stroke="#5c3a21" stroke-width="2"/>
       <circle cx="88" cy="28" r="5" fill="#ff8787" stroke="#5c3a21" stroke-width="2"/>
@@ -154,113 +146,83 @@ function createCuteHamsterSVG(level, mood) {
       <circle cx="82" cy="29" r="4" fill="#ffe066"/>
     `;
   } else if (evoTier >= 3) {
-    // Lv15〜29：ピンクのリボン
     accessorySVG = `
       <polygon points="60,23 48,16 50,28" fill="#ff6b81" stroke="#5c3a21" stroke-width="2.5" stroke-linejoin="round"/>
       <polygon points="60,23 72,16 70,28" fill="#ff6b81" stroke="#5c3a21" stroke-width="2.5" stroke-linejoin="round"/>
       <circle cx="60" cy="23" r="4" fill="#ff4757" stroke="#5c3a21" stroke-width="2"/>
     `;
   } else if (evoTier >= 1) {
-    // Lv5〜14：頭のふたば🌱
     accessorySVG = `
       <path d="M 60 24 Q 60 15 68 12" stroke="#5c3a21" stroke-width="2.5" fill="none" stroke-linecap="round"/>
       <ellipse cx="72" cy="12" rx="7" ry="4" transform="rotate(-20 72 12)" fill="#51cf66" stroke="#5c3a21" stroke-width="2"/>
     `;
   }
 
-  // 表情パーツ（添付画像の表情バリエーションを反映）
   let faceAndHandsSVG = '';
 
   if (mood === 'eating') {
-    // ご飯をもらった時の喜びもぐもぐ表情（目を細めた笑顔＋ふっくらほっぺ＋ひまわりの種）
     faceAndHandsSVG = `
-      <!-- ほっぺのふくらみ線 -->
       <path d="M 27 57 Q 21 63 27 69" stroke="#5c3a21" stroke-width="2.5" fill="none" stroke-linecap="round"/>
       <path d="M 93 57 Q 99 63 93 69" stroke="#5c3a21" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-      <!-- 喜びの線 -->
       <line x1="15" y1="46" x2="21" y2="50" stroke="#f39c12" stroke-width="2.5" stroke-linecap="round"/>
       <line x1="105" y1="46" x2="99" y2="50" stroke="#f39c12" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- 細めた幸せ目 -->
       <path d="M 38 51 Q 44 45 50 51" stroke="#5c3a21" stroke-width="3" fill="none" stroke-linecap="round"/>
       <path d="M 70 51 Q 76 45 82 51" stroke="#5c3a21" stroke-width="3" fill="none" stroke-linecap="round"/>
-      <!-- ピンクのほっぺ -->
       <ellipse cx="34" cy="61" rx="7" ry="4.5" fill="#ff8fa3" opacity="0.75"/>
       <ellipse cx="86" cy="61" rx="7" ry="4.5" fill="#ff8fa3" opacity="0.75"/>
-      <!-- 鼻と口 -->
       <ellipse cx="60" cy="56" rx="3.5" ry="2.5" fill="#ff8787"/>
       <path d="M 53 61 Q 56.5 65 60 61 Q 63.5 65 67 61" stroke="#5c3a21" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-      <!-- ひまわりの種 -->
       <ellipse cx="60" cy="77" rx="9" ry="14" fill="#635852" stroke="#5c3a21" stroke-width="2.5"/>
       <path d="M 56 65 Q 54 77 56 89" stroke="#f1f3f5" stroke-width="2" fill="none"/>
       <path d="M 60 64 L 60 90" stroke="#f1f3f5" stroke-width="2"/>
       <path d="M 64 65 Q 66 77 64 89" stroke="#f1f3f5" stroke-width="2" fill="none"/>
-      <!-- 両手 -->
       <ellipse cx="49" cy="77" rx="6" ry="5" fill="#ffc9c9" stroke="#5c3a21" stroke-width="2.5"/>
       <ellipse cx="71" cy="77" rx="6" ry="5" fill="#ffc9c9" stroke="#5c3a21" stroke-width="2.5"/>
     `;
   } else if (mood === 'worried') {
-    // まだお薬を飲んでいない時の困り顔・心配顔
     faceAndHandsSVG = `
-      <!-- 困り眉 -->
       <line x1="38" y1="44" x2="48" y2="41" stroke="#5c3a21" stroke-width="2.5" stroke-linecap="round"/>
       <line x1="82" y1="44" x2="72" y2="41" stroke="#5c3a21" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- うるうる目 -->
       <circle cx="44" cy="52" r="5.5" fill="#3d2616"/>
       <circle cx="42.5" cy="50" r="2" fill="#ffffff"/>
       <circle cx="76" cy="52" r="5.5" fill="#3d2616"/>
       <circle cx="74.5" cy="50" r="2" fill="#ffffff"/>
-      <!-- 汗マーク -->
       <path d="M 96 42 Q 100 48 96 51 Q 92 48 96 42 Z" fill="#74c0fc"/>
-      <!-- ピンクのほっぺ -->
       <ellipse cx="34" cy="61" rx="6.5" ry="4" fill="#ff8fa3" opacity="0.65"/>
       <ellipse cx="86" cy="61" rx="6.5" ry="4" fill="#ff8fa3" opacity="0.65"/>
-      <!-- 鼻とむにゅ口 -->
       <ellipse cx="60" cy="57" rx="3.5" ry="2.5" fill="#ff8787"/>
       <path d="M 54 65 Q 60 61 66 65" stroke="#5c3a21" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-      <!-- ちょこんと揃えた手 -->
       <path d="M 46 73 Q 51 77 46 81" stroke="#5c3a21" stroke-width="2.5" fill="none" stroke-linecap="round"/>
       <path d="M 74 73 Q 69 77 74 81" stroke="#5c3a21" stroke-width="2.5" fill="none" stroke-linecap="round"/>
     `;
   } else if (mood === 'wink') {
-    // お薬を飲んだ時・褒める時の元気いっぱいウインク笑顔
     faceAndHandsSVG = `
-      <!-- 喜び線 -->
       <line x1="15" y1="45" x2="21" y2="49" stroke="#f39c12" stroke-width="2.5" stroke-linecap="round"/>
       <line x1="105" y1="45" x2="99" y2="49" stroke="#f39c12" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- ウインク目とキラキラ目 -->
       <path d="M 38 52 Q 44 47 50 52" stroke="#5c3a21" stroke-width="3" fill="none" stroke-linecap="round"/>
       <circle cx="76" cy="52" r="5.5" fill="#3d2616"/>
       <circle cx="74.5" cy="50" r="2" fill="#ffffff"/>
-      <!-- ピンクのほっぺ -->
       <ellipse cx="34" cy="61" rx="7" ry="4.5" fill="#ff8fa3" opacity="0.75"/>
       <ellipse cx="86" cy="61" rx="7" ry="4.5" fill="#ff8fa3" opacity="0.75"/>
-      <!-- 鼻と笑顔の口 -->
       <ellipse cx="60" cy="56" rx="3.5" ry="2.5" fill="#ff8787"/>
       <path d="M 53 60 Q 56.5 64 60 60 Q 63.5 64 67 60" stroke="#5c3a21" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-      <!-- 元気に上げた右手と左手 -->
       <path d="M 32 68 Q 26 54 36 52 Q 42 54 41 68" fill="#f5b062" stroke="#5c3a21" stroke-width="2.5" stroke-linecap="round"/>
       <path d="M 72 74 Q 67 78 72 82" stroke="#5c3a21" stroke-width="2.5" fill="none" stroke-linecap="round"/>
     `;
   } else {
-    // 通常時（添付1枚目ベース：くりくり黒目＋ひまわりの種を持ったニコニコ顔）
     faceAndHandsSVG = `
-      <!-- くりくり黒目とハイライト -->
       <circle cx="44" cy="51" r="5.8" fill="#3d2616"/>
       <circle cx="42" cy="49" r="2.2" fill="#ffffff"/>
       <circle cx="76" cy="51" r="5.8" fill="#3d2616"/>
       <circle cx="74" cy="49" r="2.2" fill="#ffffff"/>
-      <!-- ふっくらチーク -->
       <ellipse cx="34" cy="60" rx="7" ry="4.5" fill="#ff8fa3" opacity="0.7"/>
       <ellipse cx="86" cy="60" rx="7" ry="4.5" fill="#ff8fa3" opacity="0.7"/>
-      <!-- ピンクの鼻とにっこり口 -->
       <ellipse cx="60" cy="56" rx="3.5" ry="2.5" fill="#ff8787"/>
       <path d="M 53 60 Q 56.5 64 60 60 Q 63.5 64 67 60" stroke="#5c3a21" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-      <!-- ひまわりの種 -->
       <ellipse cx="60" cy="78" rx="8" ry="13" fill="#635852" stroke="#5c3a21" stroke-width="2.5"/>
       <path d="M 57 67 Q 55 78 57 89" stroke="#f1f3f5" stroke-width="1.8" fill="none"/>
       <path d="M 60 66 L 60 90" stroke="#f1f3f5" stroke-width="1.8"/>
       <path d="M 63 67 Q 65 78 63 89" stroke="#f1f3f5" stroke-width="1.8" fill="none"/>
-      <!-- 両手 -->
       <ellipse cx="50" cy="78" rx="5.5" ry="4.5" fill="#ffc9c9" stroke="#5c3a21" stroke-width="2.5"/>
       <ellipse cx="70" cy="78" rx="5.5" ry="4.5" fill="#ffc9c9" stroke="#5c3a21" stroke-width="2.5"/>
     `;
@@ -268,36 +230,24 @@ function createCuteHamsterSVG(level, mood) {
 
   return `
     <svg viewBox="0 0 120 120" class="hamster-svg-art">
-      <!-- 丸いお耳 -->
       <circle cx="35" cy="31" r="12" fill="#f5b062" stroke="#5c3a21" stroke-width="3"/>
       <circle cx="35" cy="32" r="6.5" fill="#ffb8c6"/>
       <circle cx="85" cy="31" r="12" fill="#f5b062" stroke="#5c3a21" stroke-width="3"/>
       <circle cx="85" cy="32" r="6.5" fill="#ffb8c6"/>
-      
-      <!-- 頭の上のふわふわ毛 -->
       <path d="M 55 24 L 58 19 L 60 23 L 63 19 L 65 24" stroke="#5c3a21" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-
-      <!-- ぷっくりした体とほっぺの輪郭 -->
       <path d="M 32 45 C 32 27, 88 27, 88 45 C 97 53, 98 66, 91 74 C 95 88, 86 102, 60 102 C 34 102, 25 88, 29 74 C 22 66, 23 53, 32 45 Z" fill="#f5b062" stroke="#5c3a21" stroke-width="3"/>
-
-      <!-- クリーム色のお腹と口元 -->
       <path d="M 43 56 C 43 49, 77 49, 77 56 C 84 63, 86 98, 60 98 C 34 98, 36 63, 43 56 Z" fill="#fff9eb"/>
-
-      <!-- ピンクの小さな足 -->
       <ellipse cx="44" cy="103" rx="8" ry="4.5" fill="#ffc9c9" stroke="#5c3a21" stroke-width="2.5"/>
       <ellipse cx="76" cy="103" rx="8" ry="4.5" fill="#ffc9c9" stroke="#5c3a21" stroke-width="2.5"/>
-
       ${faceAndHandsSVG}
       ${accessorySVG}
     </svg>
   `;
 }
 
-// Lv5ごとの成長サイズを計算（Lv100以上でストップし、画面いっぱいにならない）
 function getHamsterScale(level) {
   const cappedLevel = Math.min(level || 1, 100);
-  const evoTier = Math.floor(cappedLevel / 5); // 0〜20
-  // 0.84倍 〜 最大1.22倍（Lv100で上限）
+  const evoTier = Math.floor(cappedLevel / 5);
   return (0.84 + evoTier * 0.019).toFixed(3);
 }
 
@@ -345,7 +295,7 @@ function updateHomeCalendarAndPet() {
 }
 
 /* ====================================================
-   ペット育成 ＆ レベル連動おしゃべり
+   ペット育成 ＆ Groq API おしゃべり
    ==================================================== */
 function initPetSystem() {
   const tabGohan = document.getElementById('tab-btn-gohan');
@@ -378,10 +328,8 @@ function initPetSystem() {
         appData.exp = (appData.exp || 0) + expGain;
 
         const oldLevel = appData.level || 1;
-        // 30EXPごとに1レベルアップ（Lv5ごとの変化を実感しやすい設計）
         appData.level = Math.floor(appData.exp / 30) + 1;
 
-        // ご飯をもらった喜び表情に切り替え
         triggerTempPetMood('eating', 3500);
 
         saveData(appData);
@@ -451,36 +399,65 @@ function triggerTempPetMood(mood, durationMs) {
   }, durationMs);
 }
 
+// Groq API 呼び出し関数（フォールバック機能付き）
+async function callGroqModel(modelName, userText) {
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${GROQ_API_KEY.trim()}`
+    },
+    body: JSON.stringify({
+      model: modelName,
+      messages: [
+        {
+          role: 'system',
+          content: `あなたは高齢者の患者さんを心から癒す可愛い相棒ハムスター（現在Lv.${appData.level}）です。語尾に「チュ」「～のだ」をつけて、優しく丁寧な日本語（70文字以内）で返答してください。`
+        },
+        {
+          role: 'user',
+          content: userText
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 512
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Groq API Error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) {
+    throw new Error('Empty response from Groq');
+  }
+  return content.trim();
+}
+
 async function fetchAIReply(userText) {
-  if (GEMINI_API_KEY) {
+  if (GROQ_API_KEY && GROQ_API_KEY.trim() !== "") {
     try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: `あなたは高齢者の患者さんを心から癒す可愛い相棒ハムスター（現在Lv.${appData.level}）です。語尾に「チュ」「～のだ」をつけて、優しく丁寧な日本語（70文字以内）で返答してください。質問: ${userText}`
-            }]
-          }]
-        })
-      });
-      const data = await response.json();
-      if (data.candidates && data.candidates[0].content.parts[0].text) {
-        return data.candidates[0].content.parts[0].text.trim();
-      }
+      // 高品質モデルでリクエスト
+      return await callGroqModel('openai/gpt-oss-120b', userText);
     } catch (e) {
-      console.error(e);
+      console.warn('120bでの応答に失敗したため軽量モデルへ切り替えます:', e);
+      try {
+        // 軽量高速モデルへフォールバック
+        return await callGroqModel('openai/gpt-oss-20b', userText);
+      } catch (e2) {
+        console.error('Groq API通信エラー:', e2);
+      }
     }
   }
+  // APIキー未設定時・オフライン時は内蔵会話にフォールバック
   return generateLevelBasedReply(userText);
 }
 
-// レベルが上がるごとに会話のレパートリーが増えていく仕組み
 function generateLevelBasedReply(text) {
   const level = appData.level || 1;
 
-  // キーワード反応
   if (text.includes("天気") || text.includes("雨") || text.includes("晴れ") || text.includes("暑い") || text.includes("寒い")) {
     return "今日もお外の空気をすうと気持ちいいチュ！無理せず快適にお過ごしくださいね！";
   }
@@ -497,46 +474,36 @@ function generateLevelBasedReply(text) {
     return "大丈夫チュ？無理は厳禁だよ。温かい飲み物を飲んでゆっくり休みましょうね。";
   }
 
-  // レベル1〜4の基本会話
   const pool = [
     `「${text}」って教えてくれてありがとうチュ！とっても嬉しいのだ！`,
     "お話できて楽しいチュ！今日も一緒にのんびり過ごそうね！",
     "計算テストも無理のないペースで楽しんでねチュ！"
   ];
 
-  // Lv5以上で追加される会話レパートリー
   if (level >= 5) {
     pool.push(
       "少しずつ大きくなってきた気がするチュ！いつもごはんをありがとうなのだ！",
       "背伸びをすると体がポカポカして気持ちいいチュ！一緒に深呼吸しよう〜！"
     );
   }
-
-  // Lv15以上で追加される会話レパートリー
   if (level >= 15) {
     pool.push(
       "水分補給はこまめにすると体にいいらしいチュ！お茶でも飲んで一息つこうね！",
       "あなたが笑顔でいてくれると、僕もほっぺが落ちそうなくらい幸せチュ！"
     );
   }
-
-  // Lv30以上で追加される会話レパートリー
   if (level >= 30) {
     pool.push(
       "もうすっかり大親友だチュ！昔好きだった食べ物や思い出のお話も聞かせてほしいのだ！",
       "夜ぐっすり眠れるように、昼間は明るく楽しく過ごそうねチュ！"
     );
   }
-
-  // Lv50以上で追加される会話レパートリー
   if (level >= 50) {
     pool.push(
       "ここまで一緒に歩いてくれて本当に感謝しているチュ！ずっと一番の味方なのだ！",
       "今日の調子はどうチュ？楽しい予定があったらカレンダーに書いておこうね！"
     );
   }
-
-  // Lv100以上で追加される特別会話
   if (level >= 100) {
     pool.push(
       "最高レベルまで育ててくれてありがとうチュ！あなたは僕の世界一のパートナーなのだ！✨"
@@ -574,7 +541,6 @@ function updatePetDisplay() {
     if (expTextEl) expTextEl.innerHTML = `あと <strong>${neededExp}</strong> でレベルアップ！`;
   }
 
-  // Lv5ごとの呼び名
   let stageName = '赤ちゃんハム';
   if (level >= 100) stageName = '王様ハム（最大成長）';
   else if (level >= 75) stageName = 'ティアラハム';
@@ -586,7 +552,6 @@ function updatePetDisplay() {
 
   if (stageElem) stageElem.textContent = stageName;
 
-  // 表情の決定（一時的な喜び/ウインク ＞ 薬の服用状況 ＞ 通常）
   const isMedTakenToday = (appData.medTakenDate === getTodayStr());
   const currentMood = petTempMood || (isMedTakenToday ? 'wink' : 'normal');
 
@@ -599,14 +564,22 @@ function updatePetDisplay() {
     openingSlot.innerHTML = createCuteHamsterSVG(level, 'wink');
   }
 
-  // 会話レパートリー段階の表示
   if (repCountEl) {
-    if (level >= 100) repCountEl.textContent = '最大解放（すべての会話）';
-    else if (level >= 50) repCountEl.textContent = '段階5（大親友トーク解放中）';
-    else if (level >= 30) repCountEl.textContent = '段階4（思い出トーク解放中）';
-    else if (level >= 15) repCountEl.textContent = '段階3（健康アドバイス解放中）';
-    else if (level >= 5) repCountEl.textContent = '段階2（成長トーク解放中）';
-    else repCountEl.textContent = '段階1（Lv5で新しい会話が解放！）';
+    if (GROQ_API_KEY && GROQ_API_KEY.trim() !== "") {
+      repCountEl.textContent = 'AI会話モード（Groq接続中 ✨）';
+    } else if (level >= 100) {
+      repCountEl.textContent = '最大解放（すべての会話）';
+    } else if (level >= 50) {
+      repCountEl.textContent = '段階5（大親友トーク解放中）';
+    } else if (level >= 30) {
+      repCountEl.textContent = '段階4（思い出トーク解放中）';
+    } else if (level >= 15) {
+      repCountEl.textContent = '段階3（健康アドバイス解放中）';
+    } else if (level >= 5) {
+      repCountEl.textContent = '段階2（成長トーク解放中）';
+    } else {
+      repCountEl.textContent = '段階1（Lv5で新しい会話が解放！）';
+    }
   }
 }
 
@@ -622,7 +595,7 @@ function appendChatBubble(text, sender) {
 }
 
 /* ====================================================
-   計算ゲーム（難易度別コイン調整 ＆ 1問ごとの○×・答え表示）
+   計算ゲーム
    ==================================================== */
 function initCalcSystem() {
   const menu = document.getElementById('calc-menu');
@@ -674,7 +647,7 @@ function initCalcSystem() {
 
   document.querySelectorAll('.num-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
-      if (calcState.isChecking) return; // 判定表示中は入力ロック
+      if (calcState.isChecking) return;
       const val = e.currentTarget.textContent;
       if (val === '消す') { if (userAns) userAns.textContent = ''; }
       else if (val === '確定') submitAnswer();
@@ -721,8 +694,6 @@ function submitAnswer() {
   calcState.isChecking = true;
   const userVal = parseInt(uAns.textContent);
   const correctAns = calcState.currentQuestion.ans;
-
-  // 難易度ごとの1問あたりコイン数（かんたん:1, ふつう:2, むずかしい:3）
   const coinPerQuestion = calcState.selectedDiff === 'easy' ? 1 : (calcState.selectedDiff === 'mid' ? 2 : 3);
 
   if (feedbackEl) {
@@ -738,7 +709,6 @@ function submitAnswer() {
     }
   }
 
-  // 1.3秒間、○×と答えを表示してから次の問題またはリザルトへ進む
   setTimeout(() => {
     calcState.isChecking = false;
     calcState.questionIndex++;
