@@ -1,60 +1,146 @@
-const GROQ_API_KEY = ""; // ← ここに取得したGroqのAPIキー（gsk_...）を貼り付けてください
+const GROQ_API_KEY = ""; // ← 取得したGroqのAPIキー（gsk_...）を貼り付けてください
 
-const defaultData = {
-  coins: 11,
-  love: 0,
-  exp: 0,
-  level: 1,
-  medTakenDate: "",
-  currentPatientId: 1,
-  patients: [
-    {
-      id: 1,
-      name: 'マノ コウタ',
-      age: 86,
-      schedule: [
-        { label: '朝ごはん', time: '7:00' },
-        { label: '昼ごはん', time: '12:00' },
-        { label: '晩ごはん', time: '19:00' },
-        { label: 'お風呂', time: '17:00' }
-      ],
-      meds: [
-        { name: 'ロキソニン', instruction: '朝 食後 2錠' },
-        { name: '軟膏(塗り薬)', instruction: '朝洗顔後 入浴後 就寝前' }
-      ]
-    }
-  ],
-  events: {}
-};
+function createDefaultPatientProfile(id, name) {
+  return {
+    id: id || 'PT-1001',
+    name: name || 'マノ コウタ',
+    coins: 11,
+    love: 0,
+    exp: 0,
+    level: 1,
+    medTakenDate: "",
+    schedule: [
+      { label: '朝ごはん', time: '7:00' },
+      { label: '昼ごはん', time: '12:00' },
+      { label: '晩ごはん', time: '19:00' },
+      { label: 'お風呂', time: '17:00' }
+    ],
+    meds: [
+      { name: 'ロキソニン', instruction: '朝 食後 2錠' },
+      { name: '軟膏(塗り薬)', instruction: '朝洗顔後 入浴後 就寝前' }
+    ],
+    events: {}
+  };
+}
 
 function getTodayStr() {
   const today = new Date();
   return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 }
 
-function getData() {
+/* ====================================================
+   利用者ごとの専用データ管理（スマホごとに本人のみ表示）
+   ==================================================== */
+function loadStore() {
   try {
-    const saved = localStorage.getItem('brain_med_app_data');
-    if (!saved) return JSON.parse(JSON.stringify(defaultData));
-    const data = JSON.parse(saved);
-    data.exp = data.exp || 0;
-    data.level = data.level || 1;
-    data.coins = data.coins ?? 11;
-    data.love = data.love ?? 0;
-    data.medTakenDate = data.medTakenDate || "";
-    data.events = data.events || {};
-    return data;
+    const raw = localStorage.getItem('brain_med_multi_user_v1');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.profiles && parsed.activePatientId && parsed.profiles[parsed.activePatientId]) {
+        return parsed;
+      }
+    }
   } catch (e) {
-    return JSON.parse(JSON.stringify(defaultData));
+    console.error(e);
+  }
+  const initialProfile = createDefaultPatientProfile('PT-1001', 'マノ コウタ');
+  return {
+    activePatientId: 'PT-1001',
+    profiles: {
+      'PT-1001': initialProfile
+    }
+  };
+}
+
+let store = loadStore();
+
+function getActiveUser() {
+  if (!store.profiles[store.activePatientId]) {
+    const firstKey = Object.keys(store.profiles)[0] || 'PT-1001';
+    if (!store.profiles[firstKey]) {
+      store.profiles[firstKey] = createDefaultPatientProfile(firstKey, 'マノ コウタ');
+    }
+    store.activePatientId = firstKey;
+  }
+  return store.profiles[store.activePatientId];
+}
+
+function saveStore() {
+  localStorage.setItem('brain_med_multi_user_v1', JSON.stringify(store));
+}
+
+/* ====================================================
+   薬剤師アプリ ⇔ 患者スマホ 連携コードエンコード・デコード
+   ==================================================== */
+function encodeLinkCode(payload) {
+  const json = JSON.stringify(payload);
+  const bytes = new TextEncoder().encode(json);
+  let binary = '';
+  bytes.forEach(b => { binary += String.fromCharCode(b); });
+  return 'HAM-' + btoa(binary);
+}
+
+function decodeLinkCode(rawInput) {
+  let str = rawInput.trim();
+  if (str.includes('link=')) {
+    const match = str.match(/[?&]link=([^&]+)/);
+    if (match) str = decodeURIComponent(match[1]);
+  }
+  if (str.startsWith('HAM-')) {
+    str = str.slice(4);
+  }
+  const binary = atob(str);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  const json = new TextDecoder().decode(bytes);
+  return JSON.parse(json);
+}
+
+function applyPharmacistPayload(payload, silent = false) {
+  if (!payload || !payload.id || !payload.name) {
+    throw new Error('不正な連携データです');
+  }
+  // すでにこのスマホで育てている同IDのペットデータがあれば維持し、薬と生活時間だけ最新に更新
+  const existing = store.profiles[payload.id];
+  if (existing) {
+    existing.name = payload.name;
+    existing.schedule = Array.isArray(payload.schedule) ? payload.schedule : existing.schedule;
+    existing.meds = Array.isArray(payload.meds) ? payload.meds : existing.meds;
+  } else {
+    const newProfile = createDefaultPatientProfile(payload.id, payload.name);
+    if (Array.isArray(payload.schedule)) newProfile.schedule = payload.schedule;
+    if (Array.isArray(payload.meds)) newProfile.meds = payload.meds;
+    store.profiles[payload.id] = newProfile;
+  }
+
+  // このスマホの利用者をこの患者本人に切り替え（他の利用者のデータは表示しない）
+  store.activePatientId = payload.id;
+  saveStore();
+  refreshAllViews();
+
+  if (!silent) {
+    alert(`✅ 「${payload.name} 様」の専用設定＆お薬情報をこのスマホに反映しました！`);
   }
 }
 
-function saveData(data) {
-  localStorage.setItem('brain_med_app_data', JSON.stringify(data));
+function checkUrlLinkOnBoot() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const linkParam = params.get('link');
+    if (linkParam) {
+      const payload = decodeLinkCode(linkParam);
+      applyPharmacistPayload(payload, true);
+      // URLパラメータを綺麗にする
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  } catch (e) {
+    console.warn('URL連携パラメータの読み込みをスキップしました:', e);
+  }
 }
 
-let appData = getData();
-let petTempMood = null; // 'eating' | 'wink' | null
+let petTempMood = null;
 let petMoodTimer = null;
 
 let calcState = {
@@ -72,16 +158,30 @@ let calendarState = {
   selectedDateStr: null
 };
 
+let pharmaDraft = {
+  id: '',
+  name: '',
+  schedule: [],
+  meds: []
+};
+
 document.addEventListener('DOMContentLoaded', () => {
+  checkUrlLinkOnBoot();
   initNavigation();
   initPetSystem();
   initCalcSystem();
   initAlarmSystem();
   initCalendarSystem();
+  initPharmacistSystem();
+  refreshAllViews();
+});
+
+function refreshAllViews() {
   renderPatientData();
   updatePetDisplay();
   updateHomeCalendarAndPet();
-});
+  renderCalendar();
+}
 
 function initNavigation() {
   document.querySelectorAll('[data-target]').forEach(btn => {
@@ -91,7 +191,6 @@ function initNavigation() {
       if (targetId === 'screen-home') {
         updateHomeCalendarAndPet();
       } else if (targetId === 'screen-med') {
-        appData = getData();
         renderPatientData();
       } else if (targetId === 'screen-calendar') {
         renderCalendar();
@@ -100,6 +199,20 @@ function initNavigation() {
       }
     });
   });
+
+  const openSetupBtn = document.getElementById('open-patient-setup-btn');
+  if (openSetupBtn) {
+    openSetupBtn.addEventListener('click', () => {
+      openPharmacistScreen();
+    });
+  }
+
+  const openPharmaBtn = document.getElementById('open-pharmacist-btn');
+  if (openPharmaBtn) {
+    openPharmaBtn.addEventListener('click', () => {
+      openPharmacistScreen();
+    });
+  }
 }
 
 function showScreen(screenId) {
@@ -252,21 +365,25 @@ function getHamsterScale(level) {
 }
 
 /* ====================================================
-   ホーム画面：カレンダー日付＆ハムスターの表情・コメント更新
+   ホーム画面：カレンダー日付＆ハムスター更新
    ==================================================== */
 function updateHomeCalendarAndPet() {
+  const user = getActiveUser();
   const today = new Date();
   const monthEl = document.getElementById('home-cal-month');
   const dayEl = document.getElementById('home-cal-day');
   if (monthEl) monthEl.textContent = `${today.getMonth() + 1}月`;
   if (dayEl) dayEl.textContent = today.getDate();
 
+  const openingBadge = document.getElementById('opening-user-badge');
+  if (openingBadge) openingBadge.textContent = `${user.name} 様 専用`;
+
   const speechEl = document.getElementById('home-pet-speech');
   const homePetBody = document.getElementById('home-pet-body');
 
   const todayStr = getTodayStr();
-  const todayEvents = appData.events[todayStr] || [];
-  const isMedTakenToday = (appData.medTakenDate === todayStr);
+  const todayEvents = user.events[todayStr] || [];
+  const isMedTakenToday = (user.medTakenDate === todayStr);
 
   const eventNames = todayEvents.map(ev => ev.title).join('・');
   let message = "";
@@ -288,8 +405,8 @@ function updateHomeCalendarAndPet() {
 
   if (speechEl) speechEl.textContent = message;
   if (homePetBody) {
-    homePetBody.innerHTML = createCuteHamsterSVG(appData.level, homeMood);
-    const scale = Math.min(parseFloat(getHamsterScale(appData.level)), 1.12);
+    homePetBody.innerHTML = createCuteHamsterSVG(user.level, homeMood);
+    const scale = Math.min(parseFloat(getHamsterScale(user.level)), 1.12);
     homePetBody.style.transform = `scale(${scale})`;
   }
 }
@@ -317,31 +434,32 @@ function initPetSystem() {
 
   document.querySelectorAll('.food-card').forEach(card => {
     card.addEventListener('click', () => {
+      const user = getActiveUser();
       const cost = parseInt(card.getAttribute('data-cost'));
       const expGain = parseInt(card.getAttribute('data-exp'));
       const loveGain = parseInt(card.getAttribute('data-love') || "5");
       const foodName = card.getAttribute('data-food');
 
-      if (appData.coins >= cost) {
-        appData.coins -= cost;
-        appData.love = Math.min(100, (appData.love || 0) + loveGain);
-        appData.exp = (appData.exp || 0) + expGain;
+      if (user.coins >= cost) {
+        user.coins -= cost;
+        user.love = Math.min(100, (user.love || 0) + loveGain);
+        user.exp = (user.exp || 0) + expGain;
 
-        const oldLevel = appData.level || 1;
-        appData.level = Math.floor(appData.exp / 30) + 1;
+        const oldLevel = user.level || 1;
+        user.level = Math.floor(user.exp / 30) + 1;
 
         triggerTempPetMood('eating', 3500);
 
-        saveData(appData);
+        saveStore();
         updatePetDisplay();
 
         const oldEvo = Math.floor(Math.min(oldLevel, 100) / 5);
-        const newEvo = Math.floor(Math.min(appData.level, 100) / 5);
+        const newEvo = Math.floor(Math.min(user.level, 100) / 5);
 
         if (newEvo > oldEvo) {
-          alert(`🎉 おめでとう！ Lv.${appData.level} に成長してハムスターの姿が変化しました！`);
-        } else if (appData.level > oldLevel) {
-          alert(`🎉 レベルアップ！ Lv.${appData.level} になりました！`);
+          alert(`🎉 おめでとう！ Lv.${user.level} に成長してハムスターの姿が変化しました！`);
+        } else if (user.level > oldLevel) {
+          alert(`🎉 レベルアップ！ Lv.${user.level} になりました！`);
         } else {
           alert(`ハムスターに${foodName}をあげました！もぐもぐ大喜び！`);
         }
@@ -371,22 +489,6 @@ function initPetSystem() {
     sendBtn.addEventListener('click', sendMessage);
     input.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
   }
-
-  const resetBtn = document.getElementById('reset-data-btn');
-  if (resetBtn) {
-    resetBtn.addEventListener('click', () => {
-      if (confirm('最初からやり直しますか？')) {
-        localStorage.removeItem('brain_med_app_data');
-        appData = JSON.parse(JSON.stringify(defaultData));
-        petTempMood = null;
-        saveData(appData);
-        updatePetDisplay();
-        updateHomeCalendarAndPet();
-        renderCalendar();
-        alert('リセットしました。');
-      }
-    });
-  }
 }
 
 function triggerTempPetMood(mood, durationMs) {
@@ -399,8 +501,8 @@ function triggerTempPetMood(mood, durationMs) {
   }, durationMs);
 }
 
-// Groq API 呼び出し関数（フォールバック機能付き）
 async function callGroqModel(modelName, userText) {
+  const user = getActiveUser();
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -412,7 +514,7 @@ async function callGroqModel(modelName, userText) {
       messages: [
         {
           role: 'system',
-          content: `あなたは高齢者の患者さんを心から癒す可愛い相棒ハムスター（現在Lv.${appData.level}）です。語尾に「チュ」「～のだ」をつけて、優しく丁寧な日本語（70文字以内）で返答してください。`
+          content: `あなたは${user.name}さんを心から癒す可愛い相棒ハムスター（現在Lv.${user.level}）です。語尾に「チュ」「～のだ」をつけて、優しく丁寧な日本語（70文字以内）で返答してください。`
         },
         {
           role: 'user',
@@ -439,24 +541,21 @@ async function callGroqModel(modelName, userText) {
 async function fetchAIReply(userText) {
   if (GROQ_API_KEY && GROQ_API_KEY.trim() !== "") {
     try {
-      // 高品質モデルでリクエスト
       return await callGroqModel('openai/gpt-oss-120b', userText);
     } catch (e) {
-      console.warn('120bでの応答に失敗したため軽量モデルへ切り替えます:', e);
       try {
-        // 軽量高速モデルへフォールバック
         return await callGroqModel('openai/gpt-oss-20b', userText);
       } catch (e2) {
         console.error('Groq API通信エラー:', e2);
       }
     }
   }
-  // APIキー未設定時・オフライン時は内蔵会話にフォールバック
   return generateLevelBasedReply(userText);
 }
 
 function generateLevelBasedReply(text) {
-  const level = appData.level || 1;
+  const user = getActiveUser();
+  const level = user.level || 1;
 
   if (text.includes("天気") || text.includes("雨") || text.includes("晴れ") || text.includes("暑い") || text.includes("寒い")) {
     return "今日もお外の空気をすうと気持ちいいチュ！無理せず快適にお過ごしくださいね！";
@@ -514,20 +613,20 @@ function generateLevelBasedReply(text) {
 }
 
 function updatePetDisplay() {
+  const user = getActiveUser();
   const coinElem = document.getElementById('coin-count');
   const loveElem = document.getElementById('pet-love');
   const levelElem = document.getElementById('pet-level');
   const stageElem = document.getElementById('pet-stage-name');
   const petBody = document.getElementById('pet-character-body');
   const openingSlot = document.getElementById('opening-pet-slot');
-  const repCountEl = document.getElementById('talk-repertoire-count');
 
-  const level = appData.level || 1;
-  if (coinElem) coinElem.textContent = appData.coins || 0;
-  if (loveElem) loveElem.textContent = appData.love || 0;
+  const level = user.level || 1;
+  if (coinElem) coinElem.textContent = user.coins || 0;
+  if (loveElem) loveElem.textContent = user.love || 0;
   if (levelElem) levelElem.textContent = level;
 
-  const currentLevelExp = (appData.exp || 0) % 30;
+  const currentLevelExp = (user.exp || 0) % 30;
   const neededExp = 30 - currentLevelExp;
   const progressPercent = (currentLevelExp / 30) * 100;
 
@@ -552,7 +651,7 @@ function updatePetDisplay() {
 
   if (stageElem) stageElem.textContent = stageName;
 
-  const isMedTakenToday = (appData.medTakenDate === getTodayStr());
+  const isMedTakenToday = (user.medTakenDate === getTodayStr());
   const currentMood = petTempMood || (isMedTakenToday ? 'wink' : 'normal');
 
   if (petBody) {
@@ -562,24 +661,6 @@ function updatePetDisplay() {
 
   if (openingSlot) {
     openingSlot.innerHTML = createCuteHamsterSVG(level, 'wink');
-  }
-
-  if (repCountEl) {
-    if (GROQ_API_KEY && GROQ_API_KEY.trim() !== "") {
-      repCountEl.textContent = 'AI会話モード（Groq接続中 ✨）';
-    } else if (level >= 100) {
-      repCountEl.textContent = '最大解放（すべての会話）';
-    } else if (level >= 50) {
-      repCountEl.textContent = '段階5（大親友トーク解放中）';
-    } else if (level >= 30) {
-      repCountEl.textContent = '段階4（思い出トーク解放中）';
-    } else if (level >= 15) {
-      repCountEl.textContent = '段階3（健康アドバイス解放中）';
-    } else if (level >= 5) {
-      repCountEl.textContent = '段階2（成長トーク解放中）';
-    } else {
-      repCountEl.textContent = '段階1（Lv5で新しい会話が解放！）';
-    }
   }
 }
 
@@ -721,11 +802,12 @@ function submitAnswer() {
 }
 
 function showCalcResult() {
+  const user = getActiveUser();
   const game = document.getElementById('calc-game');
   const result = document.getElementById('calc-result');
 
-  appData.coins = (appData.coins || 0) + calcState.earnedCoins;
-  saveData(appData);
+  user.coins = (user.coins || 0) + calcState.earnedCoins;
+  saveStore();
   updatePetDisplay();
 
   document.getElementById('result-correct-count').textContent = calcState.correctCount;
@@ -739,22 +821,23 @@ function showCalcResult() {
    服薬・生活データ ＆ アラーム
    ==================================================== */
 function renderPatientData() {
-  const patient = appData.patients.find(p => p.id === appData.currentPatientId);
-  if (!patient) return;
+  const user = getActiveUser();
 
   const nameElem = document.getElementById('patient-display-name');
-  if (nameElem) nameElem.textContent = `${patient.name} 様`;
+  const idElem = document.getElementById('patient-display-id');
+  if (nameElem) nameElem.textContent = `${user.name} 様`;
+  if (idElem) idElem.textContent = `利用者ID: ${user.id}`;
 
   const schedList = document.getElementById('schedule-list');
   if (schedList) {
-    schedList.innerHTML = patient.schedule.map(s =>
+    schedList.innerHTML = user.schedule.map(s =>
       `<li><span>${s.label}</span> <strong>${s.time}</strong></li>`
     ).join('');
   }
 
   const medList = document.getElementById('medicine-list');
   if (medList) {
-    medList.innerHTML = patient.meds.map(m =>
+    medList.innerHTML = user.meds.map(m =>
       `<div class="med-item">
         <div class="med-name">${m.name}</div>
         <div class="med-instruction">${m.instruction}</div>
@@ -764,8 +847,9 @@ function renderPatientData() {
 }
 
 function recordMedTaken() {
-  appData.medTakenDate = getTodayStr();
-  saveData(appData);
+  const user = getActiveUser();
+  user.medTakenDate = getTodayStr();
+  saveStore();
   updatePetDisplay();
   updateHomeCalendarAndPet();
   alert('今日のお薬をのんだ記録を保存しました！ハムスターも大喜びです！');
@@ -790,6 +874,215 @@ function initAlarmSystem() {
     noBtn.addEventListener('click', () => {
       modal.classList.add('hidden');
       alert('再通知に設定しました。忘れずに飲みましょうね。');
+    });
+  }
+}
+
+/* ====================================================
+   薬剤師アプリ連携 ＆ 利用者専用設定システム
+   ==================================================== */
+function openPharmacistScreen() {
+  const user = getActiveUser();
+  loadPatientIntoPharmaDraft(user.id);
+  showScreen('screen-pharmacist');
+}
+
+function loadPatientIntoPharmaDraft(patientId) {
+  const target = store.profiles[patientId] || getActiveUser();
+  pharmaDraft = {
+    id: target.id,
+    name: target.name,
+    schedule: JSON.parse(JSON.stringify(target.schedule || [])),
+    meds: JSON.parse(JSON.stringify(target.meds || []))
+  };
+
+  const selectEl = document.getElementById('pharma-patient-select');
+  if (selectEl) {
+    selectEl.innerHTML = Object.values(store.profiles).map(p =>
+      `<option value="${p.id}" ${p.id === target.id ? 'selected' : ''}>${p.name} 様 (${p.id})</option>`
+    ).join('');
+  }
+
+  const nameInput = document.getElementById('pharma-edit-name');
+  if (nameInput) nameInput.value = pharmaDraft.name;
+
+  renderPharmaEditors();
+  updateGeneratedLinkCode();
+}
+
+function renderPharmaEditors() {
+  const schedEditor = document.getElementById('pharma-schedule-editor');
+  if (schedEditor) {
+    schedEditor.innerHTML = pharmaDraft.schedule.map((s, idx) => `
+      <div class="editor-item">
+        <span>${s.label}：<strong>${s.time}</strong></span>
+        <button type="button" class="editor-del-btn" data-type="sched" data-idx="${idx}">削除</button>
+      </div>
+    `).join('');
+  }
+
+  const medsEditor = document.getElementById('pharma-meds-editor');
+  if (medsEditor) {
+    medsEditor.innerHTML = pharmaDraft.meds.map((m, idx) => `
+      <div class="editor-item">
+        <span><strong>${m.name}</strong>（${m.instruction}）</span>
+        <button type="button" class="editor-del-btn" data-type="med" data-idx="${idx}">削除</button>
+      </div>
+    `).join('');
+  }
+
+  document.querySelectorAll('.editor-del-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const type = e.currentTarget.getAttribute('data-type');
+      const idx = parseInt(e.currentTarget.getAttribute('data-idx'));
+      if (type === 'sched') pharmaDraft.schedule.splice(idx, 1);
+      if (type === 'med') pharmaDraft.meds.splice(idx, 1);
+      renderPharmaEditors();
+    });
+  });
+}
+
+function updateGeneratedLinkCode() {
+  const codeBox = document.getElementById('pharma-export-code');
+  if (!codeBox) return;
+  const payload = {
+    id: pharmaDraft.id,
+    name: pharmaDraft.name,
+    schedule: pharmaDraft.schedule,
+    meds: pharmaDraft.meds
+  };
+  codeBox.value = encodeLinkCode(payload);
+}
+
+function initPharmacistSystem() {
+  const selectEl = document.getElementById('pharma-patient-select');
+  if (selectEl) {
+    selectEl.addEventListener('change', (e) => {
+      loadPatientIntoPharmaDraft(e.target.value);
+    });
+  }
+
+  const newPatientBtn = document.getElementById('pharma-new-patient-btn');
+  if (newPatientBtn) {
+    newPatientBtn.addEventListener('click', () => {
+      const inputName = prompt('新しく登録する利用者様のお名前を入力してください（例: サトウ ハナコ）');
+      if (!inputName || !inputName.trim()) return;
+      const newId = 'PT-' + Math.floor(1000 + Math.random() * 9000);
+      store.profiles[newId] = createDefaultPatientProfile(newId, inputName.trim());
+      store.activePatientId = newId;
+      saveStore();
+      loadPatientIntoPharmaDraft(newId);
+      refreshAllViews();
+      alert(`「${inputName.trim()} 様」を新規登録し、このスマホの利用者に設定しました！`);
+    });
+  }
+
+  const addSchedBtn = document.getElementById('add-sched-item-btn');
+  if (addSchedBtn) {
+    addSchedBtn.addEventListener('click', () => {
+      const labelEl = document.getElementById('new-sched-label');
+      const timeEl = document.getElementById('new-sched-time');
+      const label = labelEl.value.trim();
+      const time = timeEl.value.trim();
+      if (!label || !time) return;
+      pharmaDraft.schedule.push({ label, time });
+      labelEl.value = '';
+      timeEl.value = '';
+      renderPharmaEditors();
+    });
+  }
+
+  const addMedBtn = document.getElementById('add-med-item-btn');
+  if (addMedBtn) {
+    addMedBtn.addEventListener('click', () => {
+      const nameEl = document.getElementById('new-med-name');
+      const instEl = document.getElementById('new-med-inst');
+      const name = nameEl.value.trim();
+      const instruction = instEl.value.trim();
+      if (!name || !instruction) return;
+      pharmaDraft.meds.push({ name, instruction });
+      nameEl.value = '';
+      instEl.value = '';
+      renderPharmaEditors();
+    });
+  }
+
+  const savePharmaBtn = document.getElementById('pharma-save-patient-btn');
+  if (savePharmaBtn) {
+    savePharmaBtn.addEventListener('click', () => {
+      const nameInput = document.getElementById('pharma-edit-name');
+      const updatedName = nameInput ? nameInput.value.trim() : '';
+      if (!updatedName) {
+        alert('お名前を入力してください。');
+        return;
+      }
+      pharmaDraft.name = updatedName;
+
+      // このスマホの利用者をこの患者本人に確定保存
+      const target = store.profiles[pharmaDraft.id] || createDefaultPatientProfile(pharmaDraft.id, updatedName);
+      target.name = updatedName;
+      target.schedule = JSON.parse(JSON.stringify(pharmaDraft.schedule));
+      target.meds = JSON.parse(JSON.stringify(pharmaDraft.meds));
+      store.profiles[pharmaDraft.id] = target;
+      store.activePatientId = pharmaDraft.id;
+
+      saveStore();
+      loadPatientIntoPharmaDraft(pharmaDraft.id);
+      refreshAllViews();
+      alert(`✅ 「${updatedName} 様」の情報を保存し、連携コードを発行しました！`);
+    });
+  }
+
+  const copyCodeBtn = document.getElementById('copy-link-code-btn');
+  if (copyCodeBtn) {
+    copyCodeBtn.addEventListener('click', async () => {
+      const codeBox = document.getElementById('pharma-export-code');
+      if (!codeBox || !codeBox.value) return;
+      try {
+        await navigator.clipboard.writeText(codeBox.value);
+        alert('連携コードをコピーしました！患者さんのスマホへ送信して貼り付けてください。');
+      } catch (e) {
+        codeBox.select();
+        document.execCommand('copy');
+        alert('連携コードをコピーしました！');
+      }
+    });
+  }
+
+  const copyUrlBtn = document.getElementById('copy-link-url-btn');
+  if (copyUrlBtn) {
+    copyUrlBtn.addEventListener('click', async () => {
+      const codeBox = document.getElementById('pharma-export-code');
+      if (!codeBox || !codeBox.value) return;
+      const baseUrl = window.location.origin + window.location.pathname;
+      const fullUrl = `${baseUrl}?link=${encodeURIComponent(codeBox.value)}`;
+      try {
+        await navigator.clipboard.writeText(fullUrl);
+        alert('連携URLをコピーしました！患者さんのスマホでこのURLを開くと自動で本人専用に設定されます。');
+      } catch (e) {
+        alert(`以下のURLを患者さんのスマホで開いてください：\n${fullUrl}`);
+      }
+    });
+  }
+
+  const applyCodeBtn = document.getElementById('apply-link-code-btn');
+  if (applyCodeBtn) {
+    applyCodeBtn.addEventListener('click', () => {
+      const importInput = document.getElementById('patient-import-code');
+      const rawVal = importInput ? importInput.value.trim() : '';
+      if (!rawVal) {
+        alert('薬剤師さんからもらった連携コードまたはURLを貼り付けてください。');
+        return;
+      }
+      try {
+        const payload = decodeLinkCode(rawVal);
+        applyPharmacistPayload(payload, false);
+        importInput.value = '';
+        loadPatientIntoPharmaDraft(payload.id);
+        showScreen('screen-med');
+      } catch (e) {
+        alert('連携コードの形式が正しくありません。もう一度コピーして貼り付けてください。');
+      }
     });
   }
 }
@@ -838,6 +1131,7 @@ function initCalendarSystem() {
   if (eventForm) {
     eventForm.addEventListener('submit', (e) => {
       e.preventDefault();
+      const user = getActiveUser();
       const titleInput = document.getElementById('event-title');
       const timeInput = document.getElementById('event-time');
       const categorySelect = document.getElementById('event-category');
@@ -850,10 +1144,10 @@ function initCalendarSystem() {
       }
 
       const dateStr = calendarState.selectedDateStr;
-      if (!appData.events[dateStr]) appData.events[dateStr] = [];
-      appData.events[dateStr].push({ title, time, category });
+      if (!user.events[dateStr]) user.events[dateStr] = [];
+      user.events[dateStr].push({ title, time, category });
 
-      saveData(appData);
+      saveStore();
       updateHomeCalendarAndPet();
 
       titleInput.value = '';
@@ -867,6 +1161,7 @@ function initCalendarSystem() {
 }
 
 function renderCalendar() {
+  const user = getActiveUser();
   const monthTitle = document.getElementById('calendar-month-title');
   const daysGrid = document.getElementById('calendar-days-grid');
   if (!monthTitle || !daysGrid) return;
@@ -898,7 +1193,7 @@ function renderCalendar() {
     if (dateStr === todayStr) cell.classList.add('today');
     if (dateStr === calendarState.selectedDateStr) cell.classList.add('selected');
 
-    if (appData.events[dateStr] && appData.events[dateStr].length > 0) {
+    if (user.events[dateStr] && user.events[dateStr].length > 0) {
       const dot = document.createElement('div');
       dot.className = 'event-dot';
       cell.appendChild(dot);
@@ -917,12 +1212,13 @@ function renderCalendar() {
 }
 
 function renderEvents() {
+  const user = getActiveUser();
   const eventsList = document.getElementById('selected-day-events');
   if (!eventsList) return;
 
   eventsList.innerHTML = '';
   const dateStr = calendarState.selectedDateStr;
-  const dayEvents = appData.events[dateStr] || [];
+  const dayEvents = user.events[dateStr] || [];
 
   if (dayEvents.length === 0) {
     eventsList.innerHTML = '<p class="empty-msg">予定はありません</p>';
@@ -941,11 +1237,12 @@ function renderEvents() {
 }
 
 window.deleteEvent = function(dateStr, index) {
-  if (!appData.events[dateStr]) return;
-  appData.events[dateStr].splice(index, 1);
-  if (appData.events[dateStr].length === 0) delete appData.events[dateStr];
+  const user = getActiveUser();
+  if (!user.events[dateStr]) return;
+  user.events[dateStr].splice(index, 1);
+  if (user.events[dateStr].length === 0) delete user.events[dateStr];
 
-  saveData(appData);
+  saveStore();
   updateHomeCalendarAndPet();
   renderCalendar();
   renderEvents();
