@@ -59,7 +59,12 @@ function saveImportedPatient(patientObj) {
 
 function decodePatientSyncCode(code) {
   const raw = code.trim().slice(4);
-  const jsonStr = decodeURIComponent(escape(atob(raw)));
+  const binStr = atob(raw);
+  const bytes = new Uint8Array(binStr.length);
+  for (let i = 0; i < binStr.length; i++) {
+    bytes[i] = binStr.charCodeAt(i);
+  }
+  const jsonStr = new TextDecoder().decode(bytes);
   return JSON.parse(jsonStr);
 }
 
@@ -145,16 +150,38 @@ let calcState = {
 
 let calendarState = {
   currentDate: new Date(),
-  selectedDateStr: null
+  selectedDateStr: getTodayStr()
+};
+
+let homeCalState = {
+  currentDate: new Date(),
+  selectedDateStr: getTodayStr()
 };
 
 document.addEventListener('DOMContentLoaded', () => {
   initNavigation();
   initIdLoginGate();
+  initHomeGoogleCalendar();
   initPetSystem();
   initCalcSystem();
   initAlarmSystem();
   initCalendarSystem();
+  initSyncUpdateModal();
+
+  // QRコード等のURLパラメータ(?sync=MED:...)経由で開かれた場合の自動ログイン・最新更新
+  const params = new URLSearchParams(window.location.search);
+  const urlSync = params.get('sync');
+  if (urlSync && urlSync.startsWith('MED:')) {
+    try {
+      const imported = decodePatientSyncCode(urlSync);
+      if (imported && imported.id && imported.name) {
+        saveImportedPatient(imported);
+        lockPatientId(imported.id);
+      }
+    } catch (e) {
+      console.warn('URL連携コード読み込みエラー:', e);
+    }
+  }
 
   const lockedId = getLockedPatientId();
   const existingPatient = lockedId ? findPatientById(lockedId) : null;
@@ -167,16 +194,25 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+// 同じブラウザの別タブで薬剤師が薬を追加・更新したときに自動反映
+window.addEventListener('storage', (e) => {
+  if (e.key === SHARED_STORAGE_KEY && getLockedPatientId()) {
+    refreshAllMyViews();
+  }
+});
+
+window.addEventListener('focus', () => {
+  if (getLockedPatientId()) {
+    renderPatientData();
+  }
+});
+
 function initIdLoginGate() {
   const form = document.getElementById('patient-id-login-form');
   const input = document.getElementById('login-patient-id-input');
   const errorEl = document.getElementById('id-login-error');
 
   if (!form || !input) return;
-
-  // 4桁IDだけでなく連携コード（MED:...）も貼り付けられるよう調整
-  input.removeAttribute('inputmode');
-  input.placeholder = '例: 1002 または 連携コード';
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -193,7 +229,7 @@ function initIdLoginGate() {
           matchedPatient = imported;
         }
       } catch (err) {
-        errorEl.textContent = '連携コードが正しくありません。もう一度コピーし直してください。';
+        errorEl.textContent = '連携コードが正しくありません。薬剤師画面の「コピー」ボタンからもう一度コピーしてください。';
         errorEl.classList.remove('hidden');
         return;
       }
@@ -202,7 +238,7 @@ function initIdLoginGate() {
     }
 
     if (!matchedPatient) {
-      errorEl.textContent = `ID「${entered}」が見つかりません。別のフォルダや別の端末で開いている場合は、薬剤師画面の「連携コード」を貼り付けてください。`;
+      errorEl.textContent = `ID「${entered}」が見つかりません。別のデバイスで開いている場合は、薬剤師画面の「連携コード（MED:...）」を貼り付けてください。`;
       errorEl.classList.remove('hidden');
       return;
     }
@@ -211,6 +247,54 @@ function initIdLoginGate() {
     lockPatientId(matchedPatient.id);
     refreshAllMyViews();
     showScreen('screen-opening');
+  });
+}
+
+function initSyncUpdateModal() {
+  const openBtn = document.getElementById('open-sync-update-btn');
+  const closeBtn = document.getElementById('close-sync-update-btn');
+  const modal = document.getElementById('sync-update-modal');
+  const form = document.getElementById('sync-update-form');
+  const input = document.getElementById('sync-update-input');
+  const errorEl = document.getElementById('sync-update-error');
+
+  if (!openBtn || !modal || !form) return;
+
+  openBtn.addEventListener('click', () => {
+    // まず同じブラウザの最新データも再読み込み
+    renderPatientData();
+    input.value = '';
+    errorEl.classList.add('hidden');
+    modal.classList.remove('hidden');
+  });
+
+  closeBtn.addEventListener('click', () => {
+    modal.classList.add('hidden');
+  });
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const code = input.value.trim();
+    if (!code.startsWith('MED:')) {
+      errorEl.textContent = '「MED:」から始まる連携コードを貼り付けてください。';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+
+    try {
+      const imported = decodePatientSyncCode(code);
+      if (!imported || !imported.id || !imported.name) {
+        throw new Error('Invalid payload');
+      }
+      saveImportedPatient(imported);
+      lockPatientId(imported.id);
+      modal.classList.add('hidden');
+      refreshAllMyViews();
+      alert(`${imported.name} 様の最新のお薬データに更新しました！`);
+    } catch (err) {
+      errorEl.textContent = 'コードの読み込みに失敗しました。コピーし直してください。';
+      errorEl.classList.remove('hidden');
+    }
   });
 }
 
@@ -233,7 +317,12 @@ function initNavigation() {
       } else if (targetId === 'screen-med') {
         renderPatientData();
       } else if (targetId === 'screen-calendar') {
+        calendarState.selectedDateStr = homeCalState.selectedDateStr || getTodayStr();
+        calendarState.currentDate = new Date(homeCalState.currentDate);
+        const label = document.getElementById('selected-date-label');
+        if (label) label.textContent = `${calendarState.selectedDateStr} の予定`;
         renderCalendar();
+        renderEvents();
       } else if (targetId === 'screen-pet') {
         updatePetDisplay();
       }
@@ -245,6 +334,142 @@ function showScreen(screenId) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const targetElem = document.getElementById(screenId);
   if (targetElem) targetElem.classList.add('active');
+}
+
+/* ===================================================
+   ホーム画面のGoogleカレンダー風ウィジェット
+=================================================== */
+function initHomeGoogleCalendar() {
+  const prevBtn = document.getElementById('home-gcal-prev');
+  const nextBtn = document.getElementById('home-gcal-next');
+
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      homeCalState.currentDate.setMonth(homeCalState.currentDate.getMonth() - 1);
+      renderHomeGoogleCalendar();
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      homeCalState.currentDate.setMonth(homeCalState.currentDate.getMonth() + 1);
+      renderHomeGoogleCalendar();
+    });
+  }
+}
+
+function renderHomeGoogleCalendar() {
+  const bundle = getMyPatientBundle();
+  if (!bundle) return;
+  const { pet } = bundle;
+
+  const titleEl = document.getElementById('home-gcal-title');
+  const gridEl = document.getElementById('home-gcal-grid');
+  if (!titleEl || !gridEl) return;
+
+  const year = homeCalState.currentDate.getFullYear();
+  const month = homeCalState.currentDate.getMonth();
+  titleEl.textContent = `${year}年 ${month + 1}月`;
+
+  gridEl.innerHTML = '';
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const lastDate = new Date(year, month + 1, 0).getDate();
+  const totalCells = Math.ceil((firstDay + lastDate) / 7) * 7;
+
+  const todayStr = getTodayStr();
+  const eventsMap = pet.events || {};
+
+  for (let i = 0; i < totalCells; i++) {
+    const cell = document.createElement('div');
+    const dayOfWeek = i % 7;
+    cell.className = 'gcal-cell';
+    if (dayOfWeek === 0) cell.classList.add('sun');
+    if (dayOfWeek === 6) cell.classList.add('sat');
+
+    const dateNum = i - firstDay + 1;
+    if (dateNum < 1 || dateNum > lastDate) {
+      cell.classList.add('other-month');
+      gridEl.appendChild(cell);
+      continue;
+    }
+
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dateNum).padStart(2, '0')}`;
+    if (dateStr === todayStr) cell.classList.add('today');
+    if (dateStr === homeCalState.selectedDateStr) cell.classList.add('selected');
+
+    const numSpan = document.createElement('div');
+    numSpan.className = 'gcal-day-num';
+    numSpan.textContent = dateNum;
+    cell.appendChild(numSpan);
+
+    const dayEvents = eventsMap[dateStr] || [];
+    dayEvents.slice(0, 2).forEach(ev => {
+      const chip = document.createElement('div');
+      chip.className = 'gcal-event-chip';
+      if (ev.category && ev.category.includes('薬')) chip.classList.add('med-chip');
+      if (ev.category && ev.category.includes('病院')) chip.classList.add('hospital-chip');
+      chip.textContent = ev.title;
+      cell.appendChild(chip);
+    });
+
+    cell.addEventListener('click', () => {
+      homeCalState.selectedDateStr = dateStr;
+      renderHomeGoogleCalendar();
+      updateHomePetSpeechForDate(dateStr);
+    });
+
+    gridEl.appendChild(cell);
+  }
+}
+
+function updateHomePetSpeechForDate(dateStr) {
+  const bundle = getMyPatientBundle();
+  if (!bundle) return;
+  const { pet } = bundle;
+
+  const speechEl = document.getElementById('home-pet-speech');
+  const homePetBody = document.getElementById('home-pet-body');
+  if (!speechEl) return;
+
+  const todayStr = getTodayStr();
+  const isMedTakenToday = (pet.medTakenDate === todayStr);
+  const events = (pet.events && pet.events[dateStr]) || [];
+  const eventNames = events.map(ev => `${ev.time ? ev.time + ' ' : ''}${ev.title}`).join('・');
+
+  let message = '';
+  let homeMood = 'normal';
+
+  if (dateStr === todayStr) {
+    if (events.length > 0 && !isMedTakenToday) {
+      message = `今日の予定は「${eventNames}」だよ！まだ今日のお薬を飲んでいないよチュ！`;
+      homeMood = 'worried';
+    } else if (events.length > 0 && isMedTakenToday) {
+      message = `今日の予定は「${eventNames}」だよチュ！お薬も飲んでえらいのだ！`;
+      homeMood = 'wink';
+    } else if (events.length === 0 && !isMedTakenToday) {
+      message = `まだ今日のお薬を飲んでいないよチュ！忘れずに飲もうね！`;
+      homeMood = 'worried';
+    } else {
+      message = `今日のお薬はバッチリ飲んだね！予定はないからゆっくり過ごそうチュ！`;
+      homeMood = 'wink';
+    }
+  } else {
+    const [, m, d] = dateStr.split('-');
+    const dateLabel = `${Number(m)}月${Number(d)}日`;
+    if (events.length > 0) {
+      message = `${dateLabel}の予定は「${eventNames}」が入っているよチュ！`;
+      homeMood = 'wink';
+    } else {
+      message = `${dateLabel}の予定はまだないよチュ！右上の「＋予定管理」から追加できるのだ！`;
+      homeMood = 'normal';
+    }
+  }
+
+  speechEl.textContent = message;
+  if (homePetBody) {
+    homePetBody.innerHTML = createCuteHamsterSVG(pet.level, homeMood);
+  }
 }
 
 function createCuteHamsterSVG(level, mood) {
@@ -390,48 +615,13 @@ function getHamsterScale(level) {
 function updateHomeCalendarAndPet() {
   const bundle = getMyPatientBundle();
   if (!bundle) return;
-  const { patient, pet } = bundle;
-
-  const today = new Date();
-  const monthEl = document.getElementById('home-cal-month');
-  const dayEl = document.getElementById('home-cal-day');
-  if (monthEl) monthEl.textContent = `${today.getMonth() + 1}月`;
-  if (dayEl) dayEl.textContent = today.getDate();
+  const { patient } = bundle;
 
   const openingBadge = document.getElementById('opening-user-badge');
   if (openingBadge) openingBadge.textContent = `${patient.name} 様 専用`;
 
-  const speechEl = document.getElementById('home-pet-speech');
-  const homePetBody = document.getElementById('home-pet-body');
-
-  const todayStr = getTodayStr();
-  const todayEvents = (pet.events && pet.events[todayStr]) || [];
-  const isMedTakenToday = (pet.medTakenDate === todayStr);
-
-  const eventNames = todayEvents.map(ev => ev.title).join('・');
-  let message = '';
-  let homeMood = 'normal';
-
-  if (todayEvents.length > 0 && !isMedTakenToday) {
-    message = `今日の予定は「${eventNames}」があるよ！それと、まだ今日のお薬を飲んでいないよチュ！`;
-    homeMood = 'worried';
-  } else if (todayEvents.length > 0 && isMedTakenToday) {
-    message = `今日の予定は「${eventNames}」があるよチュ！お薬も飲んでえらいのだ！`;
-    homeMood = 'wink';
-  } else if (todayEvents.length === 0 && !isMedTakenToday) {
-    message = `まだ今日のお薬を飲んでいないよチュ！忘れずに飲もうね！`;
-    homeMood = 'worried';
-  } else {
-    message = `今日のお薬はバッチリ飲んだね！予定はないからゆっくり過ごそうチュ！`;
-    homeMood = 'wink';
-  }
-
-  if (speechEl) speechEl.textContent = message;
-  if (homePetBody) {
-    homePetBody.innerHTML = createCuteHamsterSVG(pet.level, homeMood);
-    const scale = Math.min(parseFloat(getHamsterScale(pet.level)), 1.12);
-    homePetBody.style.transform = `scale(${scale})`;
-  }
+  renderHomeGoogleCalendar();
+  updateHomePetSpeechForDate(homeCalState.selectedDateStr || getTodayStr());
 }
 
 function initPetSystem() {
@@ -845,9 +1035,10 @@ function renderPatientData() {
       medList.innerHTML = patient.meds.map(m => {
         const timingStr = Array.isArray(m.timing) && m.timing.length > 0 ? m.timing.join('・') : '指定なし';
         const detailText = m.dosage ? `${timingStr} ／ ${m.dosage}` : timingStr;
+        const newTag = m.isNewlyAdded ? '<span class="new-med-tag">NEW</span>' : '';
         return `
           <div class="med-item">
-            <div class="med-name">${m.name}</div>
+            <div class="med-name">${m.name}${newTag}</div>
             <div class="med-instruction">${detailText}</div>
           </div>
         `;
@@ -947,6 +1138,7 @@ function initCalendarSystem() {
         p.events[dateStr].push({ title, time, category });
       });
 
+      homeCalState.selectedDateStr = dateStr;
       updateHomeCalendarAndPet();
 
       titleInput.value = '';
@@ -1004,6 +1196,7 @@ function renderCalendar() {
 
     cell.addEventListener('click', () => {
       calendarState.selectedDateStr = dateStr;
+      homeCalState.selectedDateStr = dateStr;
       const label = document.getElementById('selected-date-label');
       if (label) label.textContent = `${dateStr} の予定`;
       renderCalendar();
