@@ -53,9 +53,7 @@ body {
   display: none !important;
 }
 
-/* =========================================
-   初回起動時：患者ID入力画面
-   ========================================= */
+/* 初回起動時：患者ID入力画面 */
 .id-login-container {
   flex: 1;
   display: flex;
@@ -129,9 +127,7 @@ body {
   line-height: 1.45;
 }
 
-/* =========================================
-   オープニング画面
-   ========================================= */
+/* オープニング画面 */
 .opening-container {
   flex: 1;
   display: flex;
@@ -207,9 +203,7 @@ body {
   box-shadow: 0 3px 0 #c23616;
 }
 
-/* =========================================
-   ホーム画面
-   ========================================= */
+/* ホーム画面 */
 .home-container {
   flex: 1;
   display: flex;
@@ -392,9 +386,7 @@ body {
   font-size: 1.05rem;
 }
 
-/* =========================================
-   共通ヘッダー
-   ========================================= */
+/* 共通ヘッダー */
 .screen-header {
   display: flex;
   align-items: center;
@@ -419,9 +411,7 @@ body {
   cursor: pointer;
 }
 
-/* =========================================
-   ペット画面
-   ========================================= */
+/* ペット画面 */
 .pet-display {
   background: linear-gradient(180deg, #fff9db 0%, #fff3bf 100%);
   border: 2.5px solid #ffd43b;
@@ -639,9 +629,7 @@ body {
   cursor: pointer;
 }
 
-/* =========================================
-   計算画面
-   ========================================= */
+/* 計算画面 */
 #calc-menu h3 {
   font-size: 1rem;
   margin: 10px 0 8px;
@@ -800,9 +788,7 @@ body {
   color: #e67e22;
 }
 
-/* =========================================
-   お薬・生活時間画面
-   ========================================= */
+/* お薬・生活時間画面 */
 .patient-info-header {
   background: #ebfbee;
   border: 2px solid #8ce99a;
@@ -917,9 +903,7 @@ body {
   cursor: pointer;
 }
 
-/* =========================================
-   カレンダー画面
-   ========================================= */
+/* カレンダー画面 */
 .calendar-view-container {
   background: #fff;
   border: 2px solid #ffd8a8;
@@ -974,6 +958,10 @@ body {
   font-weight: 700;
   cursor: pointer;
   position: relative;
+}
+
+.day-cell.other-month {
+  cursor: default;
 }
 
 .day-cell.today {
@@ -1036,9 +1024,7 @@ body {
   cursor: pointer;
 }
 
-/* =========================================
-   モーダル
-   ========================================= */
+/* モーダル */
 .modal-overlay {
   position: absolute;
   inset: 0;
