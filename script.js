@@ -45,6 +45,24 @@ function loadSharedMedData() {
   return JSON.parse(JSON.stringify(fallbackSharedData));
 }
 
+function saveImportedPatient(patientObj) {
+  const shared = loadSharedMedData();
+  const idx = shared.patients.findIndex(p => String(p.id).trim() === String(patientObj.id).trim());
+  if (idx !== -1) {
+    shared.patients[idx] = patientObj;
+  } else {
+    shared.patients.push(patientObj);
+  }
+  shared.currentPatientId = String(patientObj.id).trim();
+  localStorage.setItem(SHARED_STORAGE_KEY, JSON.stringify(shared));
+}
+
+function decodePatientSyncCode(code) {
+  const raw = code.trim().slice(4);
+  const jsonStr = decodeURIComponent(escape(atob(raw)));
+  return JSON.parse(jsonStr);
+}
+
 function findPatientById(patientId) {
   const shared = loadSharedMedData();
   const targetStr = String(patientId).trim();
@@ -154,16 +172,37 @@ function initIdLoginGate() {
   const input = document.getElementById('login-patient-id-input');
   const errorEl = document.getElementById('id-login-error');
 
-  if (!form) return;
+  if (!form || !input) return;
+
+  // 4桁IDだけでなく連携コード（MED:...）も貼り付けられるよう調整
+  input.removeAttribute('inputmode');
+  input.placeholder = '例: 1002 または 連携コード';
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const enteredId = input.value.trim();
-    if (!enteredId) return;
+    const entered = input.value.trim();
+    if (!entered) return;
 
-    const matchedPatient = findPatientById(enteredId);
+    let matchedPatient = null;
+
+    if (entered.startsWith('MED:')) {
+      try {
+        const imported = decodePatientSyncCode(entered);
+        if (imported && imported.id && imported.name) {
+          saveImportedPatient(imported);
+          matchedPatient = imported;
+        }
+      } catch (err) {
+        errorEl.textContent = '連携コードが正しくありません。もう一度コピーし直してください。';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+    } else {
+      matchedPatient = findPatientById(entered);
+    }
+
     if (!matchedPatient) {
-      errorEl.textContent = `ID「${enteredId}」は登録されていません。薬剤師さんにIDをご確認ください。`;
+      errorEl.textContent = `ID「${entered}」が見つかりません。別のフォルダや別の端末で開いている場合は、薬剤師画面の「連携コード」を貼り付けてください。`;
       errorEl.classList.remove('hidden');
       return;
     }
