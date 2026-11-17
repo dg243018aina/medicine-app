@@ -21,15 +21,14 @@
           <h1 class="id-login-title">脳トレ ＆ 薬管理</h1>
           <p class="id-login-desc">
             薬剤師さんから受け取った<br>
-            <strong>あなたの患者ID</strong> を入力してください
+            <strong>あなたの患者ID（または連携コード）</strong> を入力してください
           </p>
 
           <form id="patient-id-login-form" class="id-login-form">
             <input
               type="text"
               id="login-patient-id-input"
-              inputmode="numeric"
-              placeholder="例: 1001"
+              placeholder="例: 1001 または 連携コード"
               autocomplete="off"
               required
             >
@@ -56,39 +55,37 @@
         </div>
       </section>
 
-      <!-- 画面1: メインホーム画面 -->
+      <!-- 画面1: メインホーム画面（Googleカレンダー風大型カレンダー） -->
       <section id="screen-home" class="screen">
         <div class="home-container">
-          <div class="calendar-hero-card" data-target="screen-calendar">
-            <div class="calendar-hero-top">
-              <div class="big-calendar-illust">
-                <div class="cal-illust-top">
-                  <span class="cal-ring"></span>
-                  <span class="cal-month-label" id="home-cal-month">11月</span>
-                  <span class="cal-ring"></span>
-                </div>
-                <div class="cal-illust-body">
-                  <div class="cal-big-day" id="home-cal-day">16</div>
-                  <div class="cal-mini-dots">
-                    <span class="dot-o"></span><span class="dot-y"></span><span class="dot-g"></span>
-                  </div>
-                </div>
+          
+          <!-- 上部：大きく表示されるGoogleカレンダー風ウィジェット -->
+          <div class="gcal-home-card">
+            <div class="gcal-header">
+              <div class="gcal-nav-group">
+                <button type="button" id="home-gcal-prev" class="gcal-icon-btn" aria-label="前月">‹</button>
+                <h3 id="home-gcal-title">2026年 11月</h3>
+                <button type="button" id="home-gcal-next" class="gcal-icon-btn" aria-label="次月">›</button>
               </div>
-              <div class="calendar-tap-hint">
-                <span class="hint-badge">👆 タップで開く</span>
-                <h3>カレンダー</h3>
-                <p>予定の確認・追加</p>
-              </div>
+              <button type="button" class="gcal-expand-btn" data-target="screen-calendar">＋ 予定管理</button>
             </div>
 
-            <div class="home-pet-corner">
-              <div class="home-speech-bubble" id="home-pet-speech">
-                今日もお薬と脳トレがんばろうチュ！
-              </div>
-              <div class="home-pet-avatar" id="home-pet-body"></div>
+            <div class="gcal-weekdays">
+              <span class="sun">日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span class="sat">土</span>
             </div>
+
+            <div class="gcal-grid" id="home-gcal-grid"></div>
           </div>
 
+          <!-- 中央：ハムスターの吹き出し＆アバター -->
+          <div class="home-pet-corner">
+            <div class="home-speech-bubble" id="home-pet-speech">
+              今日もお薬と脳トレがんばろうチュ！
+            </div>
+            <div class="home-pet-avatar" id="home-pet-body"></div>
+          </div>
+
+          <!-- 下部：3つのメインボタン -->
           <nav class="home-nav">
             <button class="nav-btn btn-pet" data-target="screen-pet">
               <span class="nav-icon">🐹</span>
@@ -103,6 +100,7 @@
               <span class="nav-text">計算</span>
             </button>
           </nav>
+
         </div>
       </section>
 
@@ -259,7 +257,10 @@
           </div>
 
           <div class="card meds-card">
-            <h4>処方中のお薬</h4>
+            <div class="meds-card-header">
+              <h4>処方中のお薬</h4>
+              <button type="button" id="open-sync-update-btn" class="sync-update-mini-btn">🔄 薬データを更新</button>
+            </div>
             <div id="medicine-list"></div>
           </div>
         </div>
@@ -274,7 +275,7 @@
       <section id="screen-calendar" class="screen">
         <div class="screen-header">
           <button class="back-btn" data-target="screen-home">← 戻る</button>
-          <h2>カレンダー</h2>
+          <h2>カレンダー・予定追加</h2>
         </div>
 
         <div class="calendar-view-container">
@@ -342,6 +343,26 @@
         <div class="modal-btn-group">
           <button type="button" class="btn-cancel" id="close-event-modal-btn">キャンセル</button>
           <button type="submit" class="btn-submit">保存する</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 新しい薬データ更新（別デバイス連携コード入力）モーダル -->
+  <div class="modal-overlay hidden" id="sync-update-modal">
+    <div class="modal-content">
+      <h3>お薬データの更新</h3>
+      <p style="font-size:0.82rem; color:#555; margin-top:6px; line-height:1.4;">
+        薬剤師側で新しく追加された連携コード（<code>MED:...</code>）を貼り付けてください。
+      </p>
+      <form id="sync-update-form">
+        <div class="form-group">
+          <input type="text" id="sync-update-input" placeholder="MED:..." required>
+        </div>
+        <p id="sync-update-error" class="id-login-error hidden" style="margin-top:6px;"></p>
+        <div class="modal-btn-group">
+          <button type="button" class="btn-cancel" id="close-sync-update-btn">閉じる</button>
+          <button type="submit" class="btn-submit">更新する</button>
         </div>
       </form>
     </div>
