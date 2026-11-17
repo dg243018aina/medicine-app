@@ -3,350 +3,165 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>脳トレ ＆ 薬管理</title>
+  <title>薬剤師・看護師 管理ポータル</title>
+  <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="patient.css">
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body>
 
   <div class="phone-frame">
+    <header class="app-header">
+      <div class="header-title">薬剤師 管理ポータル</div>
+      <button type="button" id="header-carte-btn" class="header-mini-btn">📋 診察カルテ</button>
+    </header>
+
     <main class="app-content">
+      <!-- 画面1: 患者選択 & 生活時間設定 -->
+      <section id="screen-step1" class="screen active">
+        <div class="pharmacist-container">
+          
+          <div class="patient-section">
+            <h3>1. 患者の入力・選択</h3>
+            
+            <label for="patient-name-input">新規患者名（新しく登録してIDを発行する場合）</label>
+            <input type="text" id="patient-name-input" placeholder="例: 山田 太郎">
 
-      <!-- 初回起動時のみ表示：患者ID入力画面 -->
-      <section id="screen-id-login" class="screen">
-        <div class="id-login-container">
-          <div class="id-login-icon">🐹💊</div>
-          <h1 class="id-login-title">脳トレ ＆ 薬管理</h1>
-          <p class="id-login-desc">
-            薬剤師さんから受け取った<br>
-            <strong>あなたの患者ID</strong> を入力してください
-          </p>
-
-          <form id="patient-id-login-form" class="id-login-form">
-            <input
-              type="text"
-              id="login-patient-id-input"
-              inputmode="numeric"
-              placeholder="例: 1001"
-              autocomplete="off"
-              required
-            >
-            <p id="id-login-error" class="id-login-error hidden"></p>
-            <button type="submit" class="start-app-btn">IDを決定してはじめる</button>
-          </form>
-
-          <p class="id-login-note">
-            ※一度IDを登録すると、次回からは自動でご本人専用の画面が開きます。
-          </p>
-        </div>
-      </section>
-
-      <!-- 画面0: オープニング画面（ID登録完了後はここから起動） -->
-      <section id="screen-opening" class="screen">
-        <div class="opening-container">
-          <div class="opening-title">
-            <h1>脳トレ <span>＆</span><br>薬管理</h1>
+            <label for="patient-select">または登録済みの患者から選択</label>
+            <select id="patient-select">
+              <option value="">-- 患者を選択してください --</option>
+            </select>
           </div>
-          <div class="opening-user-badge" id="opening-user-badge">--- 様 専用</div>
-          <div class="opening-hero-pet" id="opening-pet-slot"></div>
-          <p class="opening-sub">毎日楽しく 脳トレとお薬管理！</p>
-          <button class="start-app-btn" id="start-app-btn" data-target="screen-home">はじめる</button>
-        </div>
-      </section>
 
-      <!-- 画面1: メインホーム画面 -->
-      <section id="screen-home" class="screen">
-        <div class="home-container">
-          <div class="calendar-hero-card" data-target="screen-calendar">
-            <div class="calendar-hero-top">
-              <div class="big-calendar-illust">
-                <div class="cal-illust-top">
-                  <span class="cal-ring"></span>
-                  <span class="cal-month-label" id="home-cal-month">11月</span>
-                  <span class="cal-ring"></span>
+          <hr class="divider">
+
+          <div class="edit-patient-section">
+            <h3>2. 生活時間（ご飯・お風呂）の設定</h3>
+            <form id="edit-schedule-form">
+              <div class="time-grid">
+                <div>
+                  <label for="sched-bf">朝ごはん</label>
+                  <input type="time" id="sched-bf" value="07:00">
                 </div>
-                <div class="cal-illust-body">
-                  <div class="cal-big-day" id="home-cal-day">16</div>
-                  <div class="cal-mini-dots">
-                    <span class="dot-o"></span><span class="dot-y"></span><span class="dot-g"></span>
-                  </div>
+                <div>
+                  <label for="sched-lunch">昼ごはん</label>
+                  <input type="time" id="sched-lunch" value="12:00">
+                </div>
+                <div>
+                  <label for="sched-dinner">晩ごはん</label>
+                  <input type="time" id="sched-dinner" value="19:00">
+                </div>
+                <div>
+                  <label for="sched-bath">お風呂</label>
+                  <input type="time" id="sched-bath" value="17:00">
                 </div>
               </div>
-              <div class="calendar-tap-hint">
-                <span class="hint-badge">👆 タップで開く</span>
-                <h3>カレンダー</h3>
-                <p>予定の確認・追加</p>
-              </div>
-            </div>
 
-            <div class="home-pet-corner">
-              <div class="home-speech-bubble" id="home-pet-speech">
-                今日もお薬と脳トレがんばろうチュ！
-              </div>
-              <div class="home-pet-avatar" id="home-pet-body"></div>
-            </div>
+              <button type="submit" id="next-step-btn" class="action-btn btn-orange">次へ（お薬登録） ➔</button>
+            </form>
           </div>
 
-          <nav class="home-nav">
-            <button class="nav-btn btn-pet" data-target="screen-pet">
-              <span class="nav-icon">🐹</span>
-              <span class="nav-text">ペット</span>
-            </button>
-            <button class="nav-btn btn-med" data-target="screen-med">
-              <span class="nav-icon">💊</span>
-              <span class="nav-text">くすり</span>
-            </button>
-            <button class="nav-btn btn-calc" data-target="screen-calc">
-              <span class="nav-icon">✏️</span>
-              <span class="nav-text">計算</span>
-            </button>
-          </nav>
         </div>
       </section>
 
-      <!-- 画面2: ペット -->
-      <section id="screen-pet" class="screen">
-        <div class="screen-header">
-          <button class="back-btn" data-target="screen-home">← 戻る</button>
-          <h2>ペット育成</h2>
-        </div>
-
-        <div class="pet-display">
-          <div class="pet-level-badge">Lv.<span id="pet-level">1</span> <span id="pet-stage-name">赤ちゃんハム</span></div>
+      <!-- 画面2: 服薬情報・QR読み取り -->
+      <section id="screen-step2" class="screen">
+        <div class="pharmacist-container">
           
-          <div class="exp-bar-area">
-            <div class="exp-bar-container">
-              <div class="exp-bar-fill" id="exp-bar-fill"></div>
-            </div>
-            <div class="exp-text" id="exp-status-text">あと <strong>30</strong> でレベルアップ！</div>
+          <div class="target-patient-box">
+            <div><strong>対象患者: </strong><span id="target-patient-name">未指定</span></div>
+            <div class="target-id-line">発行ID: <strong id="target-patient-id">----</strong></div>
           </div>
 
-          <div class="pet-character-container">
-            <div class="pet-character-svg" id="pet-character-body"></div>
+          <div class="edit-medicine-section">
+            <h3>処方薬・服用タイミングの設定</h3>
+
+            <div class="instruction-box">
+              <strong>【手順】</strong> ①QRまたは手入力でセット → ②タイミング確認 → ③「この薬をリストに追加」
+            </div>
+
+            <button type="button" id="start-scan-btn" class="action-btn btn-blue">📷 QRコードから読み込む</button>
+            <div id="qr-reader-container">
+              <div id="qr-reader"></div>
+              <button type="button" id="stop-scan-btn" class="cancel-scan-btn">キャンセル</button>
+            </div>
+
+            <form id="add-medicine-form">
+              <label for="med-name">薬品名</label>
+              <input type="text" id="med-name" placeholder="例: ロキソニン" required>
+
+              <label for="med-dosage">1回の量・注意点</label>
+              <input type="text" id="med-dosage" placeholder="例: 1錠（毎食後）">
+
+              <label>いつ飲むか（複数選択可）</label>
+              <div class="checkbox-group">
+                <label><input type="checkbox" name="med-timing" value="朝"> 朝</label>
+                <label><input type="checkbox" name="med-timing" value="昼"> 昼</label>
+                <label><input type="checkbox" name="med-timing" value="夕"> 夕</label>
+                <label><input type="checkbox" name="med-timing" value="就寝前"> 就寝前</label>
+                <label><input type="checkbox" name="med-timing" value="頓服"> 頓服</label>
+              </div>
+
+              <button type="submit" class="action-btn btn-green">＋ この薬をリストに追加</button>
+            </form>
+
+            <div class="registered-medicines-list">
+              <h4>登録予定のお薬</h4>
+              <ul id="medicine-list"></ul>
+            </div>
+
+            <button type="button" id="complete-patient-btn" class="action-btn btn-orange" style="margin-top: 12px;">✅ 患者データを確定してIDを発行する</button>
+            <button type="button" id="back-to-step1-btn" class="back-step-btn">⬅ 患者・生活時間設定に戻る</button>
           </div>
 
-          <div class="pet-status">
-            <div>なつき度: <span id="pet-love">0</span>%</div>
-            <div class="coin-badge">💰 <span id="coin-count">11</span> コイン</div>
-          </div>
-        </div>
-
-        <div class="tab-controls">
-          <button class="tab-btn active" id="tab-btn-gohan">ごはん</button>
-          <button class="tab-btn" id="tab-btn-talk">おしゃべり</button>
-        </div>
-
-        <div id="tab-content-gohan" class="tab-content active">
-          <div class="food-grid">
-            <div class="food-card" data-cost="5" data-exp="15" data-love="10" data-food="ひまわりの種">
-              <div class="food-img">🌻</div>
-              <div class="food-info">
-                <span class="food-title">ひまわりの種</span>
-                <span class="food-cost">5コイン</span>
-              </div>
-            </div>
-            <div class="food-card" data-cost="8" data-exp="25" data-love="15" data-food="スイカ">
-              <div class="food-img">🍉</div>
-              <div class="food-info">
-                <span class="food-title">スイカ</span>
-                <span class="food-cost">8コイン</span>
-              </div>
-            </div>
-            <div class="food-card" data-cost="6" data-exp="20" data-love="12" data-food="さつまいも">
-              <div class="food-img">🍠</div>
-              <div class="food-info">
-                <span class="food-title">さつまいも</span>
-                <span class="food-cost">6コイン</span>
-              </div>
-            </div>
-            <div class="food-card" data-cost="3" data-exp="10" data-love="5" data-food="ブロッコリー">
-              <div class="food-img">🥦</div>
-              <div class="food-info">
-                <span class="food-title">ブロッコリー</span>
-                <span class="food-cost">3コイン</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div id="tab-content-talk" class="tab-content">
-          <div class="chat-container">
-            <div class="chat-history" id="chat-history">
-              <div class="chat-bubble pet-bubble" id="pet-dialog">
-                こんにちは！今日もお薬飲んでえらいチュ！何でも気軽にお話ししてね！
-              </div>
-            </div>
-            <div class="chat-input-row">
-              <input type="text" id="talk-input" placeholder="話しかけてね...">
-              <button id="talk-send-btn">送信</button>
-            </div>
-          </div>
         </div>
       </section>
 
-      <!-- 画面3: 計算 -->
-      <section id="screen-calc" class="screen">
-        <div class="screen-header">
-          <button class="back-btn" data-target="screen-home">← 戻る</button>
-          <h2>脳トレ計算</h2>
-        </div>
+      <!-- 画面3: 診察カルテ & 患者ID案内画面 -->
+      <section id="screen-carte" class="screen">
+        <div class="carte-container">
+          <div class="carte-header-badge">🩺 診察・服薬カルテ確認</div>
 
-        <div id="calc-menu">
-          <h3>計算の種類を選択</h3>
-          <div class="calc-op-list">
-            <button class="menu-btn calc-op-btn active" data-op="+">足し算</button>
-            <button class="menu-btn calc-op-btn" data-op="-">引き算</button>
-            <button class="menu-btn calc-op-btn" data-op="*">掛け算</button>
-            <button class="menu-btn calc-op-btn" data-op="/">割り算</button>
+          <label for="carte-patient-select">表示する患者を切り替え</label>
+          <select id="carte-patient-select"></select>
+
+          <div class="issued-id-banner">
+            <div class="issued-id-label">📲 患者側アプリに入力するID</div>
+            <div class="issued-id-number" id="carte-issued-id">1001</div>
+            <div class="issued-id-note">患者さんのアプリ初回画面でこの4桁のIDを入力してください</div>
           </div>
-          <h3>むずかしさ（1問のコイン）</h3>
-          <div class="calc-diff-list">
-            <button class="menu-btn calc-diff-btn active" data-diff="easy">かんたん<br><small>1コイン</small></button>
-            <button class="menu-btn calc-diff-btn" data-diff="mid">ふつう<br><small>2コイン</small></button>
-            <button class="menu-btn calc-diff-btn" data-diff="hard">むずかしい<br><small>3コイン</small></button>
-          </div>
-          <button class="action-btn" id="start-calc-btn">10問テスト スタート！</button>
-        </div>
 
-        <div id="calc-game" class="hidden">
-          <div class="calc-progress-badge" id="calc-progress-text">第 1 / 10 問</div>
-          <div class="question-box"><span id="question-text">8 + 5 = ?</span></div>
-          
-          <div id="calc-feedback" class="calc-feedback hidden"></div>
-
-          <div class="answer-box"><span id="user-answer"></span></div>
-          <div class="numpad">
-            <button class="num-btn">1</button><button class="num-btn">2</button><button class="num-btn">3</button>
-            <button class="num-btn">4</button><button class="num-btn">5</button><button class="num-btn">6</button>
-            <button class="num-btn">7</button><button class="num-btn">8</button><button class="num-btn">9</button>
-            <button class="num-btn clear-btn">消す</button><button class="num-btn">0</button><button class="num-btn submit-btn">確定</button>
-          </div>
-          <button class="back-btn" id="calc-quit-btn">やめる</button>
-        </div>
-
-        <div id="calc-result" class="hidden">
-          <div class="result-card">
-            <div class="result-icon">🎉</div>
-            <h3>テスト終了！</h3>
-            <div class="result-score">10問中 <span id="result-correct-count">0</span> 問 正解！</div>
-            <div class="result-coin-box">
-              <span>獲得したごほうび</span>
-              <div class="result-coins">💰 +<span id="result-earned-coins">0</span> コイン</div>
+          <div class="carte-card">
+            <div class="carte-patient-title">
+              <span id="carte-name">---</span> 様
+              <span class="carte-sub" id="carte-date">登録日: ---</span>
             </div>
-            <button class="action-btn" id="calc-retry-btn">もう一度やる</button>
+
+            <div class="carte-section">
+              <h4>⏰ 生活スケジュール</h4>
+              <div class="carte-schedule-grid" id="carte-schedule-list"></div>
+            </div>
+
+            <div class="carte-section">
+              <h4>💊 処方薬・服用タイミング</h4>
+              <ul class="carte-med-list" id="carte-med-list"></ul>
+            </div>
+
+            <div class="carte-section">
+              <h4>📝 診察メモ</h4>
+              <textarea id="carte-memo" rows="2" placeholder="診察時の所見や申し送り事項を入力..."></textarea>
+              <button type="button" id="save-memo-btn" class="action-btn btn-blue" style="margin-top: 6px; padding: 6px;">メモを保存</button>
+            </div>
           </div>
+
+          <button type="button" id="new-register-btn" class="action-btn btn-green">＋ 新しい患者・お薬を登録する</button>
         </div>
       </section>
-
-      <!-- 画面4: くすり -->
-      <section id="screen-med" class="screen">
-        <div class="screen-header">
-          <button class="back-btn" data-target="screen-home">← 戻る</button>
-          <h2>お薬・生活時間</h2>
-        </div>
-
-        <div class="patient-info-header">
-          <h3 id="patient-display-name">--- 様</h3>
-          <span class="patient-id-sub" id="patient-display-id">患者ID: ----</span>
-        </div>
-
-        <div class="med-layout">
-          <div class="card schedule-card">
-            <h4>生活時間</h4>
-            <ul id="schedule-list"></ul>
-          </div>
-
-          <div class="card meds-card">
-            <h4>処方中のお薬</h4>
-            <div id="medicine-list"></div>
-          </div>
-        </div>
-
-        <div class="med-action-buttons">
-          <button class="med-done-btn" id="mark-med-taken-btn">✅ 今日のお薬をのんだ！</button>
-          <button class="alarm-test-btn" id="trigger-alarm-test-btn">⏰ お薬アラームのテスト</button>
-        </div>
-      </section>
-
-      <!-- 画面5: カレンダー画面 -->
-      <section id="screen-calendar" class="screen">
-        <div class="screen-header">
-          <button class="back-btn" data-target="screen-home">← 戻る</button>
-          <h2>カレンダー</h2>
-        </div>
-
-        <div class="calendar-view-container">
-          <div class="calendar-month-nav">
-            <button id="prev-month-btn" class="month-nav-btn">< 前月</button>
-            <h3 id="calendar-month-title"></h3>
-            <button id="next-month-btn" class="month-nav-btn">次月 ></button>
-          </div>
-
-          <div class="calendar-weekdays">
-            <span class="sun">日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span class="sat">土</span>
-          </div>
-
-          <div class="calendar-days-grid" id="calendar-days-grid"></div>
-        </div>
-
-        <div class="selected-day-schedule">
-          <div class="schedule-header-row">
-            <h4 id="selected-date-label">日付を選択してください</h4>
-            <button id="open-add-event-btn" class="action-btn small-btn">+ 予定を追加</button>
-          </div>
-          <div id="selected-day-events" class="events-list">
-            <p class="empty-msg">予定はありません</p>
-          </div>
-        </div>
-      </section>
-
     </main>
   </div>
 
-  <!-- 服薬アラーム モーダル -->
-  <div class="modal-overlay hidden" id="alarm-modal">
-    <div class="alarm-content">
-      <div class="alarm-clock-icon" style="font-size:48px;">⏰</div>
-      <h3>お薬の時間です！</h3>
-      <p id="alarm-medicine-info">処方薬の服薬時間です</p>
-      <div class="alarm-btn-group">
-        <button class="alarm-btn btn-taken" id="alarm-btn-yes">のんだ</button>
-        <button class="alarm-btn btn-not-taken" id="alarm-btn-no">まだ</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 予定追加 モーダル -->
-  <div class="modal-overlay hidden" id="event-modal">
-    <div class="modal-content">
-      <h3>予定の追加</h3>
-      <form id="event-form">
-        <div class="form-group">
-          <label for="event-title">予定の内容</label>
-          <input type="text" id="event-title" placeholder="例: 病院、買い物" required>
-        </div>
-        <div class="form-group">
-          <label for="event-time">時間 (任意)</label>
-          <input type="time" id="event-time">
-        </div>
-        <div class="form-group">
-          <label for="event-category">種類</label>
-          <select id="event-category">
-            <option value="hospital">🏥 通院・病院</option>
-            <option value="med">💊 薬</option>
-            <option value="personal">✏️ 予定・メモ</option>
-          </select>
-        </div>
-        <div class="modal-btn-group">
-          <button type="button" class="btn-cancel" id="close-event-modal-btn">キャンセル</button>
-          <button type="submit" class="btn-submit">保存する</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <script src="patient.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
