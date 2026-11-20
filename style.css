@@ -4,6 +4,11 @@
   padding: 0;
   font-family: 'Zen Maru Gothic', sans-serif;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  font-size: 19px;
 }
 
 body {
@@ -12,14 +17,14 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  padding: 15px;
+  padding: 12px;
 }
 
 .phone-frame {
   width: 100%;
-  max-width: 430px;
-  height: 780px;
-  max-height: 92vh;
+  max-width: 460px;
+  height: 840px;
+  max-height: 95vh;
   background-color: #fffdf9;
   border-radius: 36px;
   box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45);
@@ -30,18 +35,37 @@ body {
   position: relative;
 }
 
+/* スマホ実機では外枠を消して画面いっぱいに大きく表示 */
+@media (max-width: 520px) {
+  body {
+    padding: 0;
+    background-color: #fffdf9;
+    align-items: stretch;
+  }
+
+  .phone-frame {
+    max-width: 100%;
+    height: 100dvh;
+    max-height: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+
 .app-content {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
+  -webkit-overflow-scrolling: touch;
 }
 
 .screen {
   display: none;
   flex: 1;
-  padding: 14px 14px;
+  padding: 14px 12px 18px;
   flex-direction: column;
 }
 
@@ -53,19 +77,22 @@ body {
   display: none !important;
 }
 
-/* QRカメラボタン＆リーダー枠 */
+/* ===================================================
+   QRカメラボタン＆リーダー枠
+=================================================== */
 .qr-camera-btn {
   width: 100%;
-  max-width: 320px;
-  padding: 13px 16px;
+  max-width: 360px;
+  padding: 16px 14px;
   background: linear-gradient(180deg, #339af0 0%, #1971c2 100%);
   color: #fff;
   border: none;
-  border-radius: 16px;
-  font-size: 1rem;
+  border-radius: 18px;
+  font-size: 1.05rem;
   font-weight: 900;
   cursor: pointer;
-  box-shadow: 0 4px 0 #1864ab;
+  box-shadow: 0 5px 0 #1864ab;
+  line-height: 1.3;
 }
 
 .qr-camera-btn:active {
@@ -75,28 +102,30 @@ body {
 
 .qr-reader-box {
   width: 100%;
-  max-width: 300px;
-  margin: 10px auto 0;
+  max-width: 320px;
+  margin: 12px auto 0;
   background: #000;
-  border-radius: 14px;
+  border-radius: 16px;
   overflow: hidden;
-  padding: 6px;
+  padding: 8px;
 }
 
 .qr-cancel-btn {
   width: 100%;
-  margin-top: 6px;
-  padding: 7px;
+  margin-top: 8px;
+  padding: 11px;
   background: #fa5252;
   color: #fff;
   border: none;
-  border-radius: 8px;
-  font-size: 0.85rem;
+  border-radius: 10px;
+  font-size: 1rem;
   font-weight: 900;
   cursor: pointer;
 }
 
-/* 初回起動時：患者ID入力画面 */
+/* ===================================================
+   初回起動時：患者ID入力画面
+=================================================== */
 .id-login-container {
   flex: 1;
   display: flex;
@@ -104,79 +133,84 @@ body {
   justify-content: center;
   align-items: center;
   text-align: center;
-  padding: 12px;
+  padding: 14px 10px;
   background: radial-gradient(circle at top, #fff5e6 0%, #fffdf9 70%);
 }
 
 .id-login-icon {
-  font-size: 3.1rem;
-  margin-bottom: 8px;
+  font-size: 3.2rem;
+  margin-bottom: 6px;
 }
 
 .id-login-title {
-  font-size: 1.8rem;
+  font-size: 1.75rem;
   font-weight: 900;
-  color: #e67e22;
+  color: #d9480f;
   margin-bottom: 8px;
 }
 
 .id-login-desc {
-  font-size: 0.95rem;
-  color: #444;
-  line-height: 1.5;
+  font-size: 1rem;
+  color: #212529;
+  line-height: 1.55;
   margin-bottom: 14px;
 }
 
 .login-divider {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #868e96;
-  margin: 14px 0 8px;
+  font-size: 0.92rem;
+  font-weight: 900;
+  color: #495057;
+  margin: 16px 0 8px;
 }
 
 .id-login-form {
   width: 100%;
-  max-width: 320px;
+  max-width: 360px;
 }
 
 #login-patient-id-input {
   width: 100%;
-  padding: 12px 14px;
-  font-size: 1.25rem;
+  padding: 14px;
+  font-size: 1.4rem;
   font-weight: 900;
   text-align: center;
   border: 3px solid #f39c12;
   border-radius: 16px;
   background: #fff;
-  color: #2c3e50;
-  margin-bottom: 10px;
+  color: #212529;
+  margin-bottom: 12px;
   user-select: text;
 }
 
 #login-patient-id-input:focus {
   outline: none;
   border-color: #e67e22;
-  box-shadow: 0 0 0 4px rgba(243, 156, 18, 0.2);
+  box-shadow: 0 0 0 4px rgba(243, 156, 18, 0.25);
 }
 
 .id-login-error {
-  color: #e03131;
+  color: #c92a2a;
   background: #ffe3e3;
-  border-radius: 10px;
-  padding: 8px 10px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  margin-bottom: 10px;
+  border: 2px solid #ffa8a8;
+  border-radius: 12px;
+  padding: 10px;
+  font-size: 0.92rem;
+  font-weight: 900;
+  margin-bottom: 12px;
+  line-height: 1.45;
 }
 
 .id-login-note {
   margin-top: 14px;
-  font-size: 0.78rem;
-  color: #7f8c8d;
-  line-height: 1.4;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #495057;
+  line-height: 1.45;
 }
 
-/* オープニング画面 */
+/* ===================================================
+   オープニング画面
+=================================================== */
 .opening-container {
   flex: 1;
   display: flex;
@@ -185,39 +219,39 @@ body {
   align-items: center;
   text-align: center;
   background: radial-gradient(circle at top, #fff3e0 0%, #fffdf9 75%);
-  padding: 10px;
+  padding: 12px;
 }
 
 .opening-title h1 {
-  font-size: 2.3rem;
+  font-size: 2.25rem;
   font-weight: 900;
-  color: #e67e22;
-  line-height: 1.2;
+  color: #d9480f;
+  line-height: 1.25;
   text-shadow: 2px 2px 0 #ffe0b2;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .opening-title h1 span {
-  color: #27ae60;
+  color: #2b8a3e;
   font-size: 1.8rem;
 }
 
 .opening-user-badge {
   background: #fff;
-  border: 2px solid #f39c12;
-  color: #d35400;
+  border: 3px solid #f39c12;
+  color: #b84300;
   font-weight: 900;
-  font-size: 1.05rem;
-  padding: 6px 18px;
+  font-size: 1.15rem;
+  padding: 8px 20px;
   border-radius: 999px;
   margin-bottom: 14px;
-  box-shadow: 0 3px 8px rgba(243, 156, 18, 0.15);
+  box-shadow: 0 3px 8px rgba(243, 156, 18, 0.18);
 }
 
 .opening-hero-pet {
-  width: 170px;
-  height: 170px;
-  margin: 6px auto 12px;
+  width: 175px;
+  height: 175px;
+  margin: 4px auto 12px;
 }
 
 .hamster-svg-art {
@@ -227,21 +261,21 @@ body {
 }
 
 .opening-sub {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #666;
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #495057;
   margin-bottom: 22px;
 }
 
 .start-app-btn {
   width: 100%;
-  max-width: 290px;
-  padding: 15px 24px;
+  max-width: 320px;
+  padding: 17px 20px;
   background: linear-gradient(180deg, #ff9f43 0%, #ee5253 100%);
   color: #fff;
   border: none;
   border-radius: 999px;
-  font-size: 1.25rem;
+  font-size: 1.3rem;
   font-weight: 900;
   cursor: pointer;
   box-shadow: 0 6px 0 #c23616, 0 10px 20px rgba(238, 82, 83, 0.3);
@@ -260,28 +294,28 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
 }
 
 .gcal-home-card {
   flex: 1;
   background: #ffffff;
-  border: 2px solid #dadce0;
+  border: 2.5px solid #adb5bd;
   border-radius: 20px;
-  padding: 9px;
+  padding: 8px 6px;
   display: flex;
   flex-direction: column;
   box-shadow: 0 4px 12px rgba(60, 64, 67, 0.12);
-  min-height: 0;
+  min-height: 360px;
 }
 
 .gcal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 5px;
-  border-bottom: 1px solid #e8eaed;
-  margin-bottom: 3px;
+  padding: 0 4px 6px;
+  border-bottom: 2px solid #e8eaed;
+  margin-bottom: 4px;
 }
 
 .gcal-nav-group {
@@ -291,21 +325,21 @@ body {
 }
 
 .gcal-nav-group h3 {
-  font-size: 1.08rem;
+  font-size: 1.15rem;
   font-weight: 900;
-  color: #3c4043;
-  min-width: 102px;
+  color: #212529;
+  min-width: 112px;
   text-align: center;
 }
 
 .gcal-icon-btn {
-  width: 28px;
-  height: 28px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  border: 1px solid #dadce0;
+  border: 2px solid #adb5bd;
   background: #fff;
-  color: #3c4043;
-  font-size: 1.1rem;
+  color: #212529;
+  font-size: 1.25rem;
   font-weight: 900;
   line-height: 1;
   cursor: pointer;
@@ -315,7 +349,7 @@ body {
 }
 
 .gcal-icon-btn:active {
-  background: #f1f3f4;
+  background: #e9ecef;
 }
 
 .gcal-expand-btn {
@@ -323,21 +357,21 @@ body {
   color: #fff;
   border: none;
   border-radius: 999px;
-  padding: 5px 12px;
-  font-size: 0.78rem;
+  padding: 7px 13px;
+  font-size: 0.85rem;
   font-weight: 900;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(26, 115, 232, 0.25);
+  box-shadow: 0 2px 4px rgba(26, 115, 232, 0.3);
 }
 
 .gcal-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   text-align: center;
-  font-size: 0.74rem;
+  font-size: 0.85rem;
   font-weight: 900;
-  color: #70757a;
-  padding: 2px 0 3px;
+  color: #495057;
+  padding: 3px 0 4px;
 }
 
 .gcal-weekdays .sun { color: #d93025; }
@@ -347,15 +381,15 @@ body {
   flex: 1;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  grid-auto-rows: 1fr;
-  border-top: 1px solid #e8eaed;
-  border-left: 1px solid #e8eaed;
+  grid-auto-rows: minmax(52px, 1fr);
+  border-top: 1.5px solid #ced4da;
+  border-left: 1.5px solid #ced4da;
 }
 
 .gcal-cell {
-  border-right: 1px solid #e8eaed;
-  border-bottom: 1px solid #e8eaed;
-  padding: 2px;
+  border-right: 1.5px solid #ced4da;
+  border-bottom: 1.5px solid #ced4da;
+  padding: 2px 1px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -365,29 +399,31 @@ body {
 }
 
 .gcal-cell.other-month {
-  background: #f8f9fa;
+  background: #f1f3f5;
   cursor: default;
 }
 
 .gcal-cell.selected {
   background: #e8f0fe;
+  box-shadow: inset 0 0 0 2px #1a73e8;
 }
 
 .gcal-cell.holiday {
-  background: #fff8f8;
+  background: #fff5f5;
 }
 
 .gcal-cell.holiday.selected {
-  background: #fde8e8;
+  background: #ffe3e3;
+  box-shadow: inset 0 0 0 2px #d93025;
 }
 
 .gcal-day-num {
-  width: 20px;
-  height: 20px;
+  width: 25px;
+  height: 25px;
   border-radius: 50%;
-  font-size: 0.76rem;
+  font-size: 0.92rem;
   font-weight: 900;
-  color: #3c4043;
+  color: #212529;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -415,10 +451,10 @@ body {
 
 .gcal-holiday-text {
   width: 100%;
-  font-size: 0.56rem;
+  font-size: 0.62rem;
   font-weight: 900;
-  color: #d93025;
-  line-height: 1.1;
+  color: #c92a2a;
+  line-height: 1.15;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -430,11 +466,11 @@ body {
   width: 100%;
   background: #1a73e8;
   color: #fff;
-  font-size: 0.62rem;
-  font-weight: 700;
-  line-height: 1.18;
-  padding: 1px 3px;
-  border-radius: 3px;
+  font-size: 0.68rem;
+  font-weight: 900;
+  line-height: 1.2;
+  padding: 1px 2px;
+  border-radius: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -454,18 +490,18 @@ body {
 .home-speech-bubble {
   flex: 1;
   background: #fff;
-  border: 2px solid #5c3a21;
-  border-radius: 16px;
-  padding: 8px 11px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #3d2616;
-  line-height: 1.35;
+  border: 2.5px solid #5c3a21;
+  border-radius: 18px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: #2b180a;
+  line-height: 1.4;
 }
 
 .home-pet-avatar {
-  width: 74px;
-  height: 74px;
+  width: 78px;
+  height: 78px;
   flex-shrink: 0;
   transform-origin: center;
 }
@@ -479,13 +515,13 @@ body {
 
 .nav-btn {
   border: none;
-  border-radius: 18px;
-  padding: 10px 6px;
+  border-radius: 20px;
+  padding: 12px 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 4px;
   color: #fff;
   font-weight: 900;
   cursor: pointer;
@@ -496,29 +532,31 @@ body {
 }
 
 .btn-pet {
-  background: linear-gradient(180deg, #ff922b 0%, #f76707 100%);
-  box-shadow: 0 4px 0 #d9480f;
+  background: linear-gradient(180deg, #ff922b 0%, #e8590c 100%);
+  box-shadow: 0 5px 0 #b83b08;
 }
 
 .btn-med {
-  background: linear-gradient(180deg, #51cf66 0%, #2b8a3e 100%);
-  box-shadow: 0 4px 0 #1e602b;
+  background: linear-gradient(180deg, #40c057 0%, #2b8a3e 100%);
+  box-shadow: 0 5px 0 #1b5e20;
 }
 
 .btn-calc {
-  background: linear-gradient(180deg, #4dabf7 0%, #1c7ed6 100%);
-  box-shadow: 0 4px 0 #1864ab;
+  background: linear-gradient(180deg, #339af0 0%, #1971c2 100%);
+  box-shadow: 0 5px 0 #1864ab;
 }
 
 .nav-icon {
-  font-size: 1.65rem;
+  font-size: 1.85rem;
 }
 
 .nav-text {
-  font-size: 0.95rem;
+  font-size: 1.08rem;
 }
 
-/* 共通ヘッダー */
+/* ===================================================
+   共通ヘッダー
+=================================================== */
 .screen-header {
   display: flex;
   align-items: center;
@@ -527,26 +565,29 @@ body {
 }
 
 .screen-header h2 {
-  font-size: 1.3rem;
+  font-size: 1.35rem;
   font-weight: 900;
-  color: #3d2616;
+  color: #2b180a;
 }
 
 .back-btn {
   background: #f1f3f5;
-  border: 2px solid #ced4da;
-  border-radius: 12px;
-  padding: 7px 14px;
-  font-size: 0.9rem;
+  border: 2.5px solid #adb5bd;
+  border-radius: 14px;
+  padding: 9px 15px;
+  font-size: 1rem;
   font-weight: 900;
-  color: #495057;
+  color: #212529;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
-/* ペット画面 */
+/* ===================================================
+   ペット画面
+=================================================== */
 .pet-display {
   background: linear-gradient(180deg, #fff9db 0%, #fff3bf 100%);
-  border: 2.5px solid #ffd43b;
+  border: 3px solid #fcc419;
   border-radius: 22px;
   padding: 12px;
   text-align: center;
@@ -555,11 +596,11 @@ body {
 
 .pet-level-badge {
   display: inline-block;
-  background: #ff922b;
+  background: #e8590c;
   color: #fff;
   font-weight: 900;
-  font-size: 0.95rem;
-  padding: 4px 14px;
+  font-size: 1.05rem;
+  padding: 5px 16px;
   border-radius: 999px;
   margin-bottom: 8px;
 }
@@ -569,12 +610,12 @@ body {
 }
 
 .exp-bar-container {
-  width: 85%;
-  height: 12px;
+  width: 88%;
+  height: 14px;
   background: #fff;
-  border: 2px solid #f08c00;
+  border: 2.5px solid #e8590c;
   border-radius: 999px;
-  margin: 0 auto 4px;
+  margin: 0 auto 5px;
   overflow: hidden;
 }
 
@@ -586,20 +627,21 @@ body {
 }
 
 .exp-text {
-  font-size: 0.78rem;
-  color: #5c3a21;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #3d2616;
 }
 
 .pet-character-container {
-  height: 155px;
+  height: 150px;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .pet-character-svg {
-  width: 145px;
-  height: 145px;
+  width: 140px;
+  height: 140px;
   transition: transform 0.3s ease;
 }
 
@@ -608,15 +650,15 @@ body {
   justify-content: space-around;
   align-items: center;
   font-weight: 900;
-  font-size: 0.95rem;
-  color: #5c3a21;
+  font-size: 1.02rem;
+  color: #3d2616;
   margin-top: 4px;
 }
 
 .coin-badge {
   background: #fff;
-  border: 2px solid #fcc419;
-  padding: 4px 12px;
+  border: 2.5px solid #f59f00;
+  padding: 5px 14px;
   border-radius: 999px;
 }
 
@@ -628,19 +670,19 @@ body {
 }
 
 .tab-btn {
-  padding: 10px;
-  border: 2px solid #dee2e6;
-  border-radius: 14px;
+  padding: 12px;
+  border: 2.5px solid #adb5bd;
+  border-radius: 16px;
   background: #f8f9fa;
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 900;
-  color: #495057;
+  color: #343a40;
   cursor: pointer;
 }
 
 .tab-btn.active {
-  background: #ff922b;
-  border-color: #f76707;
+  background: #f76707;
+  border-color: #d9480f;
   color: #fff;
 }
 
@@ -662,12 +704,12 @@ body {
 
 .food-card {
   background: #fff;
-  border: 2px solid #ffe0b2;
-  border-radius: 16px;
-  padding: 10px;
+  border: 2.5px solid #ffc078;
+  border-radius: 18px;
+  padding: 12px 10px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
 }
 
@@ -676,7 +718,7 @@ body {
 }
 
 .food-img {
-  font-size: 2rem;
+  font-size: 2.1rem;
 }
 
 .food-info {
@@ -685,15 +727,17 @@ body {
 }
 
 .food-title {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 900;
-  color: #333;
+  color: #212529;
+  line-height: 1.25;
 }
 
 .food-cost {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #e67e22;
+  font-size: 0.9rem;
+  font-weight: 900;
+  color: #d9480f;
+  margin-top: 2px;
 }
 
 .chat-container {
@@ -701,10 +745,10 @@ body {
   display: flex;
   flex-direction: column;
   background: #fff;
-  border: 2px solid #ffe0b2;
-  border-radius: 16px;
+  border: 2.5px solid #ffc078;
+  border-radius: 18px;
   padding: 10px;
-  min-height: 180px;
+  min-height: 200px;
 }
 
 .chat-history {
@@ -713,21 +757,22 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 8px;
-  max-height: 170px;
+  margin-bottom: 10px;
+  max-height: 210px;
 }
 
 .chat-bubble {
-  padding: 8px 12px;
-  border-radius: 14px;
-  font-size: 0.88rem;
-  line-height: 1.4;
-  max-width: 85%;
+  padding: 10px 13px;
+  border-radius: 16px;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.45;
+  max-width: 88%;
 }
 
 .pet-bubble {
   background: #fff3bf;
-  color: #3d2616;
+  color: #2b180a;
   align-self: flex-start;
 }
 
@@ -744,86 +789,97 @@ body {
 
 .chat-input-row input {
   flex: 1;
-  padding: 8px 10px;
-  border: 2px solid #ced4da;
-  border-radius: 12px;
-  font-size: 0.9rem;
+  padding: 10px 12px;
+  border: 2.5px solid #adb5bd;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 700;
   user-select: text;
 }
 
 .chat-input-row button {
-  padding: 8px 14px;
-  background: #ff922b;
+  padding: 10px 16px;
+  background: #f76707;
   color: #fff;
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
+  font-size: 1rem;
   font-weight: 900;
   cursor: pointer;
 }
 
-/* 計算画面 */
+/* ===================================================
+   計算画面
+=================================================== */
 #calc-menu h3 {
-  font-size: 1rem;
-  margin: 10px 0 8px;
-  color: #495057;
+  font-size: 1.1rem;
+  font-weight: 900;
+  margin: 12px 0 8px;
+  color: #212529;
 }
 
 .calc-op-list {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 10px;
 }
 
 .calc-diff-list {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .menu-btn {
-  padding: 12px 6px;
-  border: 2px solid #ced4da;
-  border-radius: 14px;
+  padding: 14px 6px;
+  border: 2.5px solid #adb5bd;
+  border-radius: 16px;
   background: #fff;
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   font-weight: 900;
-  color: #495057;
+  color: #212529;
   cursor: pointer;
+  line-height: 1.3;
+}
+
+.menu-btn small {
+  font-size: 0.85rem;
 }
 
 .menu-btn.active {
-  background: #339af0;
-  border-color: #1c7ed6;
+  background: #1971c2;
+  border-color: #1864ab;
   color: #fff;
 }
 
 .action-btn {
   width: 100%;
-  padding: 14px;
-  background: #2f9e44;
+  padding: 16px;
+  background: #2b8a3e;
   color: #fff;
   border: none;
-  border-radius: 16px;
-  font-size: 1.05rem;
+  border-radius: 18px;
+  font-size: 1.15rem;
   font-weight: 900;
   cursor: pointer;
 }
 
 .calc-progress-badge {
   text-align: center;
+  font-size: 1.05rem;
   font-weight: 900;
-  color: #1c7ed6;
+  color: #1864ab;
   margin-bottom: 8px;
 }
 
 .question-box {
   background: #e7f5ff;
-  border: 3px solid #74c0fc;
-  border-radius: 18px;
-  padding: 18px;
+  border: 3px solid #4dabf7;
+  border-radius: 20px;
+  padding: 18px 10px;
   text-align: center;
-  font-size: 2rem;
+  font-size: 2.2rem;
   font-weight: 900;
   color: #1864ab;
   margin-bottom: 8px;
@@ -831,9 +887,10 @@ body {
 
 .calc-feedback {
   text-align: center;
+  font-size: 1.05rem;
   font-weight: 900;
-  padding: 6px;
-  border-radius: 10px;
+  padding: 8px;
+  border-radius: 12px;
   margin-bottom: 8px;
 }
 
@@ -848,15 +905,16 @@ body {
 }
 
 .answer-box {
-  height: 48px;
-  border: 2.5px solid #adb5bd;
-  border-radius: 14px;
+  height: 54px;
+  border: 3px solid #868e96;
+  border-radius: 16px;
   background: #fff;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 1.7rem;
+  font-size: 1.9rem;
   font-weight: 900;
+  color: #212529;
   margin-bottom: 10px;
 }
 
@@ -869,110 +927,123 @@ body {
 
 .num-btn {
   padding: 14px 0;
-  font-size: 1.3rem;
+  font-size: 1.55rem;
   font-weight: 900;
-  border: 2px solid #dee2e6;
-  border-radius: 14px;
+  border: 2.5px solid #ced4da;
+  border-radius: 16px;
   background: #fff;
+  color: #212529;
   cursor: pointer;
 }
 
 .clear-btn {
   background: #ffe3e3;
   color: #c92a2a;
-  font-size: 1rem;
+  font-size: 1.15rem;
 }
 
 .submit-btn {
-  background: #2f9e44;
+  background: #2b8a3e;
   color: #fff;
-  font-size: 1rem;
+  font-size: 1.15rem;
 }
 
 .result-card {
   background: #fff9db;
-  border: 3px solid #fcc419;
-  border-radius: 22px;
-  padding: 20px;
+  border: 3px solid #f59f00;
+  border-radius: 24px;
+  padding: 22px 16px;
   text-align: center;
 }
 
 .result-icon {
-  font-size: 3rem;
+  font-size: 3.2rem;
+}
+
+.result-card h3 {
+  font-size: 1.4rem;
 }
 
 .result-score {
-  font-size: 1.3rem;
+  font-size: 1.45rem;
   font-weight: 900;
-  margin: 10px 0;
+  margin: 12px 0;
 }
 
 .result-coin-box {
   background: #fff;
-  border-radius: 14px;
-  padding: 12px;
-  margin-bottom: 16px;
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 18px;
+  font-size: 1.05rem;
+  font-weight: 900;
 }
 
 .result-coins {
-  font-size: 1.6rem;
+  font-size: 1.8rem;
   font-weight: 900;
-  color: #e67e22;
+  color: #d9480f;
+  margin-top: 4px;
 }
 
-/* お薬・生活時間画面 */
+/* ===================================================
+   お薬・生活時間画面（特大・高コントラスト）
+=================================================== */
 .patient-info-header {
   background: #ebfbee;
-  border: 2px solid #8ce99a;
-  border-radius: 16px;
-  padding: 10px 14px;
+  border: 2.5px solid #51cf66;
+  border-radius: 18px;
+  padding: 12px 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .patient-info-header h3 {
-  font-size: 1.15rem;
+  font-size: 1.3rem;
   font-weight: 900;
-  color: #2b8a3e;
+  color: #1b5e20;
 }
 
 .patient-id-sub {
   background: #fff;
-  border: 1.5px solid #51cf66;
-  color: #2b8a3e;
-  font-size: 0.8rem;
+  border: 2px solid #2b8a3e;
+  color: #1b5e20;
+  font-size: 0.9rem;
   font-weight: 900;
-  padding: 3px 10px;
+  padding: 4px 10px;
   border-radius: 999px;
+  white-space: nowrap;
 }
 
 .med-layout {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-bottom: 12px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
 .card {
   background: #fff;
-  border: 2px solid #dee2e6;
-  border-radius: 18px;
-  padding: 12px;
+  border: 2.5px solid #adb5bd;
+  border-radius: 20px;
+  padding: 14px 12px;
 }
 
 .card h4 {
-  font-size: 0.95rem;
+  font-size: 1.12rem;
   font-weight: 900;
-  color: #495057;
+  color: #212529;
 }
 
 .meds-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  gap: 6px;
+  margin-bottom: 10px;
 }
 
 .sync-update-mini-btn {
@@ -980,101 +1051,119 @@ body {
   color: #fff;
   border: none;
   border-radius: 999px;
-  padding: 5px 11px;
-  font-size: 0.78rem;
+  padding: 8px 12px;
+  font-size: 0.88rem;
   font-weight: 900;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 #schedule-list {
   list-style: none;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px;
+  gap: 8px;
   margin-top: 8px;
 }
 
 #schedule-list li {
-  background: #f8f9fa;
-  padding: 7px 10px;
-  border-radius: 10px;
+  background: #f1f3f5;
+  border: 1.5px solid #dee2e6;
+  padding: 9px 10px;
+  border-radius: 12px;
   display: flex;
   justify-content: space-between;
-  font-size: 0.88rem;
+  align-items: center;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #212529;
+}
+
+#schedule-list li strong {
+  font-size: 1.05rem;
+  font-weight: 900;
 }
 
 #medicine-list {
-  max-height: 220px;
-  overflow-y: auto;
+  max-height: none;
+  overflow-y: visible;
 }
 
 .med-item {
   background: #f3faf5;
-  border-left: 4px solid #2f9e44;
-  padding: 8px 10px;
-  border-radius: 8px;
-  margin-bottom: 6px;
+  border: 2px solid #b2f2bb;
+  border-left: 6px solid #2b8a3e;
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 10px;
 }
 
 .med-name {
-  font-size: 1rem;
+  font-size: 1.25rem;
   font-weight: 900;
-  color: #212529;
+  color: #111111;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 6px;
+  line-height: 1.3;
 }
 
 .new-med-tag {
-  background: #ff922b;
+  background: #e8590c;
   color: #fff;
-  font-size: 0.7rem;
-  padding: 1px 6px;
-  border-radius: 6px;
+  font-size: 0.8rem;
+  padding: 2px 8px;
+  border-radius: 8px;
 }
 
 .med-instruction {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #2b8a3e;
-  margin-top: 2px;
+  font-size: 1.08rem;
+  font-weight: 900;
+  color: #1b5e20;
+  margin-top: 5px;
+  line-height: 1.4;
 }
 
 .med-action-buttons {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   margin-top: auto;
+  padding-bottom: 6px;
 }
 
 .med-done-btn {
-  padding: 14px;
+  padding: 17px 12px;
   background: linear-gradient(180deg, #40c057 0%, #2b8a3e 100%);
   color: #fff;
   border: none;
-  border-radius: 16px;
-  font-size: 1.05rem;
+  border-radius: 18px;
+  font-size: 1.22rem;
   font-weight: 900;
   cursor: pointer;
+  box-shadow: 0 5px 0 #1b5e20;
 }
 
 .alarm-test-btn {
-  padding: 11px;
+  padding: 13px 12px;
   background: #fff3bf;
-  color: #e67700;
-  border: 2px solid #fcc419;
-  border-radius: 14px;
-  font-size: 0.92rem;
+  color: #b84300;
+  border: 2.5px solid #f59f00;
+  border-radius: 16px;
+  font-size: 1.02rem;
   font-weight: 900;
   cursor: pointer;
 }
 
-/* カレンダー詳細画面 */
+/* ===================================================
+   カレンダー詳細画面
+=================================================== */
 .calendar-view-container {
   background: #fff;
-  border: 2px solid #ffd8a8;
-  border-radius: 18px;
-  padding: 10px;
+  border: 2.5px solid #ffc078;
+  border-radius: 20px;
+  padding: 10px 8px;
   margin-bottom: 10px;
 }
 
@@ -1085,11 +1174,18 @@ body {
   margin-bottom: 8px;
 }
 
+.calendar-month-nav h3 {
+  font-size: 1.18rem;
+  font-weight: 900;
+  color: #212529;
+}
+
 .month-nav-btn {
   background: #fff4e6;
-  border: 1.5px solid #ffc078;
-  border-radius: 10px;
-  padding: 4px 10px;
+  border: 2px solid #ffa94d;
+  border-radius: 12px;
+  padding: 6px 12px;
+  font-size: 0.95rem;
   font-weight: 900;
   color: #d9480f;
   cursor: pointer;
@@ -1099,9 +1195,9 @@ body {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   text-align: center;
-  font-size: 0.8rem;
+  font-size: 0.92rem;
   font-weight: 900;
-  margin-bottom: 4px;
+  margin-bottom: 5px;
 }
 
 .calendar-weekdays .sun { color: #d93025; }
@@ -1119,8 +1215,8 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
-  font-size: 0.88rem;
+  border-radius: 12px;
+  font-size: 1.05rem;
   font-weight: 900;
   cursor: pointer;
   position: relative;
@@ -1141,17 +1237,17 @@ body {
 
 .day-cell.today {
   background: #fff3bf;
-  border: 2px solid #fcc419;
+  border: 2.5px solid #f59f00;
 }
 
 .day-cell.selected {
-  background: #ff922b;
+  background: #f76707;
   color: #fff !important;
 }
 
 .event-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   background: #2f9e44;
   border-radius: 50%;
   margin-top: 2px;
@@ -1159,9 +1255,9 @@ body {
 
 .selected-day-schedule {
   background: #fff;
-  border: 2px solid #dee2e6;
-  border-radius: 16px;
-  padding: 10px;
+  border: 2.5px solid #adb5bd;
+  border-radius: 18px;
+  padding: 12px;
   flex: 1;
 }
 
@@ -1169,24 +1265,38 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+#selected-date-label {
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #212529;
 }
 
 .selected-holiday-badge {
   display: inline-block;
   background: #ffe3e3;
-  color: #d93025;
-  font-size: 0.75rem;
+  color: #c92a2a;
+  font-size: 0.88rem;
   font-weight: 900;
-  padding: 2px 8px;
+  padding: 3px 10px;
   border-radius: 999px;
-  margin-top: 3px;
+  margin-top: 4px;
 }
 
 .small-btn {
   width: auto;
-  padding: 6px 12px;
-  font-size: 0.82rem;
+  padding: 9px 14px;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.empty-msg {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #495057;
 }
 
 .event-item {
@@ -1194,19 +1304,21 @@ body {
   justify-content: space-between;
   align-items: center;
   background: #f8f9fa;
-  padding: 7px 10px;
-  border-radius: 10px;
-  margin-bottom: 5px;
-  font-size: 0.88rem;
-  font-weight: 700;
+  border: 1.5px solid #dee2e6;
+  padding: 10px 12px;
+  border-radius: 12px;
+  margin-bottom: 7px;
+  font-size: 1.02rem;
+  font-weight: 900;
+  color: #212529;
 }
 
 .event-color-dot {
   display: inline-block;
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  margin-right: 6px;
+  margin-right: 7px;
   vertical-align: middle;
 }
 
@@ -1214,8 +1326,9 @@ body {
   background: #ffe3e3;
   color: #c92a2a;
   border: none;
-  border-radius: 6px;
-  padding: 2px 7px;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 0.95rem;
   font-weight: 900;
   cursor: pointer;
 }
@@ -1225,12 +1338,12 @@ body {
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
 .color-swatch {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   border: 3px solid transparent;
   cursor: pointer;
@@ -1243,15 +1356,17 @@ body {
   box-shadow: 0 0 0 2px #fff inset;
 }
 
-/* モーダル */
+/* ===================================================
+   モーダル（アラーム・予定追加・QR更新）
+=================================================== */
 .modal-overlay {
-  position: absolute;
+  position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 16px;
+  padding: 14px;
   z-index: 100;
 }
 
@@ -1259,12 +1374,25 @@ body {
 .modal-content {
   background: #fff;
   border-radius: 24px;
-  padding: 18px;
+  padding: 20px 16px;
   width: 100%;
-  max-width: 350px;
+  max-width: 390px;
   text-align: center;
-  max-height: 90vh;
+  max-height: 92vh;
   overflow-y: auto;
+}
+
+.alarm-content h3,
+.modal-content h3 {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: #212529;
+}
+
+.alarm-content p {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-top: 8px;
 }
 
 .alarm-btn-group,
@@ -1272,50 +1400,53 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-top: 14px;
+  margin-top: 16px;
 }
 
 .alarm-btn,
 .btn-cancel,
 .btn-submit {
-  padding: 11px;
+  padding: 14px 10px;
   border: none;
-  border-radius: 14px;
-  font-size: 0.95rem;
+  border-radius: 16px;
+  font-size: 1.08rem;
   font-weight: 900;
   cursor: pointer;
 }
 
 .btn-taken,
 .btn-submit {
-  background: #2f9e44;
+  background: #2b8a3e;
   color: #fff;
 }
 
 .btn-not-taken,
 .btn-cancel {
   background: #e9ecef;
-  color: #495057;
+  color: #212529;
 }
 
 .form-group {
   text-align: left;
-  margin-top: 10px;
+  margin-top: 12px;
 }
 
 .form-group label {
   display: block;
-  font-size: 0.85rem;
-  font-weight: 700;
-  margin-bottom: 4px;
+  font-size: 0.98rem;
+  font-weight: 900;
+  color: #212529;
+  margin-bottom: 5px;
 }
 
 .form-group input,
 .form-group select {
   width: 100%;
-  padding: 9px;
-  border: 2px solid #ced4da;
-  border-radius: 10px;
-  font-size: 0.95rem;
+  padding: 11px;
+  border: 2.5px solid #adb5bd;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #212529;
   user-select: text;
 }
