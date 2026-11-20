@@ -8,27 +8,39 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body>
 
   <div class="phone-frame">
     <main class="app-content">
 
-      <!-- 初回起動時のみ表示：患者ID入力画面 -->
+      <!-- 初回起動時のみ表示：患者ID・QR入力画面 -->
       <section id="screen-id-login" class="screen active">
         <div class="id-login-container">
           <div class="id-login-icon">🐹💊</div>
           <h1 class="id-login-title">脳トレ ＆ 薬管理</h1>
           <p class="id-login-desc">
-            薬剤師さんから受け取った<br>
-            <strong>あなたの患者ID（または連携コード）</strong> を入力してください
+            薬剤師さんの画面にある<strong>QRコードを読み取る</strong>か、<br>
+            <strong>患者ID</strong> を入力してください
           </p>
+
+          <button type="button" id="login-qr-scan-btn" class="qr-camera-btn">
+            📷 カメラでQRコードを読み取る
+          </button>
+
+          <div id="login-qr-reader-wrap" class="qr-reader-box hidden">
+            <div id="login-qr-reader"></div>
+            <button type="button" id="login-qr-stop-btn" class="qr-cancel-btn">カメラを閉じる</button>
+          </div>
+
+          <div class="login-divider">またはIDを手入力</div>
 
           <form id="patient-id-login-form" class="id-login-form">
             <input
               type="text"
               id="login-patient-id-input"
-              placeholder="例: 1001 または 連携コード"
+              placeholder="例: 1001"
               autocomplete="off"
               required
             >
@@ -37,7 +49,7 @@
           </form>
 
           <p class="id-login-note">
-            ※一度IDを登録すると、次回からは自動でご本人専用の画面が開きます。
+            ※一度登録すると、次回からは自動でご本人専用の画面が開きます。
           </p>
         </div>
       </section>
@@ -259,7 +271,7 @@
           <div class="card meds-card">
             <div class="meds-card-header">
               <h4>処方中のお薬</h4>
-              <button type="button" id="open-sync-update-btn" class="sync-update-mini-btn">🔄 薬データを更新</button>
+              <button type="button" id="open-sync-update-btn" class="sync-update-mini-btn">📷 QRで薬を更新</button>
             </div>
             <div id="medicine-list"></div>
           </div>
@@ -294,7 +306,10 @@
 
         <div class="selected-day-schedule">
           <div class="schedule-header-row">
-            <h4 id="selected-date-label">日付を選択してください</h4>
+            <div>
+              <h4 id="selected-date-label">日付を選択してください</h4>
+              <div id="selected-holiday-badge" class="selected-holiday-badge hidden"></div>
+            </div>
             <button id="open-add-event-btn" class="action-btn small-btn">+ 予定を追加</button>
           </div>
           <div id="selected-day-events" class="events-list">
@@ -319,26 +334,41 @@
     </div>
   </div>
 
-  <!-- 予定追加 モーダル -->
+  <!-- 予定追加 モーダル（絵文字＆色選択付き） -->
   <div class="modal-overlay hidden" id="event-modal">
     <div class="modal-content">
       <h3>予定の追加</h3>
       <form id="event-form">
         <div class="form-group">
+          <label for="event-category">種類（絵文字）</label>
+          <select id="event-category">
+            <option value="🏥" data-default-color="#d93025">🏥 通院・病院</option>
+            <option value="💊" data-default-color="#0b8043">💊 お薬・薬局</option>
+            <option value="🦷" data-default-color="#039be5">🦷 歯医者</option>
+            <option value="🛒" data-default-color="#f4511e">🛒 買い物</option>
+            <option value="🎂" data-default-color="#8e24aa">🎂 お祝い・お出かけ</option>
+            <option value="✏️" data-default-color="#1a73e8">✏️ 予定・メモ</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label for="event-title">予定の内容</label>
-          <input type="text" id="event-title" placeholder="例: 病院、買い物" required>
+          <input type="text" id="event-title" placeholder="例: 病院、薬局に行く" required>
         </div>
         <div class="form-group">
           <label for="event-time">時間 (任意)</label>
           <input type="time" id="event-time">
         </div>
         <div class="form-group">
-          <label for="event-category">種類</label>
-          <select id="event-category">
-            <option value="hospital">🏥 通院・病院</option>
-            <option value="med">💊 薬</option>
-            <option value="personal">✏️ 予定・メモ</option>
-          </select>
+          <label>カレンダーの表示色</label>
+          <div class="color-picker-row" id="event-color-picker">
+            <button type="button" class="color-swatch active" data-color="#d93025" style="background:#d93025;" title="赤"></button>
+            <button type="button" class="color-swatch" data-color="#1a73e8" style="background:#1a73e8;" title="青"></button>
+            <button type="button" class="color-swatch" data-color="#0b8043" style="background:#0b8043;" title="緑"></button>
+            <button type="button" class="color-swatch" data-color="#f4511e" style="background:#f4511e;" title="オレンジ"></button>
+            <button type="button" class="color-swatch" data-color="#8e24aa" style="background:#8e24aa;" title="紫"></button>
+            <button type="button" class="color-swatch" data-color="#e67c73" style="background:#e67c73;" title="ピンク"></button>
+          </div>
+          <input type="hidden" id="event-color" value="#d93025">
         </div>
         <div class="modal-btn-group">
           <button type="button" class="btn-cancel" id="close-event-modal-btn">キャンセル</button>
@@ -348,21 +378,32 @@
     </div>
   </div>
 
-  <!-- 新しい薬データ更新（別デバイス連携コード入力）モーダル -->
+  <!-- 新しい薬データ更新（QRカメラ読み取り＆コード入力）モーダル -->
   <div class="modal-overlay hidden" id="sync-update-modal">
     <div class="modal-content">
       <h3>お薬データの更新</h3>
-      <p style="font-size:0.82rem; color:#555; margin-top:6px; line-height:1.4;">
-        薬剤師側で新しく追加された連携コード（<code>MED:...</code>）を貼り付けてください。
+      <p style="font-size:0.82rem; color:#555; margin-top:4px; line-height:1.4;">
+        薬剤師画面のQRコードをカメラで映すと、新しいお薬が自動で保存されます。
       </p>
-      <form id="sync-update-form">
-        <div class="form-group">
-          <input type="text" id="sync-update-input" placeholder="MED:..." required>
+
+      <button type="button" id="start-sync-qr-btn" class="qr-camera-btn" style="margin-top:10px;">
+        📷 カメラを起動してQRを読み取る
+      </button>
+
+      <div id="sync-qr-reader-wrap" class="qr-reader-box hidden">
+        <div id="sync-qr-reader"></div>
+        <button type="button" id="stop-sync-qr-btn" class="qr-cancel-btn">カメラを止める</button>
+      </div>
+
+      <form id="sync-update-form" style="margin-top:10px; border-top:1px dashed #ddd; padding-top:8px;">
+        <div class="form-group" style="margin-top:0;">
+          <label for="sync-update-input" style="font-size:0.75rem; color:#777;">うまく映らない場合はコードを貼り付け</label>
+          <input type="text" id="sync-update-input" placeholder="MED:..." style="font-size:0.8rem; padding:7px;">
         </div>
         <p id="sync-update-error" class="id-login-error hidden" style="margin-top:6px;"></p>
         <div class="modal-btn-group">
           <button type="button" class="btn-cancel" id="close-sync-update-btn">閉じる</button>
-          <button type="submit" class="btn-submit">更新する</button>
+          <button type="submit" class="btn-submit">コードで更新</button>
         </div>
       </form>
     </div>
