@@ -25,6 +25,74 @@ const fallbackSharedData = {
   ]
 };
 
+/* ===================================================
+   日本の祝日判定（文化の日・勤労感謝の日・振替休日など）
+=================================================== */
+function getNthMonday(year, month1to12, nth) {
+  const firstDayOfWeek = new Date(year, month1to12 - 1, 1).getDay();
+  const offset = (1 - firstDayOfWeek + 7) % 7;
+  return 1 + offset + (nth - 1) * 7;
+}
+
+function getVernalEquinoxDay(year) {
+  return Math.floor(20.8431 + 0.242194 * (year - 1980) - Math.floor((year - 1980) / 4));
+}
+
+function getAutumnalEquinoxDay(year) {
+  return Math.floor(23.2488 + 0.242194 * (year - 1980) - Math.floor((year - 1980) / 4));
+}
+
+function getBaseHolidayName(year, month, day) {
+  if (month === 1 && day === 1) return '元日';
+  if (month === 1 && day === getNthMonday(year, 1, 2)) return '成人の日';
+  if (month === 2 && day === 11) return '建国記念の日';
+  if (month === 2 && day === 23) return '天皇誕生日';
+  if (month === 3 && day === getVernalEquinoxDay(year)) return '春分の日';
+  if (month === 4 && day === 29) return '昭和の日';
+  if (month === 5 && day === 3) return '憲法記念日';
+  if (month === 5 && day === 4) return 'みどりの日';
+  if (month === 5 && day === 5) return 'こどもの日';
+  if (month === 7 && day === getNthMonday(year, 7, 3)) return '海の日';
+  if (month === 8 && day === 11) return '山の日';
+  if (month === 9 && day === getNthMonday(year, 9, 3)) return '敬老の日';
+  if (month === 9 && day === getAutumnalEquinoxDay(year)) return '秋分の日';
+  if (month === 10 && day === getNthMonday(year, 10, 2)) return 'スポーツの日';
+  if (month === 11 && day === 3) return '文化の日';
+  if (month === 11 && day === 23) return '勤労感謝の日';
+  return null;
+}
+
+function getJapaneseHolidayName(year, month, day) {
+  const base = getBaseHolidayName(year, month, day);
+  if (base) return base;
+
+  const dateObj = new Date(year, month - 1, day);
+  const dow = dateObj.getDay();
+
+  // 振替休日判定（日曜が祝日の場合の直後の平日）
+  if (dow !== 0) {
+    let prev = new Date(year, month - 1, day - 1);
+    while (true) {
+      const pBase = getBaseHolidayName(prev.getFullYear(), prev.getMonth() + 1, prev.getDate());
+      if (!pBase) break;
+      if (prev.getDay() === 0) return '振替休日';
+      prev.setDate(prev.getDate() - 1);
+    }
+  }
+
+  // 国民の休日（前日と翌日が祝日に挟まれた平日：例 2026年9月22日）
+  const yesterday = new Date(year, month - 1, day - 1);
+  const tomorrow = new Date(year, month - 1, day + 1);
+  if (
+    getBaseHolidayName(yesterday.getFullYear(), yesterday.getMonth() + 1, yesterday.getDate()) &&
+    getBaseHolidayName(tomorrow.getFullYear(), tomorrow.getMonth() + 1, tomorrow.getDate())
+  ) {
+    return '国民の休日';
+  }
+
+  return null;
+}
+
 function getTodayStr() {
   const today = new Date();
   return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -57,8 +125,30 @@ function saveImportedPatient(patientObj) {
   localStorage.setItem(SHARED_STORAGE_KEY, JSON.stringify(shared));
 }
 
-function decodePatientSyncCode(code) {
-  const raw = code.trim().slice(4);
+function extractSyncCode(rawText) {
+  const trimmed = String(rawText || '').trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith('MED:')) return trimmed;
+
+  try {
+    const urlObj = new URL(trimmed);
+    const syncParam = urlObj.searchParams.get('sync');
+    if (syncParam && syncParam.startsWith('MED:')) {
+      return syncParam;
+    }
+  } catch (e) {
+    // URLでない場合は無視
+  }
+
+  const match = trimmed.match(/MED:[A-Za-z0-9+/=]+/);
+  return match ? match[0] : null;
+}
+
+function decodePatientSyncCode(rawText) {
+  const syncCode = extractSyncCode(rawText);
+  if (!syncCode) throw new Error('Invalid sync code');
+
+  const raw = syncCode.slice(4);
   const binStr = atob(raw);
   const bytes = new Uint8Array(binStr.length);
   for (let i = 0; i < binStr.length; i++) {
@@ -137,6 +227,8 @@ function updateMyPetData(updaterFn) {
 
 let petTempMood = null;
 let petMoodTimer = null;
+let activeQrScanner = null;
+let activeQrWrapId = null;
 
 let calcState = {
   selectedOp: '+',
@@ -171,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // QRコード等のURLパラメータ(?sync=MED:...)経由で開かれた場合の自動ログイン・最新更新
   const params = new URLSearchParams(window.location.search);
   const urlSync = params.get('sync');
-  if (urlSync && urlSync.startsWith('MED:')) {
+  if (urlSync) {
     try {
       const imported = decodePatientSyncCode(urlSync);
       if (imported && imported.id && imported.name) {
@@ -194,7 +286,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// 同じブラウザの別タブで薬剤師が薬を追加・更新したときに自動反映
 window.addEventListener('storage', (e) => {
   if (e.key === SHARED_STORAGE_KEY && getLockedPatientId()) {
     refreshAllMyViews();
@@ -207,29 +298,112 @@ window.addEventListener('focus', () => {
   }
 });
 
+/* ===================================================
+   カメラQRコード読み取り共通制御
+=================================================== */
+function stopPatientQrScanner() {
+  if (activeQrScanner) {
+    const scannerRef = activeQrScanner;
+    activeQrScanner = null;
+    try {
+      if (scannerRef.isScanning) {
+        scannerRef.stop().then(() => scannerRef.clear()).catch(() => {});
+      } else {
+        scannerRef.clear();
+      }
+    } catch (e) {}
+  }
+  if (activeQrWrapId) {
+    const wrap = document.getElementById(activeQrWrapId);
+    if (wrap) wrap.classList.add('hidden');
+    activeQrWrapId = null;
+  }
+}
+
+function startPatientQrScanner(readerElemId, wrapElemId, onDecodedSuccess) {
+  if (typeof Html5Qrcode === 'undefined') {
+    alert('QRコードカメラ機能を読み込み中です。少し待ってからもう一度押してください。');
+    return;
+  }
+
+  stopPatientQrScanner();
+
+  const wrap = document.getElementById(wrapElemId);
+  if (wrap) wrap.classList.remove('hidden');
+  activeQrWrapId = wrapElemId;
+
+  const scanner = new Html5Qrcode(readerElemId);
+  activeQrScanner = scanner;
+
+  scanner.start(
+    { facingMode: 'environment' },
+    { fps: 10, qrbox: { width: 210, height: 210 } },
+    (decodedText) => {
+      stopPatientQrScanner();
+      onDecodedSuccess(decodedText);
+    },
+    () => {}
+  ).catch(err => {
+    stopPatientQrScanner();
+    alert('カメラを起動できませんでした。ブラウザのカメラ許可を確認してください。\n(' + err + ')');
+  });
+}
+
+function applySyncedQrData(rawText) {
+  const imported = decodePatientSyncCode(rawText);
+  if (!imported || !imported.id || !imported.name) {
+    throw new Error('患者データが含まれていません');
+  }
+  saveImportedPatient(imported);
+  lockPatientId(imported.id);
+  refreshAllMyViews();
+  return imported;
+}
+
 function initIdLoginGate() {
   const form = document.getElementById('patient-id-login-form');
   const input = document.getElementById('login-patient-id-input');
   const errorEl = document.getElementById('id-login-error');
+  const qrBtn = document.getElementById('login-qr-scan-btn');
+  const qrStopBtn = document.getElementById('login-qr-stop-btn');
+
+  if (qrBtn) {
+    qrBtn.addEventListener('click', () => {
+      if (errorEl) errorEl.classList.add('hidden');
+      startPatientQrScanner('login-qr-reader', 'login-qr-reader-wrap', (decodedText) => {
+        try {
+          const imported = applySyncedQrData(decodedText);
+          alert(`${imported.name} 様のデータを読み込みました！`);
+          showScreen('screen-opening');
+        } catch (err) {
+          if (errorEl) {
+            errorEl.textContent = '薬剤師画面の患者連携QRコードを読み取ってください。';
+            errorEl.classList.remove('hidden');
+          }
+        }
+      });
+    });
+  }
+
+  if (qrStopBtn) {
+    qrStopBtn.addEventListener('click', stopPatientQrScanner);
+  }
 
   if (!form || !input) return;
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
+    stopPatientQrScanner();
     const entered = input.value.trim();
     if (!entered) return;
 
     let matchedPatient = null;
 
-    if (entered.startsWith('MED:')) {
+    if (extractSyncCode(entered)) {
       try {
-        const imported = decodePatientSyncCode(entered);
-        if (imported && imported.id && imported.name) {
-          saveImportedPatient(imported);
-          matchedPatient = imported;
-        }
+        matchedPatient = applySyncedQrData(entered);
       } catch (err) {
-        errorEl.textContent = '連携コードが正しくありません。薬剤師画面の「コピー」ボタンからもう一度コピーしてください。';
+        errorEl.textContent = '連携コードが正しくありません。上の「カメラでQRコードを読み取る」をお試しください。';
         errorEl.classList.remove('hidden');
         return;
       }
@@ -238,7 +412,7 @@ function initIdLoginGate() {
     }
 
     if (!matchedPatient) {
-      errorEl.textContent = `ID「${entered}」が見つかりません。別のデバイスで開いている場合は、薬剤師画面の「連携コード（MED:...）」を貼り付けてください。`;
+      errorEl.textContent = `ID「${entered}」が見つかりません。上の「カメラでQRコードを読み取る」で薬剤師画面のQRを映してください。`;
       errorEl.classList.remove('hidden');
       return;
     }
@@ -257,40 +431,57 @@ function initSyncUpdateModal() {
   const form = document.getElementById('sync-update-form');
   const input = document.getElementById('sync-update-input');
   const errorEl = document.getElementById('sync-update-error');
+  const startQrBtn = document.getElementById('start-sync-qr-btn');
+  const stopQrBtn = document.getElementById('stop-sync-qr-btn');
 
   if (!openBtn || !modal || !form) return;
 
   openBtn.addEventListener('click', () => {
-    // まず同じブラウザの最新データも再読み込み
     renderPatientData();
-    input.value = '';
-    errorEl.classList.add('hidden');
+    if (input) input.value = '';
+    if (errorEl) errorEl.classList.add('hidden');
     modal.classList.remove('hidden');
   });
 
-  closeBtn.addEventListener('click', () => {
+  const closeModalAndCamera = () => {
+    stopPatientQrScanner();
     modal.classList.add('hidden');
-  });
+  };
+
+  if (closeBtn) closeBtn.addEventListener('click', closeModalAndCamera);
+  if (stopQrBtn) stopQrBtn.addEventListener('click', stopPatientQrScanner);
+
+  if (startQrBtn) {
+    startQrBtn.addEventListener('click', () => {
+      if (errorEl) errorEl.classList.add('hidden');
+      startPatientQrScanner('sync-qr-reader', 'sync-qr-reader-wrap', (decodedText) => {
+        try {
+          const imported = applySyncedQrData(decodedText);
+          modal.classList.add('hidden');
+          alert(`✅ ${imported.name} 様の最新のお薬データに更新・保存しました！`);
+        } catch (err) {
+          if (errorEl) {
+            errorEl.textContent = 'QRコードの読み取りに失敗しました。薬剤師画面のQRをもう一度映してください。';
+            errorEl.classList.remove('hidden');
+          }
+        }
+      });
+    });
+  }
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const code = input.value.trim();
-    if (!code.startsWith('MED:')) {
-      errorEl.textContent = '「MED:」から始まる連携コードを貼り付けてください。';
+    if (!extractSyncCode(code)) {
+      errorEl.textContent = '「MED:」から始まる連携コードを入力するか、上のカメラでQRを読み取ってください。';
       errorEl.classList.remove('hidden');
       return;
     }
 
     try {
-      const imported = decodePatientSyncCode(code);
-      if (!imported || !imported.id || !imported.name) {
-        throw new Error('Invalid payload');
-      }
-      saveImportedPatient(imported);
-      lockPatientId(imported.id);
-      modal.classList.add('hidden');
-      refreshAllMyViews();
-      alert(`${imported.name} 様の最新のお薬データに更新しました！`);
+      const imported = applySyncedQrData(code);
+      closeModalAndCamera();
+      alert(`✅ ${imported.name} 様の最新のお薬データに更新・保存しました！`);
     } catch (err) {
       errorEl.textContent = 'コードの読み込みに失敗しました。コピーし直してください。';
       errorEl.classList.remove('hidden');
@@ -311,6 +502,7 @@ function initNavigation() {
       const targetId = e.currentTarget.getAttribute('data-target');
       if (targetId === 'screen-id-login') return;
 
+      stopPatientQrScanner();
       showScreen(targetId);
       if (targetId === 'screen-home') {
         updateHomeCalendarAndPet();
@@ -319,8 +511,7 @@ function initNavigation() {
       } else if (targetId === 'screen-calendar') {
         calendarState.selectedDateStr = homeCalState.selectedDateStr || getTodayStr();
         calendarState.currentDate = new Date(homeCalState.currentDate);
-        const label = document.getElementById('selected-date-label');
-        if (label) label.textContent = `${calendarState.selectedDateStr} の予定`;
+        updateSelectedDateHeader(calendarState.selectedDateStr);
         renderCalendar();
         renderEvents();
       } else if (targetId === 'screen-pet') {
@@ -337,7 +528,7 @@ function showScreen(screenId) {
 }
 
 /* ===================================================
-   ホーム画面のGoogleカレンダー風ウィジェット
+   ホーム画面のGoogleカレンダー風ウィジェット（祝日・色・絵文字対応）
 =================================================== */
 function initHomeGoogleCalendar() {
   const prevBtn = document.getElementById('home-gcal-prev');
@@ -356,6 +547,16 @@ function initHomeGoogleCalendar() {
       renderHomeGoogleCalendar();
     });
   }
+}
+
+function getDefaultColorForCategory(category) {
+  if (!category) return '#1a73e8';
+  if (category.includes('🏥')) return '#d93025';
+  if (category.includes('💊')) return '#0b8043';
+  if (category.includes('🦷')) return '#039be5';
+  if (category.includes('🛒')) return '#f4511e';
+  if (category.includes('🎂')) return '#8e24aa';
+  return '#1a73e8';
 }
 
 function renderHomeGoogleCalendar() {
@@ -395,6 +596,9 @@ function renderHomeGoogleCalendar() {
     }
 
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dateNum).padStart(2, '0')}`;
+    const holidayName = getJapaneseHolidayName(year, month + 1, dateNum);
+
+    if (holidayName) cell.classList.add('holiday');
     if (dateStr === todayStr) cell.classList.add('today');
     if (dateStr === homeCalState.selectedDateStr) cell.classList.add('selected');
 
@@ -403,13 +607,21 @@ function renderHomeGoogleCalendar() {
     numSpan.textContent = dateNum;
     cell.appendChild(numSpan);
 
+    if (holidayName) {
+      const holEl = document.createElement('div');
+      holEl.className = 'gcal-holiday-text';
+      holEl.textContent = holidayName;
+      cell.appendChild(holEl);
+    }
+
     const dayEvents = eventsMap[dateStr] || [];
-    dayEvents.slice(0, 2).forEach(ev => {
+    const maxChips = holidayName ? 1 : 2;
+    dayEvents.slice(0, maxChips).forEach(ev => {
       const chip = document.createElement('div');
       chip.className = 'gcal-event-chip';
-      if (ev.category && ev.category.includes('薬')) chip.classList.add('med-chip');
-      if (ev.category && ev.category.includes('病院')) chip.classList.add('hospital-chip');
-      chip.textContent = ev.title;
+      chip.style.backgroundColor = ev.color || getDefaultColorForCategory(ev.category);
+      const emojiPrefix = ev.category ? `${ev.category} ` : '';
+      chip.textContent = `${emojiPrefix}${ev.title}`;
       cell.appendChild(chip);
     });
 
@@ -435,30 +647,36 @@ function updateHomePetSpeechForDate(dateStr) {
   const todayStr = getTodayStr();
   const isMedTakenToday = (pet.medTakenDate === todayStr);
   const events = (pet.events && pet.events[dateStr]) || [];
-  const eventNames = events.map(ev => `${ev.time ? ev.time + ' ' : ''}${ev.title}`).join('・');
+  const eventNames = events.map(ev => `${ev.category || ''}${ev.time ? ev.time + ' ' : ''}${ev.title}`).join('・');
+
+  const [yStr, mStr, dStr] = dateStr.split('-');
+  const holidayName = getJapaneseHolidayName(Number(yStr), Number(mStr), Number(dStr));
+  const holidayPrefix = holidayName ? `【${holidayName}】` : '';
 
   let message = '';
   let homeMood = 'normal';
 
   if (dateStr === todayStr) {
     if (events.length > 0 && !isMedTakenToday) {
-      message = `今日の予定は「${eventNames}」だよ！まだ今日のお薬を飲んでいないよチュ！`;
+      message = `${holidayPrefix}今日の予定は「${eventNames}」だよ！まだお薬を飲んでいないよチュ！`;
       homeMood = 'worried';
     } else if (events.length > 0 && isMedTakenToday) {
-      message = `今日の予定は「${eventNames}」だよチュ！お薬も飲んでえらいのだ！`;
+      message = `${holidayPrefix}今日の予定は「${eventNames}」だよチュ！お薬も飲んでえらいのだ！`;
       homeMood = 'wink';
     } else if (events.length === 0 && !isMedTakenToday) {
-      message = `まだ今日のお薬を飲んでいないよチュ！忘れずに飲もうね！`;
+      message = `${holidayPrefix}まだ今日のお薬を飲んでいないよチュ！忘れずに飲もうね！`;
       homeMood = 'worried';
     } else {
-      message = `今日のお薬はバッチリ飲んだね！予定はないからゆっくり過ごそうチュ！`;
+      message = `${holidayPrefix}今日のお薬はバッチリ飲んだね！ゆっくり過ごそうチュ！`;
       homeMood = 'wink';
     }
   } else {
-    const [, m, d] = dateStr.split('-');
-    const dateLabel = `${Number(m)}月${Number(d)}日`;
+    const dateLabel = `${Number(mStr)}月${Number(dStr)}日`;
     if (events.length > 0) {
-      message = `${dateLabel}の予定は「${eventNames}」が入っているよチュ！`;
+      message = `${dateLabel}${holidayPrefix}の予定は「${eventNames}」が入っているよチュ！`;
+      homeMood = 'wink';
+    } else if (holidayName) {
+      message = `${dateLabel}は「${holidayName}」でお休みだよチュ！予定があれば右上の「＋予定管理」から追加してね！`;
       homeMood = 'wink';
     } else {
       message = `${dateLabel}の予定はまだないよチュ！右上の「＋予定管理」から追加できるのだ！`;
@@ -1079,6 +1297,38 @@ function initAlarmSystem() {
   }
 }
 
+/* ===================================================
+   詳細カレンダー ＆ 予定追加（色選択・祝日表示）
+=================================================== */
+function updateSelectedDateHeader(dateStr) {
+  const label = document.getElementById('selected-date-label');
+  const holBadge = document.getElementById('selected-holiday-badge');
+  if (label) label.textContent = `${dateStr} の予定`;
+
+  if (holBadge) {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const holidayName = getJapaneseHolidayName(y, m, d);
+    if (holidayName) {
+      holBadge.textContent = `🎌 ${holidayName}`;
+      holBadge.classList.remove('hidden');
+    } else {
+      holBadge.classList.add('hidden');
+    }
+  }
+}
+
+function setSelectedEventColor(hexColor) {
+  const hiddenInput = document.getElementById('event-color');
+  if (hiddenInput) hiddenInput.value = hexColor;
+  document.querySelectorAll('#event-color-picker .color-swatch').forEach(btn => {
+    if (btn.getAttribute('data-color') === hexColor) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+}
+
 function initCalendarSystem() {
   const prevBtn = document.getElementById('prev-month-btn');
   const nextBtn = document.getElementById('next-month-btn');
@@ -1086,6 +1336,7 @@ function initCalendarSystem() {
   const closeModalBtn = document.getElementById('close-event-modal-btn');
   const eventForm = document.getElementById('event-form');
   const eventModal = document.getElementById('event-modal');
+  const categorySelect = document.getElementById('event-category');
 
   if (prevBtn) {
     prevBtn.addEventListener('click', () => {
@@ -1100,6 +1351,21 @@ function initCalendarSystem() {
       renderCalendar();
     });
   }
+
+  if (categorySelect) {
+    categorySelect.addEventListener('change', () => {
+      const selectedOpt = categorySelect.options[categorySelect.selectedIndex];
+      const defColor = selectedOpt ? selectedOpt.getAttribute('data-default-color') : null;
+      if (defColor) setSelectedEventColor(defColor);
+    });
+  }
+
+  document.querySelectorAll('#event-color-picker .color-swatch').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const color = btn.getAttribute('data-color');
+      if (color) setSelectedEventColor(color);
+    });
+  });
 
   if (openModalBtn) {
     openModalBtn.addEventListener('click', () => {
@@ -1122,20 +1388,18 @@ function initCalendarSystem() {
       e.preventDefault();
       const titleInput = document.getElementById('event-title');
       const timeInput = document.getElementById('event-time');
-      const categorySelect = document.getElementById('event-category');
+      const colorInput = document.getElementById('event-color');
 
       const title = titleInput.value.trim();
       const time = timeInput ? timeInput.value : '';
-      let category = '';
-      if (categorySelect) {
-        category = categorySelect.options[categorySelect.selectedIndex].text.split(' ')[0];
-      }
+      const category = categorySelect ? categorySelect.value : '✏️';
+      const color = colorInput ? colorInput.value : getDefaultColorForCategory(category);
 
       const dateStr = calendarState.selectedDateStr;
       updateMyPetData(p => {
         if (!p.events) p.events = {};
         if (!p.events[dateStr]) p.events[dateStr] = [];
-        p.events[dateStr].push({ title, time, category });
+        p.events[dateStr].push({ title, time, category, color });
       });
 
       homeCalState.selectedDateStr = dateStr;
@@ -1180,25 +1444,30 @@ function renderCalendar() {
 
   for (let date = 1; date <= lastDate; date++) {
     const cell = document.createElement('div');
+    const dow = (firstDay + date - 1) % 7;
     cell.className = 'day-cell';
+    if (dow === 0) cell.classList.add('sun');
+    if (dow === 6) cell.classList.add('sat');
     cell.textContent = date;
 
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
+    const holidayName = getJapaneseHolidayName(year, month + 1, date);
 
+    if (holidayName) cell.classList.add('holiday');
     if (dateStr === todayStr) cell.classList.add('today');
     if (dateStr === calendarState.selectedDateStr) cell.classList.add('selected');
 
     if (eventsMap[dateStr] && eventsMap[dateStr].length > 0) {
       const dot = document.createElement('div');
       dot.className = 'event-dot';
+      dot.style.backgroundColor = eventsMap[dateStr][0].color || '#2f9e44';
       cell.appendChild(dot);
     }
 
     cell.addEventListener('click', () => {
       calendarState.selectedDateStr = dateStr;
       homeCalState.selectedDateStr = dateStr;
-      const label = document.getElementById('selected-date-label');
-      if (label) label.textContent = `${dateStr} の予定`;
+      updateSelectedDateHeader(dateStr);
       renderCalendar();
       renderEvents();
     });
@@ -1227,8 +1496,12 @@ function renderEvents() {
   dayEvents.forEach((ev, index) => {
     const item = document.createElement('div');
     item.className = 'event-item';
+    const dotColor = ev.color || getDefaultColorForCategory(ev.category);
     item.innerHTML = `
-      <span>${ev.category || ''} ${ev.time ? ev.time + ' ' : ''}${ev.title}</span>
+      <span>
+        <span class="event-color-dot" style="background:${dotColor};"></span>
+        ${ev.category || ''} ${ev.time ? ev.time + ' ' : ''}${ev.title}
+      </span>
       <button class="delete-event-btn" onclick="deleteEvent('${dateStr}', ${index})">✕</button>
     `;
     eventsList.appendChild(item);
