@@ -65,7 +65,7 @@ body {
 .screen {
   display: none;
   flex: 1;
-  padding: 14px 12px 18px;
+  padding: 14px 12px 16px;
   flex-direction: column;
 }
 
@@ -561,7 +561,8 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
 }
 
 .screen-header h2 {
@@ -809,181 +810,269 @@ body {
 }
 
 /* ===================================================
-   計算画面
+   計算画面（デッドスペース解消・特大ボタン版）
 =================================================== */
+#calc-menu {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 #calc-menu h3 {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 900;
-  margin: 12px 0 8px;
+  margin: 2px 0;
   color: #212529;
 }
 
 .calc-op-list {
+  flex: 1.3;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
 
 .calc-diff-list {
+  flex: 1;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-  margin-bottom: 18px;
+  margin-bottom: 4px;
 }
 
 .menu-btn {
-  padding: 14px 6px;
-  border: 2.5px solid #adb5bd;
-  border-radius: 16px;
+  padding: 12px 6px;
+  border: 3px solid #adb5bd;
+  border-radius: 18px;
   background: #fff;
-  font-size: 1.05rem;
+  font-size: 1.25rem;
   font-weight: 900;
   color: #212529;
   cursor: pointer;
   line-height: 1.3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 0 #ced4da;
+}
+
+.menu-btn:active {
+  transform: translateY(2px);
+}
+
+.calc-op-btn {
+  font-size: 1.4rem;
+}
+
+.calc-diff-btn {
+  font-size: 1.12rem;
 }
 
 .menu-btn small {
-  font-size: 0.85rem;
+  font-size: 0.92rem;
+  margin-top: 3px;
 }
 
 .menu-btn.active {
   background: #1971c2;
   border-color: #1864ab;
   color: #fff;
+  box-shadow: 0 4px 0 #1864ab;
 }
 
 .action-btn {
   width: 100%;
-  padding: 16px;
-  background: #2b8a3e;
+  padding: 19px 14px;
+  background: linear-gradient(180deg, #40c057 0%, #2b8a3e 100%);
   color: #fff;
   border: none;
-  border-radius: 18px;
-  font-size: 1.15rem;
+  border-radius: 20px;
+  font-size: 1.3rem;
   font-weight: 900;
   cursor: pointer;
+  box-shadow: 0 5px 0 #1b5e20;
+}
+
+.action-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #1b5e20;
+}
+
+/* 計算プレイ中のレイアウト */
+#calc-game {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .calc-progress-badge {
-  text-align: center;
+  align-self: center;
+  background: #e7f5ff;
+  border: 2px solid #74c0fc;
+  padding: 4px 16px;
+  border-radius: 999px;
   font-size: 1.05rem;
   font-weight: 900;
   color: #1864ab;
-  margin-bottom: 8px;
 }
 
 .question-box {
   background: #e7f5ff;
-  border: 3px solid #4dabf7;
+  border: 3.5px solid #4dabf7;
   border-radius: 20px;
   padding: 18px 10px;
   text-align: center;
-  font-size: 2.2rem;
+  font-size: 2.55rem;
   font-weight: 900;
   color: #1864ab;
-  margin-bottom: 8px;
+  letter-spacing: 0.04em;
 }
 
 .calc-feedback {
   text-align: center;
-  font-size: 1.05rem;
+  font-size: 1.12rem;
   font-weight: 900;
   padding: 8px;
-  border-radius: 12px;
-  margin-bottom: 8px;
+  border-radius: 14px;
 }
 
 .calc-feedback.correct {
   background: #d3f9d8;
   color: #2b8a3e;
+  border: 2px solid #69db7c;
 }
 
 .calc-feedback.wrong {
   background: #ffe3e3;
   color: #c92a2a;
+  border: 2px solid #ffa8a8;
 }
 
 .answer-box {
-  height: 54px;
-  border: 3px solid #868e96;
-  border-radius: 16px;
+  height: 62px;
+  border: 3.5px solid #1971c2;
+  border-radius: 18px;
   background: #fff;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 1.9rem;
+  font-size: 2.25rem;
   font-weight: 900;
   color: #212529;
-  margin-bottom: 10px;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+#user-answer:empty::before {
+  content: '下の数字を押して入力';
+  color: #adb5bd;
+  font-size: 1.05rem;
+  font-weight: 700;
 }
 
 .numpad {
+  flex: 1;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-bottom: 10px;
+  grid-template-rows: repeat(4, 1fr);
+  gap: 9px;
+  min-height: 245px;
 }
 
 .num-btn {
-  padding: 14px 0;
-  font-size: 1.55rem;
+  padding: 0;
+  font-size: 1.9rem;
   font-weight: 900;
-  border: 2.5px solid #ced4da;
-  border-radius: 16px;
-  background: #fff;
+  border: 2.5px solid #adb5bd;
+  border-radius: 18px;
+  background: #ffffff;
   color: #212529;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 0 #adb5bd;
+}
+
+.num-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #adb5bd;
 }
 
 .clear-btn {
   background: #ffe3e3;
+  border-color: #ffa8a8;
   color: #c92a2a;
-  font-size: 1.15rem;
+  font-size: 1.3rem;
+  box-shadow: 0 4px 0 #ffa8a8;
 }
 
 .submit-btn {
-  background: #2b8a3e;
+  background: linear-gradient(180deg, #40c057 0%, #2b8a3e 100%);
+  border-color: #2b8a3e;
   color: #fff;
-  font-size: 1.15rem;
+  font-size: 1.35rem;
+  box-shadow: 0 4px 0 #1b5e20;
 }
 
-.result-card {
-  background: #fff9db;
-  border: 3px solid #f59f00;
-  border-radius: 24px;
-  padding: 22px 16px;
+#calc-quit-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 1.05rem;
   text-align: center;
 }
 
+/* 計算結果画面 */
+#calc-result {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.result-card {
+  flex: 1;
+  background: #fff9db;
+  border: 3.5px solid #f59f00;
+  border-radius: 24px;
+  padding: 24px 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
 .result-icon {
-  font-size: 3.2rem;
+  font-size: 3.6rem;
 }
 
 .result-card h3 {
-  font-size: 1.4rem;
+  font-size: 1.55rem;
+  font-weight: 900;
 }
 
 .result-score {
-  font-size: 1.45rem;
+  font-size: 1.55rem;
   font-weight: 900;
-  margin: 12px 0;
 }
 
 .result-coin-box {
   background: #fff;
-  border-radius: 16px;
-  padding: 14px;
-  margin-bottom: 18px;
-  font-size: 1.05rem;
+  border: 2px solid #fcc419;
+  border-radius: 18px;
+  padding: 16px;
+  font-size: 1.1rem;
   font-weight: 900;
 }
 
 .result-coins {
-  font-size: 1.8rem;
+  font-size: 2rem;
   font-weight: 900;
   color: #d9480f;
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
 /* ===================================================
