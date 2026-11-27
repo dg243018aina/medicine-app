@@ -10,7 +10,7 @@ const fallbackSharedData = {
     {
       id: '1001',
       name: '眞野 宏太',
-      updatedAt: '2026/11/16',
+      updatedAt: '2026/11/27',
       memo: '血圧安定。食後の飲み忘れに注意。',
       schedule: [
         { label: '朝ごはん', time: '07:00' },
@@ -19,14 +19,15 @@ const fallbackSharedData = {
         { label: 'お風呂', time: '17:00' }
       ],
       meds: [
-        { name: 'ロキソニン', dosage: '1錠', timing: ['朝', '昼', '夕'] }
-      ]
+        { name: 'ロキソニン', dosage: '1錠', timing: ['朝（食後）', '昼（食後）', '夕（食後）'] }
+      ],
+      intakeLogs: {}
     }
   ]
 };
 
 /* ===================================================
-   日本の祝日判定（文化の日・勤労感謝の日・振替休日など）
+   日本の祝日判定
 =================================================== */
 function getNthMonday(year, month1to12, nth) {
   const firstDayOfWeek = new Date(year, month1to12 - 1, 1).getDay();
@@ -69,7 +70,6 @@ function getJapaneseHolidayName(year, month, day) {
   const dateObj = new Date(year, month - 1, day);
   const dow = dateObj.getDay();
 
-  // 振替休日判定（日曜が祝日の場合の直後の平日）
   if (dow !== 0) {
     let prev = new Date(year, month - 1, day - 1);
     while (true) {
@@ -80,7 +80,6 @@ function getJapaneseHolidayName(year, month, day) {
     }
   }
 
-  // 国民の休日（前日と翌日が祝日に挟まれた平日：例 2026年9月22日）
   const yesterday = new Date(year, month - 1, day - 1);
   const tomorrow = new Date(year, month - 1, day + 1);
   if (
@@ -113,16 +112,28 @@ function loadSharedMedData() {
   return JSON.parse(JSON.stringify(fallbackSharedData));
 }
 
+function saveSharedMedData(shared) {
+  try {
+    localStorage.setItem(SHARED_STORAGE_KEY, JSON.stringify(shared));
+  } catch (e) {
+    console.warn('共有データ保存エラー:', e);
+  }
+}
+
 function saveImportedPatient(patientObj) {
   const shared = loadSharedMedData();
   const idx = shared.patients.findIndex(p => String(p.id).trim() === String(patientObj.id).trim());
   if (idx !== -1) {
+    const existingLogs = shared.patients[idx].intakeLogs || {};
+    const incomingLogs = patientObj.intakeLogs || {};
+    patientObj.intakeLogs = { ...existingLogs, ...incomingLogs };
     shared.patients[idx] = patientObj;
   } else {
+    if (!patientObj.intakeLogs) patientObj.intakeLogs = {};
     shared.patients.push(patientObj);
   }
   shared.currentPatientId = String(patientObj.id).trim();
-  localStorage.setItem(SHARED_STORAGE_KEY, JSON.stringify(shared));
+  saveSharedMedData(shared);
 }
 
 function extractSyncCode(rawText) {
@@ -136,9 +147,7 @@ function extractSyncCode(rawText) {
     if (syncParam && syncParam.startsWith('MED:')) {
       return syncParam;
     }
-  } catch (e) {
-    // URLでない場合は無視
-  }
+  } catch (e) {}
 
   const match = trimmed.match(/MED:[A-Za-z0-9+/=]+/);
   return match ? match[0] : null;
@@ -156,6 +165,24 @@ function decodePatientSyncCode(rawText) {
   }
   const jsonStr = new TextDecoder().decode(bytes);
   return JSON.parse(jsonStr);
+}
+
+function encodePatientLogCode(patient, petLogs) {
+  const mergedLogs = { ...(patient.intakeLogs || {}), ...(petLogs || {}) };
+  // 直近14日分に絞ってQRコードをコンパクトに保つ
+  const recentKeys = Object.keys(mergedLogs).sort().slice(-14);
+  const compactLogs = {};
+  recentKeys.forEach(k => { compactLogs[k] = mergedLogs[k]; });
+
+  const payload = {
+    id: patient.id,
+    name: patient.name,
+    intakeLogs: compactLogs
+  };
+  const bytes = new TextEncoder().encode(JSON.stringify(payload));
+  let binStr = '';
+  bytes.forEach(b => { binStr += String.fromCharCode(b); });
+  return 'LOG:' + btoa(binStr);
 }
 
 function findPatientById(patientId) {
@@ -179,6 +206,7 @@ function createDefaultPetData() {
     exp: 0,
     level: 1,
     medTakenDate: "",
+    intakeLogs: {},
     events: {}
   };
 }
@@ -207,6 +235,9 @@ function getMyPatientBundle() {
     profiles[key] = createDefaultPetData();
     saveAllPetProfiles(profiles);
   }
+  if (!profiles[key].intakeLogs) {
+    profiles[key].intakeLogs = {};
+  }
 
   return {
     patient,
@@ -221,8 +252,251 @@ function updateMyPetData(updaterFn) {
   const profiles = loadAllPetProfiles();
   const key = String(bundle.patient.id);
   if (!profiles[key]) profiles[key] = createDefaultPetData();
+  if (!profiles[key].intakeLogs) profiles[key].intakeLogs = {};
   updaterFn(profiles[key]);
   saveAllPetProfiles(profiles);
+}
+
+/* ===================================================
+   食事時間と薬の食前/食後からアラーム時刻を計算
+=================================================== */
+const TIME_SLOTS = ['朝', '昼', '夕'];
+
+function timeToMinutes(hhmm) {
+  if (!hhmm || !hhmm.includes(':')) return 0;
+  const [h, m] = hhmm.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function minutesToTime(totalMins) {
+  const wrapped = ((totalMins % 1440) + 1440) % 1440;
+  const h = Math.floor(wrapped / 60);
+  const m = wrapped % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+function getSlotAlarmInfo(patient, slot) {
+  const schedule = patient.schedule || [];
+  const labelMap = { '朝': '朝ごはん', '昼': '昼ごはん', '夕': '晩ごはん' };
+  const mealEntry = schedule.find(s => s.label === labelMap[slot]);
+  const baseMealTime = mealEntry ? mealEntry.time : (slot === '朝' ? '07:00' : slot === '昼' ? '12:00' : '19:00');
+
+  const slotMeds = [];
+  let hasPreMeal = false;
+  let hasPostMeal = false;
+  let hasBetweenMeal = false;
+
+  (patient.meds || []).forEach(med => {
+    const timings = Array.isArray(med.timing) ? med.timing : [];
+    const matched = timings.find(t => String(t).includes(slot));
+    if (matched) {
+      slotMeds.push({
+        name: med.name,
+        dosage: med.dosage || '',
+        detail: matched
+      });
+      if (matched.includes('食前') || matched.includes('起床')) hasPreMeal = true;
+      else if (matched.includes('食後')) hasPostMeal = true;
+      else if (matched.includes('食間')) hasBetweenMeal = true;
+    }
+  });
+
+  const baseMins = timeToMinutes(baseMealTime);
+  let alarmMins = baseMins;
+  let timingNote = `${labelMap[slot]}（${baseMealTime}）`;
+
+  if (hasPreMeal) {
+    alarmMins = baseMins - 30;
+    timingNote = `${labelMap[slot]}の30分前（食前）`;
+  } else if (hasPostMeal) {
+    alarmMins = baseMins + 30;
+    timingNote = `${labelMap[slot]}の30分後（食後）`;
+  } else if (hasBetweenMeal) {
+    alarmMins = baseMins + 120;
+    timingNote = `${labelMap[slot]}の2時間後（食間）`;
+  }
+
+  return {
+    slot,
+    hasMeds: slotMeds.length > 0,
+    meds: slotMeds,
+    baseMealTime,
+    alarmTime: minutesToTime(alarmMins),
+    alarmMins,
+    timingNote
+  };
+}
+
+function getSlotStatusForDate(bundle, dateStr, slot) {
+  if (!bundle) return 'none';
+  const petStatus = bundle.pet.intakeLogs?.[dateStr]?.[slot];
+  const sharedStatus = bundle.patient.intakeLogs?.[dateStr]?.[slot];
+  return petStatus || sharedStatus || 'none';
+}
+
+function recordSlotIntakeStatus(slot, status, dateStr = getTodayStr()) {
+  const bundle = getMyPatientBundle();
+  if (!bundle) return;
+
+  // 1. 患者プロファイルに保存
+  updateMyPetData(p => {
+    if (!p.intakeLogs) p.intakeLogs = {};
+    if (!p.intakeLogs[dateStr]) p.intakeLogs[dateStr] = {};
+    p.intakeLogs[dateStr][slot] = status;
+
+    if (status === 'taken') {
+      p.medTakenDate = dateStr;
+    }
+  });
+
+  // 2. 共有ストレージ（薬剤師側画面でも即座に丸バツ確認できる）にも保存
+  const shared = loadSharedMedData();
+  const idx = shared.patients.findIndex(p => String(p.id) === String(bundle.patient.id));
+  if (idx !== -1) {
+    if (!shared.patients[idx].intakeLogs) shared.patients[idx].intakeLogs = {};
+    if (!shared.patients[idx].intakeLogs[dateStr]) shared.patients[idx].intakeLogs[dateStr] = {};
+    shared.patients[idx].intakeLogs[dateStr][slot] = status;
+    saveSharedMedData(shared);
+  }
+
+  // 飲んだ場合はリマインドを解除
+  if (status === 'taken') {
+    delete snoozeReminders[`${dateStr}_${slot}`];
+  }
+
+  renderMedStampCard();
+  updatePetDisplay();
+  updateHomeCalendarAndPet();
+}
+
+/* ===================================================
+   アラーム音（Web Audio API）＆ 自動チェック・10分おきリマインド
+=================================================== */
+let activeAlarmContext = null; // { dateStr, slot, isTest }
+let snoozeReminders = {}; // { "2026-11-27_朝": timestampMs }
+let alarmIntervalId = null;
+let alarmSoundIntervalId = null;
+
+function playGentleChimeOnce() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const notes = [523.25, 659.25, 783.99, 1046.5]; // ド・ミ・ソ・高いド
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      const startTime = ctx.currentTime + i * 0.18;
+      gain.gain.setValueAtTime(0.001, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.28, startTime + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.45);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(startTime);
+      osc.stop(startTime + 0.48);
+    });
+  } catch (e) {
+    console.warn('音声再生エラー:', e);
+  }
+}
+
+function startAlarmSoundLoop() {
+  stopAlarmSoundLoop();
+  playGentleChimeOnce();
+  alarmSoundIntervalId = setInterval(playGentleChimeOnce, 3500);
+}
+
+function stopAlarmSoundLoop() {
+  if (alarmSoundIntervalId) {
+    clearInterval(alarmSoundIntervalId);
+    alarmSoundIntervalId = null;
+  }
+}
+
+function openMedicationAlarmModal(slotInfo, isTest = false) {
+  const modal = document.getElementById('alarm-modal');
+  const badgeEl = document.getElementById('alarm-slot-badge');
+  const titleEl = document.getElementById('alarm-title');
+  const infoEl = document.getElementById('alarm-medicine-info');
+  if (!modal) return;
+
+  const todayStr = getTodayStr();
+  activeAlarmContext = {
+    dateStr: todayStr,
+    slot: slotInfo.slot,
+    isTest
+  };
+
+  if (badgeEl) {
+    badgeEl.textContent = `${slotInfo.slot}のお薬（${slotInfo.alarmTime}）`;
+  }
+  if (titleEl) {
+    titleEl.textContent = isTest
+      ? `【テスト】${slotInfo.slot}のお薬の時間です！`
+      : `${slotInfo.slot}のお薬の時間です！`;
+  }
+  if (infoEl) {
+    if (slotInfo.meds && slotInfo.meds.length > 0) {
+      const medLines = slotInfo.meds
+        .map(m => `・${m.name}（${m.dosage}）`)
+        .join('<br>');
+      infoEl.innerHTML = `<div style="font-size:0.88rem; color:#495057; margin-bottom:4px;">${slotInfo.timingNote}</div>${medLines}`;
+    } else {
+      infoEl.textContent = '処方薬の服薬時間です。お水と一緒に飲みましょう。';
+    }
+  }
+
+  modal.classList.remove('hidden');
+  startAlarmSoundLoop();
+}
+
+function checkScheduledAlarms() {
+  const bundle = getMyPatientBundle();
+  if (!bundle) return;
+
+  const modal = document.getElementById('alarm-modal');
+  if (modal && !modal.classList.contains('hidden')) return;
+
+  const now = new Date();
+  const todayStr = getTodayStr();
+  const nowMins = now.getHours() * 60 + now.getMinutes();
+  const nowMs = now.getTime();
+
+  for (const slot of TIME_SLOTS) {
+    const slotInfo = getSlotAlarmInfo(bundle.patient, slot);
+    if (!slotInfo.hasMeds) continue;
+
+    // すでにスタンプカードやアラームで「飲んだ」と記録済みなら絶対に鳴らさない
+    const status = getSlotStatusForDate(bundle, todayStr, slot);
+    if (status === 'taken') continue;
+
+    const key = `${todayStr}_${slot}`;
+    const snoozeTargetMs = snoozeReminders[key];
+
+    // 1. 「まだ」を押した後の10分おきリマインド判定
+    if (snoozeTargetMs) {
+      if (nowMs >= snoozeTargetMs) {
+        delete snoozeReminders[key];
+        openMedicationAlarmModal(slotInfo, false);
+        return;
+      }
+      continue;
+    }
+
+    // 2. 初回アラーム判定（予定時刻を過ぎていて、まだ未回答の場合）
+    if (status === 'none' && nowMins >= slotInfo.alarmMins && nowMins <= slotInfo.alarmMins + 180) {
+      openMedicationAlarmModal(slotInfo, false);
+      return;
+    }
+  }
+}
+
+function startAlarmWatcher() {
+  if (alarmIntervalId) clearInterval(alarmIntervalId);
+  checkScheduledAlarms();
+  alarmIntervalId = setInterval(checkScheduledAlarms, 5000);
 }
 
 let petTempMood = null;
@@ -259,8 +533,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initAlarmSystem();
   initCalendarSystem();
   initSyncUpdateModal();
+  initShareLogModal();
 
-  // QRコード等のURLパラメータ(?sync=MED:...)経由で開かれた場合の自動ログイン・最新更新
   const params = new URLSearchParams(window.location.search);
   const urlSync = params.get('sync');
   if (urlSync) {
@@ -281,6 +555,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (existingPatient) {
     refreshAllMyViews();
     showScreen('screen-opening');
+    startAlarmWatcher();
   } else {
     showScreen('screen-id-login');
   }
@@ -295,6 +570,7 @@ window.addEventListener('storage', (e) => {
 window.addEventListener('focus', () => {
   if (getLockedPatientId()) {
     renderPatientData();
+    checkScheduledAlarms();
   }
 });
 
@@ -357,6 +633,7 @@ function applySyncedQrData(rawText) {
   saveImportedPatient(imported);
   lockPatientId(imported.id);
   refreshAllMyViews();
+  startAlarmWatcher();
   return imported;
 }
 
@@ -420,6 +697,7 @@ function initIdLoginGate() {
     errorEl.classList.add('hidden');
     lockPatientId(matchedPatient.id);
     refreshAllMyViews();
+    startAlarmWatcher();
     showScreen('screen-opening');
   });
 }
@@ -458,7 +736,7 @@ function initSyncUpdateModal() {
         try {
           const imported = applySyncedQrData(decodedText);
           modal.classList.add('hidden');
-          alert(`✅ ${imported.name} 様の最新のお薬データに更新・保存しました！`);
+          alert(`✅ ${imported.name} 様の最新のお薬・食事時間に更新しました！`);
         } catch (err) {
           if (errorEl) {
             errorEl.textContent = 'QRコードの読み取りに失敗しました。薬剤師画面のQRをもう一度映してください。';
@@ -481,12 +759,46 @@ function initSyncUpdateModal() {
     try {
       const imported = applySyncedQrData(code);
       closeModalAndCamera();
-      alert(`✅ ${imported.name} 様の最新のお薬データに更新・保存しました！`);
+      alert(`✅ ${imported.name} 様の最新のお薬・食事時間に更新しました！`);
     } catch (err) {
       errorEl.textContent = 'コードの読み込みに失敗しました。コピーし直してください。';
       errorEl.classList.remove('hidden');
     }
   });
+}
+
+function initShareLogModal() {
+  const openBtn = document.getElementById('open-share-log-btn');
+  const closeBtn = document.getElementById('close-share-log-btn');
+  const modal = document.getElementById('share-log-modal');
+  const copyBtn = document.getElementById('copy-share-log-btn');
+  const codeInput = document.getElementById('share-log-code-input');
+  const qrImg = document.getElementById('share-log-qr-img');
+
+  if (!openBtn || !modal) return;
+
+  openBtn.addEventListener('click', () => {
+    const bundle = getMyPatientBundle();
+    if (!bundle) return;
+    const logCode = encodePatientLogCode(bundle.patient, bundle.pet.intakeLogs);
+    if (codeInput) codeInput.value = logCode;
+    if (qrImg) {
+      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(logCode)}`;
+    }
+    modal.classList.remove('hidden');
+  });
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+  }
+
+  if (copyBtn && codeInput) {
+    copyBtn.addEventListener('click', () => {
+      codeInput.select();
+      document.execCommand('copy');
+      alert('服薬記録コードをコピーしました！');
+    });
+  }
 }
 
 function refreshAllMyViews() {
@@ -528,7 +840,7 @@ function showScreen(screenId) {
 }
 
 /* ===================================================
-   ホーム画面のGoogleカレンダー風ウィジェット（祝日・色・絵文字対応）
+   ホーム画面のGoogleカレンダー風ウィジェット
 =================================================== */
 function initHomeGoogleCalendar() {
   const prevBtn = document.getElementById('home-gcal-prev');
@@ -638,36 +950,39 @@ function renderHomeGoogleCalendar() {
 function updateHomePetSpeechForDate(dateStr) {
   const bundle = getMyPatientBundle();
   if (!bundle) return;
-  const { pet } = bundle;
+  const { patient } = bundle;
 
   const speechEl = document.getElementById('home-pet-speech');
   const homePetBody = document.getElementById('home-pet-body');
   if (!speechEl) return;
 
   const todayStr = getTodayStr();
-  const isMedTakenToday = (pet.medTakenDate === todayStr);
-  const events = (pet.events && pet.events[dateStr]) || [];
+  const events = (bundle.pet.events && bundle.pet.events[dateStr]) || [];
   const eventNames = events.map(ev => `${ev.category || ''}${ev.time ? ev.time + ' ' : ''}${ev.title}`).join('・');
 
   const [yStr, mStr, dStr] = dateStr.split('-');
   const holidayName = getJapaneseHolidayName(Number(yStr), Number(mStr), Number(dStr));
   const holidayPrefix = holidayName ? `【${holidayName}】` : '';
 
+  const untakenSlots = TIME_SLOTS.filter(slot => {
+    const info = getSlotAlarmInfo(patient, slot);
+    return info.hasMeds && getSlotStatusForDate(bundle, todayStr, slot) !== 'taken';
+  });
+
   let message = '';
   let homeMood = 'normal';
 
   if (dateStr === todayStr) {
-    if (events.length > 0 && !isMedTakenToday) {
-      message = `${holidayPrefix}今日の予定は「${eventNames}」だよ！まだお薬を飲んでいないよチュ！`;
+    if (untakenSlots.length > 0) {
+      const nextSlot = untakenSlots[0];
+      const nextInfo = getSlotAlarmInfo(patient, nextSlot);
+      message = `${holidayPrefix}次は${nextSlot}のお薬（${nextInfo.alarmTime}頃）だよチュ！スタンプカードも見てね！`;
       homeMood = 'worried';
-    } else if (events.length > 0 && isMedTakenToday) {
-      message = `${holidayPrefix}今日の予定は「${eventNames}」だよチュ！お薬も飲んでえらいのだ！`;
+    } else if (events.length > 0) {
+      message = `${holidayPrefix}今日の予定は「${eventNames}」だよチュ！お薬スタンプもバッチリだね！`;
       homeMood = 'wink';
-    } else if (events.length === 0 && !isMedTakenToday) {
-      message = `${holidayPrefix}まだ今日のお薬を飲んでいないよチュ！忘れずに飲もうね！`;
-      homeMood = 'worried';
     } else {
-      message = `${holidayPrefix}今日のお薬はバッチリ飲んだね！ゆっくり過ごそうチュ！`;
+      message = `${holidayPrefix}今日のお薬スタンプは全部バッチリだね！ゆっくり過ごそうチュ！`;
       homeMood = 'wink';
     }
   } else {
@@ -686,7 +1001,7 @@ function updateHomePetSpeechForDate(dateStr) {
 
   speechEl.textContent = message;
   if (homePetBody) {
-    homePetBody.innerHTML = createCuteHamsterSVG(pet.level, homeMood);
+    homePetBody.innerHTML = createCuteHamsterSVG(bundle.pet.level, homeMood);
   }
 }
 
@@ -1228,6 +1543,85 @@ function showCalcResult() {
   result.classList.remove('hidden');
 }
 
+/* ===================================================
+   お薬画面・スタンプカード描画
+=================================================== */
+function renderMedStampCard() {
+  const bundle = getMyPatientBundle();
+  if (!bundle) return;
+
+  const gridEl = document.getElementById('med-stamp-grid');
+  const dateLabelEl = document.getElementById('stamp-today-label');
+  if (!gridEl) return;
+
+  const today = new Date();
+  const todayStr = getTodayStr();
+  if (dateLabelEl) {
+    dateLabelEl.textContent = `${today.getMonth() + 1}月${today.getDate()}日`;
+  }
+
+  const slotIcons = { '朝': '🌅', '昼': '☀️', '夕': '🌙' };
+  gridEl.innerHTML = '';
+
+  TIME_SLOTS.forEach(slot => {
+    const info = getSlotAlarmInfo(bundle.patient, slot);
+    const status = getSlotStatusForDate(bundle, todayStr, slot);
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'stamp-slot-btn';
+
+    if (!info.hasMeds) {
+      btn.classList.add('no-med');
+      btn.innerHTML = `
+        <span class="stamp-slot-label">${slotIcons[slot]} ${slot}</span>
+        <span class="stamp-slot-time">お薬なし</span>
+        <div class="stamp-circle">ー</div>
+        <span class="stamp-status-text">対象外</span>
+      `;
+    } else if (status === 'taken') {
+      btn.classList.add('taken');
+      btn.innerHTML = `
+        <span class="stamp-slot-label">${slotIcons[slot]} ${slot}</span>
+        <span class="stamp-slot-time">${info.alarmTime}</span>
+        <div class="stamp-circle">💮</div>
+        <span class="stamp-status-text">⭕ のんだ！</span>
+      `;
+      btn.addEventListener('click', () => {
+        if (confirm(`「${slot}のお薬」の記録を取り消して未服薬に戻しますか？`)) {
+          recordSlotIntakeStatus(slot, 'none', todayStr);
+        }
+      });
+    } else if (status === 'missed') {
+      btn.classList.add('missed');
+      btn.innerHTML = `
+        <span class="stamp-slot-label">${slotIcons[slot]} ${slot}</span>
+        <span class="stamp-slot-time">${info.alarmTime}</span>
+        <div class="stamp-circle">❌</div>
+        <span class="stamp-status-text">まだ（押して完了）</span>
+      `;
+      btn.addEventListener('click', () => {
+        recordSlotIntakeStatus(slot, 'taken', todayStr);
+        alert(`⭕ ${slot}のお薬を「のんだ」に記録しました！`);
+      });
+    } else {
+      btn.classList.add('has-med');
+      btn.innerHTML = `
+        <span class="stamp-slot-label">${slotIcons[slot]} ${slot}</span>
+        <span class="stamp-slot-time">${info.alarmTime}</span>
+        <div class="stamp-circle">押す</div>
+        <span class="stamp-status-text">未服薬</span>
+      `;
+      btn.addEventListener('click', () => {
+        recordSlotIntakeStatus(slot, 'taken', todayStr);
+        alert(`💮 ${slot}のお薬スタンプを押しました！\nこの時間のアラームは鳴りません。`);
+      });
+    }
+
+    gridEl.appendChild(btn);
+  });
+}
+
 function renderPatientData() {
   const bundle = getMyPatientBundle();
   if (!bundle) return;
@@ -1237,6 +1631,8 @@ function renderPatientData() {
   const idElem = document.getElementById('patient-display-id');
   if (nameElem) nameElem.textContent = `${patient.name} 様`;
   if (idElem) idElem.textContent = `患者ID: ${patient.id}`;
+
+  renderMedStampCard();
 
   const schedList = document.getElementById('schedule-list');
   if (schedList) {
@@ -1265,40 +1661,52 @@ function renderPatientData() {
   }
 }
 
-function recordMedTaken() {
-  updateMyPetData(p => {
-    p.medTakenDate = getTodayStr();
-  });
-  updatePetDisplay();
-  updateHomeCalendarAndPet();
-  alert('今日のお薬をのんだ記録を保存しました！ハムスターも大喜びです！');
-}
-
 function initAlarmSystem() {
   const modal = document.getElementById('alarm-modal');
   const triggerBtn = document.getElementById('trigger-alarm-test-btn');
-  const doneBtn = document.getElementById('mark-med-taken-btn');
   const yesBtn = document.getElementById('alarm-btn-yes');
   const noBtn = document.getElementById('alarm-btn-no');
 
-  if (doneBtn) doneBtn.addEventListener('click', recordMedTaken);
-  if (triggerBtn) triggerBtn.addEventListener('click', () => modal.classList.remove('hidden'));
-  if (yesBtn) {
-    yesBtn.addEventListener('click', () => {
-      modal.classList.add('hidden');
-      recordMedTaken();
+  if (triggerBtn) {
+    triggerBtn.addEventListener('click', () => {
+      const bundle = getMyPatientBundle();
+      if (!bundle) return;
+      const targetSlot = TIME_SLOTS.find(s => getSlotAlarmInfo(bundle.patient, s).hasMeds) || '朝';
+      const slotInfo = getSlotAlarmInfo(bundle.patient, targetSlot);
+      openMedicationAlarmModal(slotInfo, true);
     });
   }
+
+  if (yesBtn) {
+    yesBtn.addEventListener('click', () => {
+      stopAlarmSoundLoop();
+      modal.classList.add('hidden');
+      if (activeAlarmContext) {
+        recordSlotIntakeStatus(activeAlarmContext.slot, 'taken', activeAlarmContext.dateStr);
+        alert(`⭕ ${activeAlarmContext.slot}のお薬を「のんだ」に記録しました！ハムスターも大喜びです！`);
+        activeAlarmContext = null;
+      }
+    });
+  }
+
   if (noBtn) {
     noBtn.addEventListener('click', () => {
+      stopAlarmSoundLoop();
       modal.classList.add('hidden');
-      alert('再通知に設定しました。忘れずに飲みましょうね。');
+      if (activeAlarmContext) {
+        const { dateStr, slot } = activeAlarmContext;
+        recordSlotIntakeStatus(slot, 'missed', dateStr);
+        // 10分後に再通知セット
+        snoozeReminders[`${dateStr}_${slot}`] = Date.now() + 10 * 60 * 1000;
+        alert(`❌「まだ」で記録しました。\n10分後にまたアラームでお知らせします！`);
+        activeAlarmContext = null;
+      }
     });
   }
 }
 
 /* ===================================================
-   詳細カレンダー ＆ 予定追加（色選択・祝日表示）
+   詳細カレンダー ＆ 予定追加
 =================================================== */
 function updateSelectedDateHeader(dateStr) {
   const label = document.getElementById('selected-date-label');
