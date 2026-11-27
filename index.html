@@ -250,7 +250,7 @@
         </div>
       </section>
 
-      <!-- 画面4: くすり -->
+      <!-- 画面4: くすり（スタンプカード ＆ 自動アラーム連携） -->
       <section id="screen-med" class="screen">
         <div class="screen-header">
           <button class="back-btn" data-target="screen-home">← 戻る</button>
@@ -262,15 +262,25 @@
           <span class="patient-id-sub" id="patient-display-id">患者ID: ----</span>
         </div>
 
+        <!-- 今日の服薬スタンプカード（事前入力＆アラーム停止対応） -->
+        <div class="card stamp-card">
+          <div class="stamp-card-header">
+            <h4>💮 今日のお薬スタンプカード</h4>
+            <span class="stamp-date-tag" id="stamp-today-label">--月--日</span>
+          </div>
+          <p class="stamp-help-text">押すと「のんだ」になり、その時間のアラームは鳴りません</p>
+          <div class="stamp-grid" id="med-stamp-grid"></div>
+        </div>
+
         <div class="med-layout">
           <div class="card schedule-card">
-            <h4>生活時間</h4>
+            <h4>⏰ 生活時間・アラーム予定</h4>
             <ul id="schedule-list"></ul>
           </div>
 
           <div class="card meds-card">
             <div class="meds-card-header">
-              <h4>処方中のお薬</h4>
+              <h4>💊 処方中のお薬</h4>
               <button type="button" id="open-sync-update-btn" class="sync-update-mini-btn">📷 QRで薬を更新</button>
             </div>
             <div id="medicine-list"></div>
@@ -278,8 +288,8 @@
         </div>
 
         <div class="med-action-buttons">
-          <button class="med-done-btn" id="mark-med-taken-btn">✅ 今日のお薬をのんだ！</button>
-          <button class="alarm-test-btn" id="trigger-alarm-test-btn">⏰ お薬アラームのテスト</button>
+          <button class="alarm-test-btn" id="trigger-alarm-test-btn">🔔 お薬アラームのテスト（音＆表示）</button>
+          <button class="share-log-btn" id="open-share-log-btn">📤 飲んだ記録を薬剤師へ見せる（QR）</button>
         </div>
       </section>
 
@@ -321,20 +331,21 @@
     </main>
   </div>
 
-  <!-- 服薬アラーム モーダル -->
+  <!-- 服薬アラーム モーダル（時間になったら自動表示・音付き） -->
   <div class="modal-overlay hidden" id="alarm-modal">
     <div class="alarm-content">
-      <div class="alarm-clock-icon" style="font-size:48px;">⏰</div>
-      <h3>お薬の時間です！</h3>
-      <p id="alarm-medicine-info">処方薬の服薬時間です</p>
+      <div class="alarm-clock-icon" style="font-size:52px;">⏰</div>
+      <div class="alarm-slot-badge" id="alarm-slot-badge">朝のお薬</div>
+      <h3 id="alarm-title">お薬の時間です！</h3>
+      <div class="alarm-med-box" id="alarm-medicine-info">処方薬の服薬時間です</div>
       <div class="alarm-btn-group">
-        <button class="alarm-btn btn-taken" id="alarm-btn-yes">のんだ</button>
-        <button class="alarm-btn btn-not-taken" id="alarm-btn-no">まだ</button>
+        <button class="alarm-btn btn-taken" id="alarm-btn-yes">⭕ のんだ</button>
+        <button class="alarm-btn btn-not-taken" id="alarm-btn-no">❌ まだ<br><small>（10分後に再通知）</small></button>
       </div>
     </div>
   </div>
 
-  <!-- 予定追加 モーダル（絵文字＆色選択付き） -->
+  <!-- 予定追加 モーダル -->
   <div class="modal-overlay hidden" id="event-modal">
     <div class="modal-content">
       <h3>予定の追加</h3>
@@ -382,8 +393,8 @@
   <div class="modal-overlay hidden" id="sync-update-modal">
     <div class="modal-content">
       <h3>お薬データの更新</h3>
-      <p style="font-size:0.82rem; color:#555; margin-top:4px; line-height:1.4;">
-        薬剤師画面のQRコードをカメラで映すと、新しいお薬が自動で保存されます。
+      <p style="font-size:0.88rem; color:#495057; margin-top:4px; line-height:1.4;">
+        薬剤師画面のQRコードをカメラで映すと、新しいお薬と食事時間が保存されます。
       </p>
 
       <button type="button" id="start-sync-qr-btn" class="qr-camera-btn" style="margin-top:10px;">
@@ -397,8 +408,8 @@
 
       <form id="sync-update-form" style="margin-top:10px; border-top:1px dashed #ddd; padding-top:8px;">
         <div class="form-group" style="margin-top:0;">
-          <label for="sync-update-input" style="font-size:0.75rem; color:#777;">うまく映らない場合はコードを貼り付け</label>
-          <input type="text" id="sync-update-input" placeholder="MED:..." style="font-size:0.8rem; padding:7px;">
+          <label for="sync-update-input" style="font-size:0.8rem; color:#666;">うまく映らない場合はコードを貼り付け</label>
+          <input type="text" id="sync-update-input" placeholder="MED:..." style="font-size:0.85rem; padding:8px;">
         </div>
         <p id="sync-update-error" class="id-login-error hidden" style="margin-top:6px;"></p>
         <div class="modal-btn-group">
@@ -406,6 +417,24 @@
           <button type="submit" class="btn-submit">コードで更新</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- 飲んだ記録を薬剤師へ送る（QR表示）モーダル -->
+  <div class="modal-overlay hidden" id="share-log-modal">
+    <div class="modal-content">
+      <h3>飲んだ記録の共有QR</h3>
+      <p style="font-size:0.86rem; color:#495057; margin-top:4px; line-height:1.4;">
+        薬剤師さんの画面で「患者の飲んだ記録を読み取る」を押して、下のQRコードを映してください。
+      </p>
+      <div style="margin:12px auto; text-align:center;">
+        <img id="share-log-qr-img" alt="服薬記録QR" style="width:180px; height:180px; border:3px solid #2b8a3e; border-radius:12px; background:#fff;">
+      </div>
+      <div style="display:flex; gap:6px; margin-top:8px;">
+        <input type="text" id="share-log-code-input" readonly style="font-size:0.78rem; padding:7px;">
+        <button type="button" id="copy-share-log-btn" class="btn-submit" style="width:auto; padding:7px 14px; font-size:0.85rem;">コピー</button>
+      </div>
+      <button type="button" class="btn-cancel" id="close-share-log-btn" style="width:100%; margin-top:12px;">閉じる</button>
     </div>
   </div>
 
