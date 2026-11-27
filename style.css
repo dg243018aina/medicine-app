@@ -35,7 +35,6 @@ body {
   position: relative;
 }
 
-/* スマホ実機では外枠を消して画面いっぱいに大きく表示 */
 @media (max-width: 520px) {
   body {
     padding: 0;
@@ -585,7 +584,7 @@ body {
 }
 
 /* ===================================================
-   ペット画面（おしゃべり送信ボタン修正済み）
+   ペット画面
 =================================================== */
 .pet-display {
   background: linear-gradient(180deg, #fff9db 0%, #fff3bf 100%);
@@ -829,7 +828,7 @@ body {
 }
 
 /* ===================================================
-   計算画面（デッドスペース解消・特大ボタン版）
+   計算画面
 =================================================== */
 #calc-menu {
   flex: 1;
@@ -920,7 +919,6 @@ body {
   box-shadow: 0 2px 0 #1b5e20;
 }
 
-/* 計算プレイ中のレイアウト */
 #calc-game {
   flex: 1;
   display: flex;
@@ -1045,7 +1043,6 @@ body {
   text-align: center;
 }
 
-/* 計算結果画面 */
 #calc-result {
   flex: 1;
   display: flex;
@@ -1095,22 +1092,22 @@ body {
 }
 
 /* ===================================================
-   お薬・生活時間画面（特大・高コントラスト）
+   お薬・生活時間画面 ＆ スタンプカード
 =================================================== */
 .patient-info-header {
   background: #ebfbee;
   border: 2.5px solid #51cf66;
   border-radius: 18px;
-  padding: 12px 14px;
+  padding: 10px 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .patient-info-header h3 {
-  font-size: 1.3rem;
+  font-size: 1.25rem;
   font-weight: 900;
   color: #1b5e20;
 }
@@ -1119,11 +1116,141 @@ body {
   background: #fff;
   border: 2px solid #2b8a3e;
   color: #1b5e20;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 900;
   padding: 4px 10px;
   border-radius: 999px;
   white-space: nowrap;
+}
+
+/* スタンプカード */
+.stamp-card {
+  background: linear-gradient(180deg, #fff9db 0%, #fffdf5 100%) !important;
+  border: 3px solid #f59f00 !important;
+  margin-bottom: 12px;
+}
+
+.stamp-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+}
+
+.stamp-date-tag {
+  background: #e8590c;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 900;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.stamp-help-text {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #5c3a21;
+  margin: 5px 0 10px;
+  line-height: 1.35;
+}
+
+.stamp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.stamp-slot-btn {
+  background: #ffffff;
+  border: 2.5px dashed #adb5bd;
+  border-radius: 16px;
+  padding: 10px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.stamp-slot-btn:active {
+  transform: scale(0.96);
+}
+
+.stamp-slot-btn.has-med {
+  border-style: solid;
+  border-color: #f59f00;
+}
+
+.stamp-slot-btn.taken {
+  background: #ebfbee;
+  border: 3px solid #2b8a3e;
+}
+
+.stamp-slot-btn.missed {
+  background: #fff5f5;
+  border: 3px solid #e03131;
+}
+
+.stamp-slot-btn.no-med {
+  background: #f1f3f5;
+  border-color: #dee2e6;
+  opacity: 0.72;
+}
+
+.stamp-slot-label {
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #212529;
+}
+
+.stamp-slot-time {
+  font-size: 0.8rem;
+  font-weight: 900;
+  color: #495057;
+}
+
+.stamp-circle {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: 2.5px dashed #ced4da;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 4px 0 2px;
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: #868e96;
+}
+
+.stamp-slot-btn.taken .stamp-circle {
+  border: 3px solid #c92a2a;
+  background: #fff5f5;
+  color: #c92a2a;
+  transform: rotate(-6deg);
+}
+
+.stamp-slot-btn.missed .stamp-circle {
+  border: 3px solid #e03131;
+  background: #ffe3e3;
+  color: #c92a2a;
+}
+
+.stamp-status-text {
+  font-size: 0.84rem;
+  font-weight: 900;
+  color: #495057;
+}
+
+.stamp-slot-btn.taken .stamp-status-text {
+  color: #2b8a3e;
+}
+
+.stamp-slot-btn.missed .stamp-status-text {
+  color: #c92a2a;
 }
 
 .med-layout {
@@ -1137,11 +1264,11 @@ body {
   background: #fff;
   border: 2.5px solid #adb5bd;
   border-radius: 20px;
-  padding: 14px 12px;
+  padding: 13px 12px;
 }
 
 .card h4 {
-  font-size: 1.12rem;
+  font-size: 1.08rem;
   font-weight: 900;
   color: #212529;
 }
@@ -1160,7 +1287,7 @@ body {
   border: none;
   border-radius: 999px;
   padding: 8px 12px;
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   font-weight: 900;
   cursor: pointer;
   white-space: nowrap;
@@ -1182,13 +1309,13 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.98rem;
+  font-size: 0.96rem;
   font-weight: 700;
   color: #212529;
 }
 
 #schedule-list li strong {
-  font-size: 1.05rem;
+  font-size: 1.04rem;
   font-weight: 900;
 }
 
@@ -1201,13 +1328,13 @@ body {
   background: #f3faf5;
   border: 2px solid #b2f2bb;
   border-left: 6px solid #2b8a3e;
-  padding: 12px;
+  padding: 11px 12px;
   border-radius: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 9px;
 }
 
 .med-name {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 900;
   color: #111111;
   display: flex;
@@ -1220,16 +1347,16 @@ body {
 .new-med-tag {
   background: #e8590c;
   color: #fff;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   padding: 2px 8px;
   border-radius: 8px;
 }
 
 .med-instruction {
-  font-size: 1.08rem;
+  font-size: 1.04rem;
   font-weight: 900;
   color: #1b5e20;
-  margin-top: 5px;
+  margin-top: 4px;
   line-height: 1.4;
 }
 
@@ -1241,25 +1368,24 @@ body {
   padding-bottom: 6px;
 }
 
-.med-done-btn {
-  padding: 17px 12px;
-  background: linear-gradient(180deg, #40c057 0%, #2b8a3e 100%);
-  color: #fff;
-  border: none;
-  border-radius: 18px;
-  font-size: 1.22rem;
-  font-weight: 900;
-  cursor: pointer;
-  box-shadow: 0 5px 0 #1b5e20;
-}
-
 .alarm-test-btn {
   padding: 13px 12px;
   background: #fff3bf;
   color: #b84300;
   border: 2.5px solid #f59f00;
   border-radius: 16px;
-  font-size: 1.02rem;
+  font-size: 1rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.share-log-btn {
+  padding: 14px 12px;
+  background: #e7f5ff;
+  color: #1864ab;
+  border: 2.5px solid #4dabf7;
+  border-radius: 16px;
+  font-size: 1rem;
   font-weight: 900;
   cursor: pointer;
 }
@@ -1441,7 +1567,6 @@ body {
   cursor: pointer;
 }
 
-/* カラー選択ボタン */
 .color-picker-row {
   display: flex;
   justify-content: space-between;
@@ -1470,7 +1595,7 @@ body {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.65);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1488,19 +1613,41 @@ body {
   text-align: center;
   max-height: 92vh;
   overflow-y: auto;
+  border: 4px solid #f59f00;
+}
+
+.modal-content {
+  border-color: #adb5bd;
+}
+
+.alarm-slot-badge {
+  display: inline-block;
+  background: #e8590c;
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 900;
+  padding: 4px 16px;
+  border-radius: 999px;
+  margin: 6px 0;
 }
 
 .alarm-content h3,
 .modal-content h3 {
-  font-size: 1.3rem;
+  font-size: 1.35rem;
   font-weight: 900;
   color: #212529;
 }
 
-.alarm-content p {
-  font-size: 1.05rem;
-  font-weight: 700;
-  margin-top: 8px;
+.alarm-med-box {
+  background: #ebfbee;
+  border: 2px solid #51cf66;
+  border-radius: 14px;
+  padding: 12px;
+  margin-top: 10px;
+  font-size: 1.08rem;
+  font-weight: 900;
+  color: #1b5e20;
+  line-height: 1.45;
 }
 
 .alarm-btn-group,
@@ -1514,24 +1661,38 @@ body {
 .alarm-btn,
 .btn-cancel,
 .btn-submit {
-  padding: 14px 10px;
+  padding: 14px 8px;
   border: none;
   border-radius: 16px;
-  font-size: 1.08rem;
+  font-size: 1.15rem;
   font-weight: 900;
   cursor: pointer;
+  line-height: 1.25;
+}
+
+.alarm-btn small {
+  font-size: 0.78rem;
+  font-weight: 700;
 }
 
 .btn-taken,
 .btn-submit {
   background: #2b8a3e;
   color: #fff;
+  box-shadow: 0 4px 0 #1b5e20;
 }
 
 .btn-not-taken,
 .btn-cancel {
+  background: #ffe3e3;
+  color: #c92a2a;
+  box-shadow: 0 4px 0 #ffa8a8;
+}
+
+.btn-cancel {
   background: #e9ecef;
   color: #212529;
+  box-shadow: none;
 }
 
 .form-group {
